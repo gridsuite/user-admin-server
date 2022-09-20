@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: user-admin
+
+dbName: useradmin
+
+server:
+  max-http-header-size: 64000

@@ -1,0 +1,9 @@
+server:
+  port: 5032
+
+spring:
+  rabbitmq:
+    addresses: localhost
+  data:
+    elasticsearch:
+      host: localhost
