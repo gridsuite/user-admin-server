@@ -33,14 +33,14 @@ public class UserAdminService {
     }
 
     public List<UserInfosEntity> getUsers(String userId) {
-        if (!isSuperAdminUser(userId)) {
+        if (!isAdmin(userId)) {
             throw new UserAdminException(UNAUTHORIZED);
         }
         return repository.findAll();
     }
 
     public void createUser(String sub, String userId) {
-        if (!isSuperAdminUser(userId)) {
+        if (!isAdmin(userId)) {
             throw new UserAdminException(UNAUTHORIZED);
         }
         UserInfosEntity userInfosEntity = new UserInfosEntity(sub);
@@ -48,7 +48,7 @@ public class UserAdminService {
     }
 
     public void delete(UUID id, String userId) {
-        if (!isSuperAdminUser(userId)) {
+        if (!isAdmin(userId)) {
             throw new UserAdminException(UNAUTHORIZED);
         }
         repository.deleteById(id);
@@ -58,7 +58,7 @@ public class UserAdminService {
         return !repository.findAllBySub(sub).isEmpty();
     }
 
-    private boolean isSuperAdminUser(String sub) {
+    private boolean isAdmin(String sub) {
         return applicationProps.getAdmins().contains(sub);
     }
 }
