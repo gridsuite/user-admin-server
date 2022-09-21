@@ -7,6 +7,7 @@
 package org.gridsuite.useradmin.server.service;
 
 import org.gridsuite.useradmin.server.UserAdminApplicationProps;
+import org.gridsuite.useradmin.server.UserAdminException;
 import org.gridsuite.useradmin.server.repository.UserAdminRepository;
 import org.gridsuite.useradmin.server.repository.UserInfosEntity;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,14 +33,14 @@ public class UserAdminService {
 
     public List<UserInfosEntity> getUsers(String userId) {
         if (!isSuperAdminUser(userId)) {
-            throw new RuntimeException("Unauthorized");
+            throw new UserAdminException("Unauthorized");
         }
         return repository.findAll();
     }
 
     public void createUser(String sub, String userId) {
         if (!isSuperAdminUser(userId)) {
-            throw new RuntimeException("Unauthorized");
+            throw new UserAdminException("Unauthorized");
         }
         UserInfosEntity userInfosEntity = new UserInfosEntity(sub);
         repository.save(userInfosEntity);
@@ -47,7 +48,7 @@ public class UserAdminService {
 
     public void delete(UUID id, String userId) {
         if (!isSuperAdminUser(userId)) {
-            throw new RuntimeException("Unauthorized");
+            throw new UserAdminException("Unauthorized");
         }
         repository.deleteById(id);
     }
