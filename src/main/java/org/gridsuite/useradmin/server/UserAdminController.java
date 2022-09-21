@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author Etienne Homer <etienne.homer at rte-france.com>
@@ -34,23 +35,23 @@ public class UserAdminController {
     @GetMapping(value = "/users")
     @Operation(summary = "get the users ids")
     @ApiResponse(responseCode = "200", description = "The users list")
-    public ResponseEntity<List<UserInfosEntity>> getUsers() {
-        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getUsers());
+    public ResponseEntity<List<UserInfosEntity>> getUsers(@RequestHeader("userId") String userId) {
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getUsers(userId));
     }
 
     @PostMapping(value = "/users/{sub}")
     @Operation(summary = "Create the user")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The user has been created")})
-    public ResponseEntity<Void> createUser(@PathVariable("sub") String sub) {
-        service.createUser(sub);
+    public ResponseEntity<Void> createUser(@PathVariable("sub") String sub, @RequestHeader("userId") String userId) {
+        service.createUser(sub, userId);
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping(value = "/users/{sub}")
+    @DeleteMapping(value = "/users/{id}")
     @Operation(summary = "delete the user")
     @ApiResponse(responseCode = "200", description = "User deleted")
-    public ResponseEntity<Void> deleteUser(@PathVariable("sub") String sub) {
-        service.delete(sub);
+    public ResponseEntity<Void> deleteUser(@PathVariable("id") UUID id, @RequestHeader("userId") String userId) {
+        service.delete(id, userId);
         return ResponseEntity.ok().build();
     }
 

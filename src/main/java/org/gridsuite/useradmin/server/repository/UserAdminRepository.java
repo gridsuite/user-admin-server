@@ -8,7 +8,6 @@ package org.gridsuite.useradmin.server.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -18,8 +17,5 @@ import java.util.UUID;
  */
 @Repository
 public interface UserAdminRepository extends JpaRepository<UserInfosEntity, UUID> {
-    @Transactional
-    void deleteBySub(String sub);
-
     List<UserInfosEntity> findAllBySub(String sub);
 }

@@ -21,6 +21,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -54,12 +55,14 @@ public class UserAdminTest {
         cleanDB();
     }
 
-    private static final String USER_SUB = "USER_1";
+    private static final String USER_SUB = "user1";
+    private static final String ADMIN_USER = "admin1";
 
     @Test
     public void testUserAdmin() throws Exception {
         List<UserInfosEntity> userEntities = objectMapper.readValue(
                 mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users")
+                                .header("userId", ADMIN_USER)
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),
@@ -68,12 +71,15 @@ public class UserAdminTest {
 
         assertEquals(0, userEntities.size());
 
-        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB))
+        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB)
+                        .header("userId", ADMIN_USER)
+                )
                 .andExpect(status().isOk())
                 .andReturn();
 
         userEntities = objectMapper.readValue(
                 mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users")
+                                .header("userId", ADMIN_USER)
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),
@@ -81,6 +87,8 @@ public class UserAdminTest {
                 });
 
         assertEquals(1, userEntities.size());
+
+        UUID userId = userEntities.get(0).getId();
 
         mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB))
                 .andExpect(status().isOk())
@@ -90,12 +98,15 @@ public class UserAdminTest {
                 .andExpect(status().isNoContent())
                 .andReturn();
 
-        mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB))
+        mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/users/{id}", userId)
+                        .header("userId", ADMIN_USER)
+                )
                 .andExpect(status().isOk())
                 .andReturn();
 
         userEntities = objectMapper.readValue(
                 mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users")
+                                .header("userId", ADMIN_USER)
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),

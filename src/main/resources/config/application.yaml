@@ -3,3 +3,8 @@ spring:
     name: user-admin
 
 dbName: useradmin
+
+application:
+  superadmins:
+    - admin1
+    - admin2
