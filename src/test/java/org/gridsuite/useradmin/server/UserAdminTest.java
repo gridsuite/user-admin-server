@@ -52,7 +52,7 @@ public class UserAdminTest {
         cleanDB();
     }
 
-    private static final String USER_SUB = "7928181c-7977-4592-ba19-88027e4254e4";
+    private static final String USER_SUB = "USER_1";
 
     @Test
     public void testUserAdmin() throws Exception {
