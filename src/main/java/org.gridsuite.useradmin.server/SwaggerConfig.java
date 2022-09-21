@@ -21,8 +21,8 @@ public class SwaggerConfig {
     public OpenAPI openAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("Security analysis API")
-                        .description("This is the documentation of the security analysis REST API")
+                        .title("Short Circuit API")
+                        .description("This is the documentation of the short circuit REST API")
                         .version(UserAdminApi.API_VERSION));
     }
 }

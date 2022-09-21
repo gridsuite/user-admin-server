@@ -19,7 +19,7 @@ import java.util.UUID;
 @Repository
 public interface UserAdminRepository extends JpaRepository<UserEntity, UUID> {
     @Transactional
-    void deleteByUserId(String userId);
+    void deleteBySub(String sub);
 
-    List<UserEntity> findAllByUserId(String userId);
+    List<UserEntity> findAllBySub(String sub);
 }

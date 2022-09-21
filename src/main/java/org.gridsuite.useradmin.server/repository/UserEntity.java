@@ -22,17 +22,17 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
-@Table(name = "user", indexes = {@Index(name = "userEntity_userId_index", columnList = "userId")})
+@Table(name = "user", indexes = {@Index(name = "userEntity_sub_index", columnList = "sub")})
 public class UserEntity {
 
-    public UserEntity(String userId) {
-        this(UUID.randomUUID(), userId);
+    public UserEntity(String sub) {
+        this(UUID.randomUUID(), sub);
     }
 
     @Id
     @Column(name = "id")
     private UUID id;
 
-    @Column(name = "userId", nullable = false)
-    private String userId;
+    @Column(name = "sub", nullable = false)
+    private String sub;
 }

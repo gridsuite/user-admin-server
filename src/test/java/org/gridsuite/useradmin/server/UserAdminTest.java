@@ -10,7 +10,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.gridsuite.useradmin.server.repository.UserAdminRepository;
 import org.gridsuite.useradmin.server.repository.UserEntity;
-import org.gridsuite.useradmin.server.service.UserAdminService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,9 +40,6 @@ public class UserAdminTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private UserAdminService userAdminService;
-
-    @Autowired
     ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
@@ -58,7 +54,7 @@ public class UserAdminTest {
         cleanDB();
     }
 
-    private static final String USER_ID = "7928181c-7977-4592-ba19-88027e4254e4";
+    private static final String USER_SUB = "7928181c-7977-4592-ba19-88027e4254e4";
 
     @Test
     public void testUserAdmin() throws Exception {
@@ -72,7 +68,7 @@ public class UserAdminTest {
 
         assertEquals(0, userEntities.size());
 
-        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/users/{userId}", USER_ID))
+        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -86,15 +82,15 @@ public class UserAdminTest {
 
         assertEquals(1, userEntities.size());
 
-        mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/{userId}", USER_ID))
+        mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB))
                 .andExpect(status().isOk())
                 .andReturn();
 
-        mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/{userId}", "UNKNOWN"))
+        mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/{sub}", "UNKNOWN"))
                 .andExpect(status().isNoContent())
                 .andReturn();
 
-        mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/users/{userId}", USER_ID))
+        mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -109,18 +105,4 @@ public class UserAdminTest {
         assertEquals(0, userEntities.size());
 
     }
-//    @Test
-//    public void testCreateUser() throws Exception {
-//
-//    }
-//
-//    @Test
-//    public void testDeleteUser() throws Exception {
-//
-//    }
-//
-//    @Test
-//    public void testUserExists() throws Exception {
-//
-//    }
 }

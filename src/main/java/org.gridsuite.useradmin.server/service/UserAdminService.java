@@ -28,16 +28,16 @@ public class UserAdminService {
         return repository.findAll();
     }
 
-    public void createUser(String userId) {
-        UserEntity userEntity = new UserEntity(userId);
+    public void createUser(String sub) {
+        UserEntity userEntity = new UserEntity(sub);
         repository.save(userEntity);
     }
 
-    public void delete(String userId) {
-        repository.deleteByUserId(userId);
+    public void delete(String sub) {
+        repository.deleteBySub(sub);
     }
 
-    public boolean userIdExists(String userId) {
-        return !repository.findAllByUserId(userId).isEmpty();
+    public boolean subExists(String sub) {
+        return !repository.findAllBySub(sub).isEmpty();
     }
 }

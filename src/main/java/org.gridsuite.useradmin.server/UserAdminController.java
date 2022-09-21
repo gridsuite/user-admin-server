@@ -38,30 +38,30 @@ public class UserAdminController {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getUsers());
     }
 
-    @PostMapping(value = "/users/{userId}")
+    @PostMapping(value = "/users/{sub}")
     @Operation(summary = "Create the user")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The user has been created")})
-    public ResponseEntity<Void> createUser(@PathVariable("userId") String userId) {
-        service.createUser(userId);
+    public ResponseEntity<Void> createUser(@PathVariable("sub") String sub) {
+        service.createUser(sub);
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping(value = "/users/{userId}")
+    @DeleteMapping(value = "/users/{sub}")
     @Operation(summary = "delete the user")
     @ApiResponse(responseCode = "200", description = "User deleted")
-    public ResponseEntity<Void> deleteUser(@PathVariable("userId") String userId) {
-        service.delete(userId);
+    public ResponseEntity<Void> deleteUser(@PathVariable("sub") String sub) {
+        service.delete(sub);
         return ResponseEntity.ok().build();
     }
 
-    @RequestMapping(value = "/users/{userId}", method = RequestMethod.HEAD)
-    @Operation(summary = "Test if a user id exists")
+    @RequestMapping(value = "/users/{sub}", method = RequestMethod.HEAD)
+    @Operation(summary = "Test if a sub exists")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "user id exists"),
-            @ApiResponse(responseCode = "204", description = "user doesn't exist"),
+            @ApiResponse(responseCode = "200", description = "sub exists"),
+            @ApiResponse(responseCode = "204", description = "sub exist"),
     })
-    public ResponseEntity<Void> userExists(@PathVariable("userId") String userId) {
-        return service.userIdExists(userId) ? ResponseEntity.ok().build() : ResponseEntity.noContent().build();
+    public ResponseEntity<Void> userExists(@PathVariable("sub") String sub) {
+        return service.subExists(sub) ? ResponseEntity.ok().build() : ResponseEntity.noContent().build();
     }
 
 }
