@@ -4,7 +4,7 @@ spring:
 
 dbName: useradmin
 
-application:
+useradmin:
   superadmins:
     - admin1
     - admin2

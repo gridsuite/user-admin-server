@@ -19,7 +19,7 @@ import java.util.List;
 @Component
 @Getter
 @Setter
-@ConfigurationProperties(prefix = "application")
+@ConfigurationProperties(prefix = "useradmin")
 public class UserAdminApplicationProps {
 
     private List<String> superAdmins;
