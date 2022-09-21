@@ -22,6 +22,7 @@ import java.util.UUID;
  */
 @Service
 public class UserAdminService {
+    private static final String UNAUTHORIZED = "Unauthorized";
     private UserAdminRepository repository;
 
     @Autowired
@@ -33,14 +34,14 @@ public class UserAdminService {
 
     public List<UserInfosEntity> getUsers(String userId) {
         if (!isSuperAdminUser(userId)) {
-            throw new UserAdminException("Unauthorized");
+            throw new UserAdminException(UNAUTHORIZED);
         }
         return repository.findAll();
     }
 
     public void createUser(String sub, String userId) {
         if (!isSuperAdminUser(userId)) {
-            throw new UserAdminException("Unauthorized");
+            throw new UserAdminException(UNAUTHORIZED);
         }
         UserInfosEntity userInfosEntity = new UserInfosEntity(sub);
         repository.save(userInfosEntity);
@@ -48,7 +49,7 @@ public class UserAdminService {
 
     public void delete(UUID id, String userId) {
         if (!isSuperAdminUser(userId)) {
-            throw new UserAdminException("Unauthorized");
+            throw new UserAdminException(UNAUTHORIZED);
         }
         repository.deleteById(id);
     }
