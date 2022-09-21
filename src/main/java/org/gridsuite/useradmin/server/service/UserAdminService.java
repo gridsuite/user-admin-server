@@ -6,8 +6,8 @@
  */
 package org.gridsuite.useradmin.server.service;
 
-import org.gridsuite.useradmin.server.repository.UserAdminRepository;
-import org.gridsuite.useradmin.server.repository.UserEntity;
+import org.gridsuite.useradmin.server.UserAdminRepository;
+import org.gridsuite.useradmin.server.UserEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

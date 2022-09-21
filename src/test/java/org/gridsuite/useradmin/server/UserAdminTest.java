@@ -8,8 +8,6 @@ package org.gridsuite.useradmin.server;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.gridsuite.useradmin.server.repository.UserAdminRepository;
-import org.gridsuite.useradmin.server.repository.UserEntity;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
