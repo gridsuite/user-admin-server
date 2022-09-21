@@ -4,7 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package org.gridsuite.useradmin.server;
+package org.gridsuite.useradmin.server.repository;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,10 +22,10 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
-@Table(name = "user", indexes = {@Index(name = "userEntity_sub_index", columnList = "sub")})
-public class UserEntity {
+@Table(name = "user_infos", indexes = {@Index(name = "user_infos_sub_index", columnList = "sub")})
+public class UserInfosEntity {
 
-    public UserEntity(String sub) {
+    public UserInfosEntity(String sub) {
         this(UUID.randomUUID(), sub);
     }
 

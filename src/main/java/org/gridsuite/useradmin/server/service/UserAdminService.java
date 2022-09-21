@@ -6,8 +6,8 @@
  */
 package org.gridsuite.useradmin.server.service;
 
-import org.gridsuite.useradmin.server.UserAdminRepository;
-import org.gridsuite.useradmin.server.UserEntity;
+import org.gridsuite.useradmin.server.repository.UserAdminRepository;
+import org.gridsuite.useradmin.server.repository.UserInfosEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,13 +24,13 @@ public class UserAdminService {
         this.repository = Objects.requireNonNull(repository);
     }
 
-    public List<UserEntity> getUsers() {
+    public List<UserInfosEntity> getUsers() {
         return repository.findAll();
     }
 
     public void createUser(String sub) {
-        UserEntity userEntity = new UserEntity(sub);
-        repository.save(userEntity);
+        UserInfosEntity userInfosEntity = new UserInfosEntity(sub);
+        repository.save(userInfosEntity);
     }
 
     public void delete(String sub) {

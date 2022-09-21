@@ -4,7 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package org.gridsuite.useradmin.server;
+package org.gridsuite.useradmin.server.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -17,9 +17,9 @@ import java.util.UUID;
  * @author Etienne Homer <etienne.homer at rte-france.com>
  */
 @Repository
-public interface UserAdminRepository extends JpaRepository<UserEntity, UUID> {
+public interface UserAdminRepository extends JpaRepository<UserInfosEntity, UUID> {
     @Transactional
     void deleteBySub(String sub);
 
-    List<UserEntity> findAllBySub(String sub);
+    List<UserInfosEntity> findAllBySub(String sub);
 }

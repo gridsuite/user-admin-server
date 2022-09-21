@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.gridsuite.useradmin.server.repository.UserInfosEntity;
 import org.gridsuite.useradmin.server.service.UserAdminService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -33,7 +34,7 @@ public class UserAdminController {
     @GetMapping(value = "/users")
     @Operation(summary = "get the users ids")
     @ApiResponse(responseCode = "200", description = "The users list")
-    public ResponseEntity<List<UserEntity>> getUsers() {
+    public ResponseEntity<List<UserInfosEntity>> getUsers() {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getUsers());
     }
 
