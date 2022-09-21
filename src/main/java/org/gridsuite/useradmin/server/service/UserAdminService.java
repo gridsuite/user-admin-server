@@ -59,6 +59,6 @@ public class UserAdminService {
     }
 
     private boolean isSuperAdminUser(String sub) {
-        return applicationProps.getSuperAdmins().contains(sub);
+        return applicationProps.getAdmins().contains(sub);
     }
 }

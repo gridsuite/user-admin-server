@@ -9,18 +9,18 @@ package org.gridsuite.useradmin.server;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Configuration;
 
 import java.util.List;
 
 /**
  * @author Etienne Homer <etienne.homer at rte-france.com>
  */
-@Component
+@Configuration
 @Getter
 @Setter
 @ConfigurationProperties(prefix = "useradmin")
 public class UserAdminApplicationProps {
 
-    private List<String> superAdmins;
+    private List<String> admins;
 }

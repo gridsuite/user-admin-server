@@ -5,6 +5,6 @@ spring:
 dbName: useradmin
 
 useradmin:
-  superadmins:
-    - admin1
-    - admin2
+  admins:
+#    - admin1
+#    - admin2
