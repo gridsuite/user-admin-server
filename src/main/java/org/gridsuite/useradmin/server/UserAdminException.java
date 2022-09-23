@@ -6,13 +6,30 @@
  */
 package org.gridsuite.useradmin.server;
 
+import java.util.Objects;
+
 /**
  * @author Etienne Homer <etienne.homer at rte-france.com>
  */
 public class UserAdminException extends RuntimeException {
+    public enum Type {
+        FORBIDDEN
+    }
 
-    public UserAdminException(String msg) {
+    private final Type type;
+
+    public UserAdminException(Type type) {
+        super(Objects.requireNonNull(type.name()));
+        this.type = type;
+    }
+
+    public UserAdminException(Type type, String msg) {
         super(msg);
+        this.type = type;
+    }
+
+    Type getType() {
+        return type;
     }
 
 }

@@ -58,6 +58,8 @@ public class UserAdminTest {
     private static final String USER_SUB = "user1";
     private static final String ADMIN_USER = "admin1";
 
+    private static final String NOT_ADMIN = "notAdmin";
+
     @Test
     public void testUserAdmin() throws Exception {
         List<UserInfosEntity> userEntities = objectMapper.readValue(
@@ -115,5 +117,22 @@ public class UserAdminTest {
 
         assertEquals(0, userEntities.size());
 
+        mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/users/{id}", userId)
+                        .header("userId", NOT_ADMIN)
+                )
+                .andExpect(status().isForbidden())
+                .andReturn();
+
+        mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users", userId)
+                        .header("userId", NOT_ADMIN)
+                )
+                .andExpect(status().isForbidden())
+                .andReturn();
+
+        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/users/{id}", userId)
+                        .header("userId", NOT_ADMIN)
+                )
+                .andExpect(status().isForbidden())
+                .andReturn();
     }
 }

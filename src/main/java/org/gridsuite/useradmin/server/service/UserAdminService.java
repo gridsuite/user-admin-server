@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+import static org.gridsuite.useradmin.server.UserAdminException.Type.FORBIDDEN;
+
 /**
  * @author Etienne Homer <etienne.homer at rte-france.com>
  */
@@ -34,14 +36,14 @@ public class UserAdminService {
 
     public List<UserInfosEntity> getUsers(String userId) {
         if (!isAdmin(userId)) {
-            throw new UserAdminException(UNAUTHORIZED);
+            throw new UserAdminException(FORBIDDEN);
         }
         return repository.findAll();
     }
 
     public void createUser(String sub, String userId) {
         if (!isAdmin(userId)) {
-            throw new UserAdminException(UNAUTHORIZED);
+            throw new UserAdminException(FORBIDDEN);
         }
         UserInfosEntity userInfosEntity = new UserInfosEntity(sub);
         repository.save(userInfosEntity);
@@ -49,7 +51,7 @@ public class UserAdminService {
 
     public void delete(UUID id, String userId) {
         if (!isAdmin(userId)) {
-            throw new UserAdminException(UNAUTHORIZED);
+            throw new UserAdminException(FORBIDDEN);
         }
         repository.deleteById(id);
     }
