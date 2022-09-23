@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.server.ServerWebInputException;
 
+import static org.gridsuite.useradmin.server.UserAdminException.Type.FORBIDDEN;
+
 /**
  * @author Etienne Homer <etienne.homer at rte-france.com>
  */
@@ -23,20 +25,9 @@ public class RestResponseEntityExceptionHandler {
     protected ResponseEntity<Object> handleException(RuntimeException exception) {
         if (exception instanceof UserAdminException) {
             UserAdminException userAdminException = (UserAdminException) exception;
-            switch (userAdminException.getType()) {
-                case FORBIDDEN:
-                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(userAdminException.getType());
-                default:
+            if (userAdminException.getType().equals(FORBIDDEN)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(userAdminException.getType());
             }
-        } else if (exception instanceof ServerWebInputException) {
-            ServerWebInputException serverWebInputException = (ServerWebInputException) exception;
-            Throwable cause = serverWebInputException.getCause();
-            if (cause instanceof TypeMismatchException && cause.getCause() != null && cause.getCause() != cause) {
-                cause = cause.getCause();
-                return ResponseEntity.status(serverWebInputException.getStatus()).body(cause.getMessage());
-            }
-        } else if (exception instanceof TypeMismatchException) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getCause().getMessage());
         }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }

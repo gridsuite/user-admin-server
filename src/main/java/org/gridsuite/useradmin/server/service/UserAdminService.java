@@ -24,7 +24,6 @@ import static org.gridsuite.useradmin.server.UserAdminException.Type.FORBIDDEN;
  */
 @Service
 public class UserAdminService {
-    private static final String UNAUTHORIZED = "Unauthorized";
     private UserAdminRepository repository;
 
     @Autowired
