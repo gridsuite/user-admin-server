@@ -55,7 +55,7 @@ public class UserAdminService {
     }
 
     public boolean subExists(String sub) {
-        return !repository.findAllBySub(sub).isEmpty();
+        return applicationProps.getAdmins().isEmpty() || !repository.findAllBySub(sub).isEmpty();
     }
 
     private boolean isAdmin(String sub) {
