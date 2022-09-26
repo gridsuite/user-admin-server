@@ -29,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @SpringBootTest
 @ContextConfiguration(classes = {UserAdminApplication.class})
-@ActiveProfiles("noadmin")
+@ActiveProfiles("default, noadmin")
 public class NoAdminTest {
 
     @Autowired
