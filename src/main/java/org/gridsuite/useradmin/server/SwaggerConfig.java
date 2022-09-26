@@ -21,8 +21,8 @@ public class SwaggerConfig {
     public OpenAPI openAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("Short Circuit API")
-                        .description("This is the documentation of the short circuit REST API")
+                        .title("User Admin API")
+                        .description("This is the documentation of the user admin REST API")
                         .version(UserAdminApi.API_VERSION));
     }
 }
