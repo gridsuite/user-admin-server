@@ -6,7 +6,6 @@
  */
 package org.gridsuite.useradmin.server;
 
-import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -20,7 +19,7 @@ import static org.gridsuite.useradmin.server.UserAdminException.Type.FORBIDDEN;
 @ControllerAdvice
 public class RestResponseEntityExceptionHandler {
 
-    @ExceptionHandler(value = { UserAdminException.class, TypeMismatchException.class })
+    @ExceptionHandler(value = { UserAdminException.class })
     protected ResponseEntity<Object> handleException(RuntimeException exception) {
         if (exception instanceof UserAdminException) {
             UserAdminException userAdminException = (UserAdminException) exception;
