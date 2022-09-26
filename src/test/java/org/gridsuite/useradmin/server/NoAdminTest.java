@@ -51,7 +51,7 @@ public class NoAdminTest {
     }
 
     @Test
-    public void testNoAdmin()throws Exception {
+    public void testNoAdmin() throws Exception {
         mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/{sub}", "NOT_REGISTERED_USER"))
                 .andExpect(status().isOk())
                 .andReturn();
