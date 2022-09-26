@@ -23,11 +23,6 @@ public class UserAdminException extends RuntimeException {
         this.type = type;
     }
 
-    public UserAdminException(Type type, String msg) {
-        super(msg);
-        this.type = type;
-    }
-
     Type getType() {
         return type;
     }
