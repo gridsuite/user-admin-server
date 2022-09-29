@@ -17,7 +17,4 @@ import java.util.UUID;
 @Repository
 public interface ConnectionRepository extends JpaRepository<ConnectionEntity, UUID> {
     ConnectionEntity findBySub(String sub);
-
-    ConnectionEntity save(ConnectionEntity entity);
-
 }

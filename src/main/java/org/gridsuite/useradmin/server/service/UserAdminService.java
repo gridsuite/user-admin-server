@@ -12,7 +12,10 @@ import org.gridsuite.useradmin.server.repository.ConnectionEntity;
 import org.gridsuite.useradmin.server.repository.ConnectionRepository;
 import org.gridsuite.useradmin.server.repository.UserAdminRepository;
 import org.gridsuite.useradmin.server.repository.UserInfosEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -27,6 +30,7 @@ import static org.gridsuite.useradmin.server.UserAdminException.Type.FORBIDDEN;
  */
 @Service
 public class UserAdminService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserAdminService.class);
     private UserAdminRepository userAdminRepository;
 
     private ConnectionRepository connectionRepository;
@@ -61,8 +65,7 @@ public class UserAdminService {
         userAdminRepository.deleteById(id);
     }
 
-//    @Transactional
-    public synchronized boolean subExists(String sub) {
+    public boolean subExists(String sub) {
         Boolean isAllowed = (applicationProps.getAdmins().isEmpty() && userAdminRepository.count() == 0) || !userAdminRepository.findAllBySub(sub).isEmpty();
         recordConnectionAttempt(sub, isAllowed);
         return isAllowed.booleanValue();
@@ -72,7 +75,11 @@ public class UserAdminService {
         ConnectionEntity connectionEntity =  connectionRepository.findBySub(sub);
         if (connectionEntity == null) {
             connectionEntity = new ConnectionEntity(sub, LocalDateTime.now(), LocalDateTime.now(), isAllowed);
-            connectionRepository.save(connectionEntity);
+            try {
+                connectionRepository.save(connectionEntity);
+            } catch (DataIntegrityViolationException e) {
+                LOGGER.info("User connection already recorded.");
+            }
         } else {
             connectionEntity.setLastConnexionDate(LocalDateTime.now());
             connectionEntity.setConnectionAccepted(isAllowed);
