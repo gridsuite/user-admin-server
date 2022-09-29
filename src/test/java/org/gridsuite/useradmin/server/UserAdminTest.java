@@ -22,6 +22,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 
@@ -108,8 +109,10 @@ public class UserAdminTest {
         assertEquals(2, connectionRepository.findAll().size());
         assertTrue(connectionRepository.findBySub(USER_SUB).getConnectionAccepted());
         assertFalse(connectionRepository.findBySub("UNKNOWN").getConnectionAccepted());
-
         LocalDateTime firstConnectionDate = connectionRepository.findBySub(USER_SUB).getFirstConnexionDate();
+        //firstConnectionDate and lastConnectionDate are equals cause this is the first connection for this user
+        assertTrue(firstConnectionDate.toEpochSecond(ZoneOffset.UTC) < connectionRepository.findBySub(USER_SUB).getLastConnexionDate().toEpochSecond(ZoneOffset.UTC) + 2);
+
         mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB))
                 .andExpect(status().isOk())
                 .andReturn();
