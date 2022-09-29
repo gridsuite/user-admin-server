@@ -21,6 +21,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -104,10 +105,17 @@ public class UserAdminTest {
         mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/{sub}", "UNKNOWN"))
                 .andExpect(status().isNoContent())
                 .andReturn();
-
         assertEquals(2, connectionRepository.findAll().size());
         assertTrue(connectionRepository.findBySub(USER_SUB).getConnectionAccepted());
         assertFalse(connectionRepository.findBySub("UNKNOWN").getConnectionAccepted());
+        LocalDateTime firstConnectionDate = connectionRepository.findBySub(USER_SUB).getFirstConnexionDate();
+        //firstConnectionDate and lastConnectionDate are equals cause this is the first connection for this user
+        assertEquals(firstConnectionDate, connectionRepository.findBySub(USER_SUB).getLastConnexionDate());
+
+        mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB))
+                .andExpect(status().isOk())
+                .andReturn();
+        assertEquals(firstConnectionDate, connectionRepository.findBySub(USER_SUB).getFirstConnexionDate());
 
         mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/users/{id}", userId)
                         .header("userId", ADMIN_USER)
@@ -123,7 +131,6 @@ public class UserAdminTest {
                         .andReturn().getResponse().getContentAsString(),
                 new TypeReference<>() {
                 });
-
         assertEquals(0, userEntities.size());
 
         mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/users/{id}", userId)
