@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.gridsuite.useradmin.server.repository.ConnectionEntity;
 import org.gridsuite.useradmin.server.repository.UserInfosEntity;
 import org.gridsuite.useradmin.server.service.UserAdminService;
 import org.springframework.http.MediaType;
@@ -65,4 +66,10 @@ public class UserAdminController {
         return service.subExists(sub) ? ResponseEntity.ok().build() : ResponseEntity.noContent().build();
     }
 
+    @GetMapping(value = "/connections")
+    @Operation(summary = "get the connections")
+    @ApiResponse(responseCode = "200", description = "The connections list")
+    public ResponseEntity<List<ConnectionEntity>> getConnections(@RequestHeader("userId") String userId) {
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getConnections(userId));
+    }
 }

@@ -9,6 +9,7 @@ package org.gridsuite.useradmin.server.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -16,5 +17,5 @@ import java.util.UUID;
  */
 @Repository
 public interface ConnectionRepository extends JpaRepository<ConnectionEntity, UUID> {
-    ConnectionEntity findBySub(String sub);
+    List<ConnectionEntity> findBySub(String sub);
 }

@@ -6,5 +6,5 @@ dbName: useradmin
 
 useradmin:
   admins:
-#    - admin1
+    - etiennehomer
 #    - admin2

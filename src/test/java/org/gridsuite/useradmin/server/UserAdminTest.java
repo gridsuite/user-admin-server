@@ -8,6 +8,7 @@ package org.gridsuite.useradmin.server;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.gridsuite.useradmin.server.repository.ConnectionEntity;
 import org.gridsuite.useradmin.server.repository.ConnectionRepository;
 import org.gridsuite.useradmin.server.repository.UserAdminRepository;
 import org.gridsuite.useradmin.server.repository.UserInfosEntity;
@@ -63,6 +64,8 @@ public class UserAdminTest {
     }
 
     private static final String USER_SUB = "user1";
+
+    private static final String USER_SUB2 = "user2";
     private static final String ADMIN_USER = "admin1";
 
     private static final String NOT_ADMIN = "notAdmin";
@@ -107,16 +110,16 @@ public class UserAdminTest {
                 .andExpect(status().isNoContent())
                 .andReturn();
         assertEquals(2, connectionRepository.findAll().size());
-        assertTrue(connectionRepository.findBySub(USER_SUB).getConnectionAccepted());
-        assertFalse(connectionRepository.findBySub("UNKNOWN").getConnectionAccepted());
-        LocalDateTime firstConnectionDate = connectionRepository.findBySub(USER_SUB).getFirstConnexionDate();
+        assertTrue(connectionRepository.findBySub(USER_SUB).get(0).getConnectionAccepted());
+        assertFalse(connectionRepository.findBySub("UNKNOWN").get(0).getConnectionAccepted());
+        LocalDateTime firstConnectionDate = connectionRepository.findBySub(USER_SUB).get(0).getFirstConnexionDate();
         //firstConnectionDate and lastConnectionDate are equals cause this is the first connection for this user
-        assertTrue(firstConnectionDate.toEpochSecond(ZoneOffset.UTC) < connectionRepository.findBySub(USER_SUB).getLastConnexionDate().toEpochSecond(ZoneOffset.UTC) + 2);
+        assertTrue(firstConnectionDate.toEpochSecond(ZoneOffset.UTC) < connectionRepository.findBySub(USER_SUB).get(0).getLastConnexionDate().toEpochSecond(ZoneOffset.UTC) + 2);
 
         mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB))
                 .andExpect(status().isOk())
                 .andReturn();
-        assertEquals(firstConnectionDate, connectionRepository.findBySub(USER_SUB).getFirstConnexionDate());
+        assertEquals(firstConnectionDate, connectionRepository.findBySub(USER_SUB).get(0).getFirstConnexionDate());
 
         mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/users/{id}", userId)
                         .header("userId", ADMIN_USER)
@@ -151,5 +154,53 @@ public class UserAdminTest {
                 )
                 .andExpect(status().isForbidden())
                 .andReturn();
+    }
+
+    @Test
+    public void testGetConnections() throws Exception {
+        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB)
+                        .header("userId", ADMIN_USER)
+                )
+                .andExpect(status().isOk())
+                .andReturn();
+
+        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB2)
+                        .header("userId", ADMIN_USER)
+                )
+                .andExpect(status().isOk())
+                .andReturn();
+
+        List<UserInfosEntity> userEntities = userEntities = objectMapper.readValue(
+                mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users")
+                                .header("userId", ADMIN_USER)
+                                .contentType(APPLICATION_JSON))
+                        .andExpect(status().isOk())
+                        .andReturn().getResponse().getContentAsString(),
+                new TypeReference<>() {
+                });
+
+        assertEquals(2, userEntities.size());
+
+        UUID userId = userEntities.get(0).getId();
+
+        mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB2))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        List<ConnectionEntity> connectionEntities = objectMapper.readValue(
+                mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/connections")
+                                .header("userId", ADMIN_USER)
+                                .contentType(APPLICATION_JSON))
+                        .andExpect(status().isOk())
+                        .andReturn().getResponse().getContentAsString(),
+                new TypeReference<>() {
+                });
+
+        assertEquals(2, connectionEntities.size());
+
     }
 }

@@ -13,6 +13,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 /**
  * @author Etienne Homer <etienne.homer at rte-france.com>
@@ -26,6 +27,9 @@ import java.time.LocalDateTime;
 public class ConnectionEntity {
 
     @Id
+    @Column(name = "id")
+    private UUID id;
+
     @Column(name = "sub", nullable = false)
     private String sub;
 
@@ -37,4 +41,8 @@ public class ConnectionEntity {
 
     @Column(name = "connectionAccepted", nullable = false)
     private Boolean connectionAccepted;
+
+    public ConnectionEntity(String sub, LocalDateTime firstConnexionDate, LocalDateTime lastConnexionDate, Boolean connectionAccepted) {
+        this(UUID.randomUUID(), sub, firstConnexionDate, lastConnexionDate, connectionAccepted);
+    }
 }

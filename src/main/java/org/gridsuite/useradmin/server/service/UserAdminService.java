@@ -19,9 +19,11 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static org.gridsuite.useradmin.server.UserAdminException.Type.FORBIDDEN;
 
@@ -50,6 +52,27 @@ public class UserAdminService {
         return userAdminRepository.findAll();
     }
 
+    public List<ConnectionEntity> getConnections(String userId) {
+        if (!isAdmin(userId)) {
+            throw new UserAdminException(FORBIDDEN);
+        }
+        return removeDuplicates(connectionRepository.findAll());
+    }
+
+    public static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
+        Set<Object> seen = ConcurrentHashMap.newKeySet();
+        return t -> seen.add(keyExtractor.apply(t));
+    }
+
+
+    private List<ConnectionEntity> removeDuplicates(List<ConnectionEntity> connections) {
+        List<ConnectionEntity> connectionsWithoutDuplicates = connections.stream().filter(distinctByKey(ConnectionEntity::getSub)).collect(Collectors.toList());
+        connectionsWithoutDuplicates.stream().forEach(c -> c.setLastConnexionDate(connectionRepository.findBySub(c.getSub()).stream().max(Comparator.comparing(ConnectionEntity::getLastConnexionDate)).get().getLastConnexionDate()));
+        connectionRepository.deleteAll();
+        connectionRepository.saveAll(connectionsWithoutDuplicates);
+        return connectionsWithoutDuplicates;
+    }
+
     public void createUser(String sub, String userId) {
         if (!isAdmin(userId)) {
             throw new UserAdminException(FORBIDDEN);
@@ -72,7 +95,7 @@ public class UserAdminService {
     }
 
     public void recordConnectionAttempt(String sub, Boolean isAllowed) {
-        ConnectionEntity connectionEntity =  connectionRepository.findBySub(sub);
+        ConnectionEntity connectionEntity =  connectionRepository.findBySub(sub).stream().max(Comparator.comparing(ConnectionEntity::getLastConnexionDate)).orElse(null);
         if (connectionEntity == null) {
             connectionEntity = new ConnectionEntity(sub, LocalDateTime.now(), LocalDateTime.now(), isAllowed);
             try {
