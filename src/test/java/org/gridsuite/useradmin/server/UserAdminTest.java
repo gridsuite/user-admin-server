@@ -24,7 +24,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -105,6 +105,8 @@ public class UserAdminTest {
                 .andReturn();
 
         assertEquals(2, connectionRepository.findAll().size());
+        assertTrue(connectionRepository.findBySub(USER_SUB).getConnectionAccepted());
+        assertFalse(connectionRepository.findBySub("UNKNOWN").getConnectionAccepted());
 
         mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/users/{id}", userId)
                         .header("userId", ADMIN_USER)
