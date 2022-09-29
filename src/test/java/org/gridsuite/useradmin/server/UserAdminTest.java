@@ -8,6 +8,7 @@ package org.gridsuite.useradmin.server;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.gridsuite.useradmin.server.repository.ConnectionRepository;
 import org.gridsuite.useradmin.server.repository.UserAdminRepository;
 import org.gridsuite.useradmin.server.repository.UserInfosEntity;
 import org.junit.Before;
@@ -44,10 +45,13 @@ public class UserAdminTest {
     ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
-    private UserAdminRepository repository;
+    private UserAdminRepository userAdminRepository;
+
+    @Autowired
+    private ConnectionRepository connectionRepository;
 
     private void cleanDB() {
-        repository.deleteAll();
+        userAdminRepository.deleteAll();
     }
 
     @Before
@@ -99,6 +103,8 @@ public class UserAdminTest {
         mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/{sub}", "UNKNOWN"))
                 .andExpect(status().isNoContent())
                 .andReturn();
+
+        assertEquals(2, connectionRepository.findAll().size());
 
         mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/users/{id}", userId)
                         .header("userId", ADMIN_USER)
