@@ -2,7 +2,9 @@ spring:
   application:
     name: user-admin
 
-dbName: useradmin
+powsybl-ws:
+  database:
+    name: useradmin
 
 useradmin:
   admins:
