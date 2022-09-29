@@ -52,6 +52,7 @@ public class UserAdminTest {
 
     private void cleanDB() {
         userAdminRepository.deleteAll();
+        connectionRepository.deleteAll();
     }
 
     @Before
