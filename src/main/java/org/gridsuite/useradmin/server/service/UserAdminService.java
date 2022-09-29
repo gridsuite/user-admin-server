@@ -8,11 +8,14 @@ package org.gridsuite.useradmin.server.service;
 
 import org.gridsuite.useradmin.server.UserAdminApplicationProps;
 import org.gridsuite.useradmin.server.UserAdminException;
+import org.gridsuite.useradmin.server.repository.ConnectionEntity;
+import org.gridsuite.useradmin.server.repository.ConnectionRepository;
 import org.gridsuite.useradmin.server.repository.UserAdminRepository;
 import org.gridsuite.useradmin.server.repository.UserInfosEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -24,20 +27,23 @@ import static org.gridsuite.useradmin.server.UserAdminException.Type.FORBIDDEN;
  */
 @Service
 public class UserAdminService {
-    private UserAdminRepository repository;
+    private UserAdminRepository userAdminRepository;
+
+    private ConnectionRepository connectionRepository;
 
     @Autowired
     private UserAdminApplicationProps applicationProps;
 
-    public UserAdminService(UserAdminRepository repository) {
-        this.repository = Objects.requireNonNull(repository);
+    public UserAdminService(UserAdminRepository userAdminRepository, ConnectionRepository connectionRepository) {
+        this.userAdminRepository = Objects.requireNonNull(userAdminRepository);
+        this.connectionRepository = Objects.requireNonNull(connectionRepository);
     }
 
     public List<UserInfosEntity> getUsers(String userId) {
         if (!isAdmin(userId)) {
             throw new UserAdminException(FORBIDDEN);
         }
-        return repository.findAll();
+        return userAdminRepository.findAll();
     }
 
     public void createUser(String sub, String userId) {
@@ -45,18 +51,33 @@ public class UserAdminService {
             throw new UserAdminException(FORBIDDEN);
         }
         UserInfosEntity userInfosEntity = new UserInfosEntity(sub);
-        repository.save(userInfosEntity);
+        userAdminRepository.save(userInfosEntity);
     }
 
     public void delete(UUID id, String userId) {
         if (!isAdmin(userId)) {
             throw new UserAdminException(FORBIDDEN);
         }
-        repository.deleteById(id);
+        userAdminRepository.deleteById(id);
     }
 
-    public boolean subExists(String sub) {
-        return (applicationProps.getAdmins().isEmpty() && repository.count() == 0) || !repository.findAllBySub(sub).isEmpty();
+//    @Transactional
+    public synchronized boolean subExists(String sub) {
+        Boolean isAllowed = (applicationProps.getAdmins().isEmpty() && userAdminRepository.count() == 0) || !userAdminRepository.findAllBySub(sub).isEmpty();
+        recordConnectionAttempt(sub, isAllowed);
+        return isAllowed.booleanValue();
+    }
+
+    public void recordConnectionAttempt(String sub, Boolean isAllowed) {
+        ConnectionEntity connectionEntity =  connectionRepository.findBySub(sub);
+        if (connectionEntity == null) {
+            connectionEntity = new ConnectionEntity(sub, LocalDateTime.now(), LocalDateTime.now(), isAllowed);
+            connectionRepository.save(connectionEntity);
+        } else {
+            connectionEntity.setLastConnexionDate(LocalDateTime.now());
+            connectionEntity.setConnectionAccepted(isAllowed);
+            connectionRepository.save(connectionEntity);
+        }
     }
 
     private boolean isAdmin(String sub) {
