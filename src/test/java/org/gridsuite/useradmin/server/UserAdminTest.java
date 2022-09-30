@@ -202,5 +202,20 @@ public class UserAdminTest {
 
         assertEquals(2, connectionEntities.size());
 
+        connectionRepository.save(new ConnectionEntity(USER_SUB, LocalDateTime.now(), LocalDateTime.now(), true));
+
+        connectionRepository.save(new ConnectionEntity(USER_SUB, LocalDateTime.now(), LocalDateTime.now(), true));
+
+        connectionRepository.save(new ConnectionEntity(USER_SUB, LocalDateTime.now(), LocalDateTime.now(), true));
+
+        connectionEntities = objectMapper.readValue(
+                mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/connections")
+                                .header("userId", ADMIN_USER)
+                                .contentType(APPLICATION_JSON))
+                        .andExpect(status().isOk())
+                        .andReturn().getResponse().getContentAsString(),
+                new TypeReference<>() {
+                });
+        assertEquals(2, connectionEntities.size());
     }
 }
