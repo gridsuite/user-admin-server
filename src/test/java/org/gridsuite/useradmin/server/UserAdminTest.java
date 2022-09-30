@@ -181,8 +181,6 @@ public class UserAdminTest {
 
         assertEquals(2, userEntities.size());
 
-        UUID userId = userEntities.get(0).getId();
-
         mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -203,10 +201,8 @@ public class UserAdminTest {
         assertEquals(2, connectionEntities.size());
 
         connectionRepository.save(new ConnectionEntity(USER_SUB, LocalDateTime.now(), LocalDateTime.now(), true));
-
         connectionRepository.save(new ConnectionEntity(USER_SUB, LocalDateTime.now(), LocalDateTime.now(), true));
-
-        connectionRepository.save(new ConnectionEntity(USER_SUB, LocalDateTime.now(), LocalDateTime.now(), true));
+        connectionRepository.save(new ConnectionEntity(USER_SUB2, LocalDateTime.now(), LocalDateTime.now(), false));
 
         connectionEntities = objectMapper.readValue(
                 mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/connections")

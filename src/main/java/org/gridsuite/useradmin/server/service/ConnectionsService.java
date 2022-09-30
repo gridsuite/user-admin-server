@@ -45,7 +45,7 @@ public class ConnectionsService {
     public List<ConnectionEntity> removeDuplicates() {
         Map<String, List<ConnectionEntity>> connectionsBySub = connectionRepository.findAll().stream().collect(Collectors.groupingBy(ConnectionEntity::getSub));
 
-        connectionsBySub.keySet().forEach(sub -> {
+        connectionsBySub.keySet().forEach(sub ->
             connectionsBySub.get(sub).stream().skip(1).forEach(connectionEntity -> {
                 ConnectionEntity groupedEntity = connectionsBySub.get(sub).get(0);
                 if (connectionEntity.getLastConnexionDate().isAfter(groupedEntity.getLastConnexionDate())) {
@@ -55,8 +55,8 @@ public class ConnectionsService {
                     groupedEntity.setFirstConnexionDate(connectionEntity.getFirstConnexionDate());
                 }
                 connectionRepository.delete(connectionEntity);
-            });
-        });
+            })
+        );
         return connectionsBySub.values().stream().map(list -> list.get(0)).collect(Collectors.toList());
     }
 }

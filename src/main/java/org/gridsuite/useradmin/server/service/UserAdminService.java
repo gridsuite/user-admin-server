@@ -28,7 +28,6 @@ import static org.gridsuite.useradmin.server.UserAdminException.Type.FORBIDDEN;
  */
 @Service
 public class UserAdminService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(UserAdminService.class);
     private UserAdminRepository userAdminRepository;
 
     private ConnectionsService connectionsService;
