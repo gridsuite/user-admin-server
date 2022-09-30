@@ -201,7 +201,7 @@ public class UserAdminTest {
         assertEquals(2, connectionEntities.size());
 
         connectionRepository.save(new ConnectionEntity(USER_SUB, LocalDateTime.now(), LocalDateTime.now(), true));
-        connectionRepository.save(new ConnectionEntity(USER_SUB, LocalDateTime.now(), LocalDateTime.now(), true));
+        connectionRepository.save(new ConnectionEntity(USER_SUB, LocalDateTime.now().minusSeconds(5), LocalDateTime.now(), true));
         connectionRepository.save(new ConnectionEntity(USER_SUB2, LocalDateTime.now(), LocalDateTime.now(), false));
 
         connectionEntities = objectMapper.readValue(
@@ -214,7 +214,7 @@ public class UserAdminTest {
                 });
         assertEquals(2, connectionEntities.size());
 
-        mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users")
+        mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/connections")
                         .header("userId", NOT_ADMIN)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isForbidden());
