@@ -11,8 +11,6 @@ import org.gridsuite.useradmin.server.UserAdminException;
 import org.gridsuite.useradmin.server.repository.ConnectionEntity;
 import org.gridsuite.useradmin.server.repository.UserAdminRepository;
 import org.gridsuite.useradmin.server.repository.UserInfosEntity;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
