@@ -213,5 +213,10 @@ public class UserAdminTest {
                 new TypeReference<>() {
                 });
         assertEquals(2, connectionEntities.size());
+
+        mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users")
+                        .header("userId", NOT_ADMIN)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isForbidden());
     }
 }

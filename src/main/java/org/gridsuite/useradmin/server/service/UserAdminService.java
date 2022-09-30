@@ -52,11 +52,6 @@ public class UserAdminService {
         return connectionsService.removeDuplicates();
     }
 
-    public static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
-        Set<Object> seen = ConcurrentHashMap.newKeySet();
-        return t -> seen.add(keyExtractor.apply(t));
-    }
-
     public void createUser(String sub, String userId) {
         if (!isAdmin(userId)) {
             throw new UserAdminException(FORBIDDEN);
