@@ -83,6 +83,10 @@ public class UserAdminTest {
 
         assertEquals(0, userEntities.size());
 
+        mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/{sub}", ADMIN_USER))
+                .andExpect(status().isOk())
+                .andReturn();
+
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB)
                         .header("userId", ADMIN_USER)
                 )
@@ -109,7 +113,7 @@ public class UserAdminTest {
         mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/{sub}", "UNKNOWN"))
                 .andExpect(status().isNoContent())
                 .andReturn();
-        assertEquals(2, connectionRepository.findAll().size());
+        assertEquals(3, connectionRepository.findAll().size());
         assertTrue(connectionRepository.findBySub(USER_SUB).get(0).getConnectionAccepted());
         assertFalse(connectionRepository.findBySub("UNKNOWN").get(0).getConnectionAccepted());
         LocalDateTime firstConnectionDate = connectionRepository.findBySub(USER_SUB).get(0).getFirstConnexionDate();
