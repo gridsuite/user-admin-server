@@ -59,8 +59,8 @@ public class UserAdminController {
     @RequestMapping(value = "/users/{sub}", method = RequestMethod.HEAD)
     @Operation(summary = "Test if a sub exists")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "sub exists"),
-            @ApiResponse(responseCode = "204", description = "sub does not exist"),
+        @ApiResponse(responseCode = "200", description = "sub exists"),
+        @ApiResponse(responseCode = "204", description = "sub does not exist"),
     })
     public ResponseEntity<Void> userExists(@PathVariable("sub") String sub) {
         return service.subExists(sub) ? ResponseEntity.ok().build() : ResponseEntity.noContent().build();

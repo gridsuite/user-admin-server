@@ -33,10 +33,10 @@ public class ConnectionEntity {
     @Column(name = "sub", nullable = false)
     private String sub;
 
-    @Column(name = "firstConnexionDate",  nullable = false)
+    @Column(name = "firstConnexionDate", nullable = false)
     private LocalDateTime firstConnexionDate;
 
-    @Column(name = "lastConnexionDate",  nullable = false)
+    @Column(name = "lastConnexionDate", nullable = false)
     private LocalDateTime lastConnexionDate;
 
     @Column(name = "connectionAccepted", nullable = false)

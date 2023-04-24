@@ -31,7 +31,7 @@ public class ConnectionsService {
 
     @Transactional
     public void recordConnectionAttempt(String sub, Boolean isAllowed) {
-        ConnectionEntity connectionEntity =  connectionRepository.findBySub(sub).stream().findFirst().orElse(null);
+        ConnectionEntity connectionEntity = connectionRepository.findBySub(sub).stream().findFirst().orElse(null);
         if (connectionEntity == null) {
             connectionEntity = new ConnectionEntity(sub, LocalDateTime.now(), LocalDateTime.now(), isAllowed);
             connectionRepository.save(connectionEntity);
