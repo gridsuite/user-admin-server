@@ -33,10 +33,11 @@ public class ConnectionsService {
     public void recordConnectionAttempt(String sub, Boolean isAllowed) {
         ConnectionEntity connectionEntity = connectionRepository.findBySub(sub).stream().findFirst().orElse(null);
         if (connectionEntity == null) {
-            connectionEntity = new ConnectionEntity(sub, LocalDateTime.now(), LocalDateTime.now(), isAllowed);
+            //To avoid consistency issue we truncate the time to microseconds since postgres and h2 can only store a precision of microseconds
+            connectionEntity = new ConnectionEntity(sub, LocalDateTime.now().truncatedTo(ChronoUnit.MICROS), LocalDateTime.now().truncatedTo(ChronoUnit.MICROS), isAllowed);
             connectionRepository.save(connectionEntity);
         } else {
-            connectionEntity.setLastConnexionDate(LocalDateTime.now());
+            connectionEntity.setLastConnexionDate(LocalDateTime.now().truncatedTo(ChronoUnit.MICROS));
             connectionEntity.setConnectionAccepted(isAllowed);
         }
     }
