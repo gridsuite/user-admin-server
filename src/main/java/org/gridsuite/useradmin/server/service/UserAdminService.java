@@ -65,7 +65,7 @@ public class UserAdminService {
     }
 
     public boolean subExists(String sub) {
-        Boolean isAllowed = (applicationProps.getAdmins().isEmpty() && userAdminRepository.count() == 0) || applicationProps.getAdmins().contains(sub) || !userAdminRepository.findAllBySub(sub).isEmpty();
+        Boolean isAllowed = applicationProps.getAdmins().isEmpty() && userAdminRepository.count() == 0 || applicationProps.getAdmins().contains(sub) || !userAdminRepository.findAllBySub(sub).isEmpty();
         connectionsService.recordConnectionAttempt(sub, isAllowed);
         return isAllowed.booleanValue();
     }
