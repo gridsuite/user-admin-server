@@ -6,7 +6,6 @@
  */
 package org.gridsuite.useradmin.server;
 
-import com.powsybl.ws.commons.Utils;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -20,7 +19,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 public class UserAdminApplication {
 
     public static void main(String[] args) {
-        Utils.initProperties();
         SpringApplication.run(UserAdminApplication.class, args);
     }
 }
