@@ -6,14 +6,16 @@
  */
 package org.gridsuite.useradmin.server.repository;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 /**
  * @author Etienne Homer <etienne.homer at rte-france.com>
@@ -24,15 +26,7 @@ import java.util.UUID;
 @Setter
 @Entity
 @Table(name = "connection", indexes = {@Index(name = "connection_sub_index", columnList = "sub")})
-public class ConnectionEntity {
-
-    @Id
-    @Column(name = "id")
-    private UUID id;
-
-    @Column(name = "sub", nullable = false)
-    private String sub;
-
+public class ConnectionEntity extends AbstractUserEntity {
     @Column(name = "firstConnexionDate", nullable = false)
     private LocalDateTime firstConnexionDate;
 
@@ -43,6 +37,9 @@ public class ConnectionEntity {
     private Boolean connectionAccepted;
 
     public ConnectionEntity(String sub, LocalDateTime firstConnexionDate, LocalDateTime lastConnexionDate, Boolean connectionAccepted) {
-        this(UUID.randomUUID(), sub, firstConnexionDate, lastConnexionDate, connectionAccepted);
+        super(sub);
+        this.firstConnexionDate = firstConnexionDate;
+        this.lastConnexionDate = lastConnexionDate;
+        this.connectionAccepted = connectionAccepted;
     }
 }

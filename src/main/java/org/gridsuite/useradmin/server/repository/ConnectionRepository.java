@@ -6,10 +6,14 @@
  */
 package org.gridsuite.useradmin.server.repository;
 
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -17,5 +21,15 @@ import java.util.UUID;
  */
 @Repository
 public interface ConnectionRepository extends JpaRepository<ConnectionEntity, UUID> {
-    List<ConnectionEntity> findBySub(String sub);
+    @NonNull
+    Optional<ConnectionEntity> findBySub/*IgnoreCase*/(@NonNull String sub);
+
+    @Transactional()
+    @Modifying
+    default void recordNewConnection(@NonNull final String sub, final boolean connectionAccepted) {
+        this.findBySub/*IgnoreCase*/(sub).ifPresentOrElse(
+            conn -> this.save(conn.setLastConnexionDate(LocalDateTime.now()).setConnectionAccepted(connectionAccepted)),
+            () -> this.save(new ConnectionEntity(sub, LocalDateTime.now(), LocalDateTime.now(), connectionAccepted))
+        );
+    }
 }

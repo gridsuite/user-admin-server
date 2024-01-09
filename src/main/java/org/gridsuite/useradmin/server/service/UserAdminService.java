@@ -6,34 +6,33 @@
  */
 package org.gridsuite.useradmin.server.service;
 
+import lombok.RequiredArgsConstructor;
 import org.gridsuite.useradmin.server.UserAdminApplicationProps;
 import org.gridsuite.useradmin.server.UserAdminException;
 import org.gridsuite.useradmin.server.repository.ConnectionEntity;
+import org.gridsuite.useradmin.server.repository.ConnectionRepository;
 import org.gridsuite.useradmin.server.repository.UserAdminRepository;
 import org.gridsuite.useradmin.server.repository.UserInfosEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.List;
+import java.util.UUID;
 
 import static org.gridsuite.useradmin.server.UserAdminException.Type.FORBIDDEN;
 
 /**
  * @author Etienne Homer <etienne.homer at rte-france.com>
  */
+@RequiredArgsConstructor
 @Service
 public class UserAdminService {
-    private UserAdminRepository userAdminRepository;
-
-    private ConnectionsService connectionsService;
+    private final UserAdminRepository userAdminRepository;
+    private final ConnectionRepository connectionRepository;
+    private final ConnectionsService connectionsService;
 
     @Autowired
     private UserAdminApplicationProps applicationProps;
-
-    public UserAdminService(UserAdminRepository userAdminRepository, ConnectionsService connectionsService) {
-        this.userAdminRepository = Objects.requireNonNull(userAdminRepository);
-        this.connectionsService = Objects.requireNonNull(connectionsService);
-    }
 
     public List<UserInfosEntity> getUsers(String userId) {
         if (!isAdmin(userId)) {
@@ -43,6 +42,14 @@ public class UserAdminService {
     }
 
     public List<ConnectionEntity> getConnections(String userId) {
+        if (!isAdmin(userId)) {
+            throw new UserAdminException(FORBIDDEN);
+        }
+        return connectionRepository.findAll();
+    }
+
+    @Deprecated(forRemoval = true)
+    public List<ConnectionEntity> getDeduplicatedConnections(String userId) {
         if (!isAdmin(userId)) {
             throw new UserAdminException(FORBIDDEN);
         }
@@ -65,7 +72,9 @@ public class UserAdminService {
     }
 
     public boolean subExists(String sub) {
-        Boolean isAllowed = applicationProps.getAdmins().isEmpty() && userAdminRepository.count() == 0 || applicationProps.getAdmins().contains(sub) || !userAdminRepository.findAllBySub(sub).isEmpty();
+        Boolean isAllowed = applicationProps.getAdmins().isEmpty() && userAdminRepository.count() == 0
+                || applicationProps.getAdmins().contains(sub)
+                || !userAdminRepository.findAllBySub(sub).isEmpty();
         connectionsService.recordConnectionAttempt(sub, isAllowed);
         return isAllowed.booleanValue();
     }

@@ -114,16 +114,16 @@ public class UserAdminTest {
                 .andExpect(status().isNoContent())
                 .andReturn();
         assertEquals(3, connectionRepository.findAll().size());
-        assertTrue(connectionRepository.findBySub(USER_SUB).get(0).getConnectionAccepted());
-        assertFalse(connectionRepository.findBySub("UNKNOWN").get(0).getConnectionAccepted());
-        LocalDateTime firstConnectionDate = connectionRepository.findBySub(USER_SUB).get(0).getFirstConnexionDate();
+        assertTrue(connectionRepository.findBySub(USER_SUB).get().getConnectionAccepted());
+        assertFalse(connectionRepository.findBySub("UNKNOWN").get().getConnectionAccepted());
+        LocalDateTime firstConnectionDate = connectionRepository.findBySub(USER_SUB).get().getFirstConnexionDate();
         //firstConnectionDate and lastConnectionDate are equals cause this is the first connection for this user
-        assertTrue(firstConnectionDate.toEpochSecond(ZoneOffset.UTC) < connectionRepository.findBySub(USER_SUB).get(0).getLastConnexionDate().toEpochSecond(ZoneOffset.UTC) + 2);
+        assertTrue(firstConnectionDate.toEpochSecond(ZoneOffset.UTC) < connectionRepository.findBySub(USER_SUB).get().getLastConnexionDate().toEpochSecond(ZoneOffset.UTC) + 2);
 
         mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB))
                 .andExpect(status().isOk())
                 .andReturn();
-        assertEquals(firstConnectionDate, connectionRepository.findBySub(USER_SUB).get(0).getFirstConnexionDate());
+        assertEquals(firstConnectionDate, connectionRepository.findBySub(USER_SUB).get().getFirstConnexionDate());
 
         mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/users/{id}", userId)
                         .header("userId", ADMIN_USER)

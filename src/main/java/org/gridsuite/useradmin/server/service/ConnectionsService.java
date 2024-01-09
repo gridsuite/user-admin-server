@@ -43,6 +43,7 @@ public class ConnectionsService {
         }
     }
 
+    @Deprecated(forRemoval = true)
     @Transactional
     public List<ConnectionEntity> removeDuplicates() {
         Map<String, List<ConnectionEntity>> connectionsBySub = connectionRepository.findAll().stream().collect(Collectors.groupingBy(ConnectionEntity::getSub));

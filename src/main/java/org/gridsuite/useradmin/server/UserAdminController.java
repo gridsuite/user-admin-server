@@ -72,4 +72,12 @@ public class UserAdminController {
     public ResponseEntity<List<ConnectionEntity>> getConnections(@RequestHeader("userId") String userId) {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getConnections(userId));
     }
+
+    @Deprecated(forRemoval = true)
+    @GetMapping(value = "/connections/deduplicate")
+    @Operation(summary = "get the connections deduplicated", deprecated = true)
+    @ApiResponse(responseCode = "200", description = "The connections list")
+    public ResponseEntity<List<ConnectionEntity>> deduplicateConnections(@RequestHeader("userId") String userId) {
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getDeduplicatedConnections(userId));
+    }
 }
