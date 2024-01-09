@@ -6,11 +6,16 @@
  */
 package org.gridsuite.useradmin.server;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
 import java.util.Objects;
 
 /**
  * @author Etienne Homer <etienne.homer at rte-france.com>
  */
+@EqualsAndHashCode(callSuper = false)
+@Data
 public class UserAdminException extends RuntimeException {
     public enum Type {
         FORBIDDEN
@@ -22,9 +27,4 @@ public class UserAdminException extends RuntimeException {
         super(Objects.requireNonNull(type.name()));
         this.type = type;
     }
-
-    Type getType() {
-        return type;
-    }
-
 }

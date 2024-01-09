@@ -18,15 +18,14 @@ import static org.gridsuite.useradmin.server.UserAdminException.Type.FORBIDDEN;
  */
 @ControllerAdvice
 public class RestResponseEntityExceptionHandler {
-
     @ExceptionHandler(value = { UserAdminException.class })
     protected ResponseEntity<Object> handleException(RuntimeException exception) {
-        if (exception instanceof UserAdminException) {
-            UserAdminException userAdminException = (UserAdminException) exception;
-            if (userAdminException.getType().equals(FORBIDDEN)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(userAdminException.getType());
-            }
+        if (exception instanceof UserAdminException userAdminException) {
+            return switch (userAdminException.getType()) {
+                case FORBIDDEN -> ResponseEntity.status(HttpStatus.FORBIDDEN).body(userAdminException.getType());
+            };
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 }
