@@ -8,6 +8,7 @@ package org.gridsuite.useradmin.server;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.assertj.core.api.WithAssertions;
 import org.gridsuite.useradmin.server.repository.ConnectionEntity;
 import org.gridsuite.useradmin.server.repository.ConnectionRepository;
 import org.gridsuite.useradmin.server.repository.UserAdminRepository;
@@ -18,16 +19,15 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.Assert.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -39,7 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @SpringBootTest
 @ContextConfiguration(classes = {UserAdminApplication.class})
-public class UserAdminTest {
+public class UserAdminTest implements WithAssertions {
 
     @Autowired
     private MockMvc mockMvc;
@@ -78,10 +78,9 @@ public class UserAdminTest {
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),
-                new TypeReference<>() {
-                });
+                new TypeReference<>() { });
 
-        assertEquals(0, userEntities.size());
+        assertThat(userEntities).isEmpty();
 
         mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/{sub}", ADMIN_USER))
                 .andExpect(status().isOk())
@@ -99,10 +98,9 @@ public class UserAdminTest {
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),
-                new TypeReference<>() {
-                });
+                new TypeReference<>() { });
 
-        assertEquals(1, userEntities.size());
+        assertThat(userEntities).hasSize(1);
 
         UUID userId = userEntities.get(0).getId();
 
@@ -113,17 +111,20 @@ public class UserAdminTest {
         mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/{sub}", "UNKNOWN"))
                 .andExpect(status().isNoContent())
                 .andReturn();
-        assertEquals(3, connectionRepository.findAll().size());
-        assertTrue(connectionRepository.findBySub(USER_SUB).get().getConnectionAccepted());
-        assertFalse(connectionRepository.findBySub("UNKNOWN").get().getConnectionAccepted());
+        assertThat(connectionRepository.findAll()).hasSize(3);
+        assertThat(connectionRepository.findBySub(USER_SUB)).get()
+                .extracting(ConnectionEntity::getConnectionAccepted, BOOLEAN).isTrue();
+        assertThat(connectionRepository.findBySub("UNKNOWN")).get()
+                .extracting(ConnectionEntity::getConnectionAccepted, BOOLEAN).isFalse();
         LocalDateTime firstConnectionDate = connectionRepository.findBySub(USER_SUB).get().getFirstConnectionDate();
         //firstConnectionDate and lastConnectionDate are equals cause this is the first connection for this user
-        assertTrue(firstConnectionDate.toEpochSecond(ZoneOffset.UTC) < connectionRepository.findBySub(USER_SUB).get().getLastConnectionDate().toEpochSecond(ZoneOffset.UTC) + 2);
+        assertThat(connectionRepository.findBySub(USER_SUB)).get()
+                .extracting(ConnectionEntity::getLastConnectionDate, LOCAL_DATE_TIME).isAfterOrEqualTo(firstConnectionDate);
 
         mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB))
                 .andExpect(status().isOk())
                 .andReturn();
-        assertEquals(firstConnectionDate, connectionRepository.findBySub(USER_SUB).get().getFirstConnectionDate());
+        assertThat(connectionRepository.findBySub(USER_SUB)).get().extracting(ConnectionEntity::getFirstConnectionDate, LOCAL_DATE_TIME).isEqualTo(firstConnectionDate);
 
         mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/users/{id}", userId)
                         .header("userId", ADMIN_USER)
@@ -137,9 +138,8 @@ public class UserAdminTest {
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),
-                new TypeReference<>() {
-                });
-        assertEquals(0, userEntities.size());
+                new TypeReference<>() { });
+        assertThat(userEntities).isEmpty();
 
         mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/users/{id}", userId)
                         .header("userId", NOT_ADMIN)
@@ -180,10 +180,9 @@ public class UserAdminTest {
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),
-                new TypeReference<>() {
-                });
+                new TypeReference<>() { });
 
-        assertEquals(2, userEntities.size());
+        assertThat(userEntities).hasSize(2);
 
         mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB))
                 .andExpect(status().isOk())
@@ -199,14 +198,21 @@ public class UserAdminTest {
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),
-                new TypeReference<>() {
-                });
+                new TypeReference<>() { });
 
-        assertEquals(2, connectionEntities.size());
+        assertThat(connectionEntities).hasSize(2);
 
-        connectionRepository.save(new ConnectionEntity(USER_SUB, LocalDateTime.now(), LocalDateTime.now(), true));
-        connectionRepository.save(new ConnectionEntity(USER_SUB, LocalDateTime.now().minusSeconds(5), LocalDateTime.now(), true));
-        connectionRepository.save(new ConnectionEntity(USER_SUB2, LocalDateTime.now(), LocalDateTime.now(), false));
+        assertThatThrownBy(() -> connectionRepository.save(new ConnectionEntity(USER_SUB, LocalDateTime.now(), LocalDateTime.now(), true)))
+                .isInstanceOf(DataIntegrityViolationException.class)
+                .hasMessageContaining("Unique index or primary key violation");
+        connectionRepository.save(connectionRepository.getBySub(USER_SUB)
+                .setFirstConnectionDate(LocalDateTime.now().minusSeconds(5))
+                .setLastConnectionDate(LocalDateTime.now())
+                .setConnectionAccepted(true));
+        connectionRepository.save(connectionRepository.getBySub(USER_SUB2)
+                .setFirstConnectionDate(LocalDateTime.now())
+                .setLastConnectionDate(LocalDateTime.now())
+                .setConnectionAccepted(false));
 
         connectionEntities = objectMapper.readValue(
                 mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/connections")
@@ -214,9 +220,8 @@ public class UserAdminTest {
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),
-                new TypeReference<>() {
-                });
-        assertEquals(2, connectionEntities.size());
+                new TypeReference<>() { });
+        assertThat(connectionEntities).hasSize(2);
 
         mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/connections")
                         .header("userId", NOT_ADMIN)

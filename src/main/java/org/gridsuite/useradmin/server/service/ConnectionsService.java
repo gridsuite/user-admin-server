@@ -11,8 +11,6 @@ import org.gridsuite.useradmin.server.repository.ConnectionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -32,15 +30,7 @@ public class ConnectionsService {
 
     @Transactional
     public void recordConnectionAttempt(String sub, Boolean isAllowed) {
-        ConnectionEntity connectionEntity = connectionRepository.findBySub(sub).stream().findFirst().orElse(null);
-        if (connectionEntity == null) {
-            //To avoid consistency issue we truncate the time to microseconds since postgres and h2 can only store a precision of microseconds
-            connectionEntity = new ConnectionEntity(sub, LocalDateTime.now().truncatedTo(ChronoUnit.MICROS), LocalDateTime.now().truncatedTo(ChronoUnit.MICROS), isAllowed);
-            connectionRepository.save(connectionEntity);
-        } else {
-            connectionEntity.setLastConnectionDate(LocalDateTime.now().truncatedTo(ChronoUnit.MICROS));
-            connectionEntity.setConnectionAccepted(isAllowed);
-        }
+        connectionRepository.recordNewConnection(sub, isAllowed);
     }
 
     @Deprecated(forRemoval = true)
