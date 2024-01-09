@@ -38,7 +38,7 @@ public class ConnectionsService {
             connectionEntity = new ConnectionEntity(sub, LocalDateTime.now().truncatedTo(ChronoUnit.MICROS), LocalDateTime.now().truncatedTo(ChronoUnit.MICROS), isAllowed);
             connectionRepository.save(connectionEntity);
         } else {
-            connectionEntity.setLastConnexionDate(LocalDateTime.now().truncatedTo(ChronoUnit.MICROS));
+            connectionEntity.setLastConnectionDate(LocalDateTime.now().truncatedTo(ChronoUnit.MICROS));
             connectionEntity.setConnectionAccepted(isAllowed);
         }
     }
@@ -51,11 +51,11 @@ public class ConnectionsService {
         connectionsBySub.keySet().forEach(sub ->
             connectionsBySub.get(sub).stream().skip(1).forEach(connectionEntity -> {
                 ConnectionEntity groupedEntity = connectionsBySub.get(sub).get(0);
-                if (connectionEntity.getLastConnexionDate().isAfter(groupedEntity.getLastConnexionDate())) {
-                    groupedEntity.setLastConnexionDate(connectionEntity.getLastConnexionDate());
+                if (connectionEntity.getLastConnectionDate().isAfter(groupedEntity.getLastConnectionDate())) {
+                    groupedEntity.setLastConnectionDate(connectionEntity.getLastConnectionDate());
                 }
-                if (connectionEntity.getFirstConnexionDate().isBefore(groupedEntity.getFirstConnexionDate())) {
-                    groupedEntity.setFirstConnexionDate(connectionEntity.getFirstConnexionDate());
+                if (connectionEntity.getFirstConnectionDate().isBefore(groupedEntity.getFirstConnectionDate())) {
+                    groupedEntity.setFirstConnectionDate(connectionEntity.getFirstConnectionDate());
                 }
                 connectionRepository.delete(connectionEntity);
             })

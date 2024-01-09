@@ -27,19 +27,19 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "connection", indexes = {@Index(name = "connection_sub_index", columnList = "sub")})
 public class ConnectionEntity extends AbstractUserEntity {
-    @Column(name = "firstConnexionDate", nullable = false)
-    private LocalDateTime firstConnexionDate;
+    @Column(name = "firstConnectionDate", nullable = false)
+    private LocalDateTime firstConnectionDate;
 
-    @Column(name = "lastConnexionDate", nullable = false)
-    private LocalDateTime lastConnexionDate;
+    @Column(name = "lastConnectionDate", nullable = false)
+    private LocalDateTime lastConnectionDate;
 
     @Column(name = "connectionAccepted", nullable = false)
     private Boolean connectionAccepted;
 
-    public ConnectionEntity(String sub, LocalDateTime firstConnexionDate, LocalDateTime lastConnexionDate, Boolean connectionAccepted) {
+    public ConnectionEntity(String sub, LocalDateTime firstConnectionDate, LocalDateTime lastConnectionDate, Boolean connectionAccepted) {
         super(sub);
-        this.firstConnexionDate = firstConnexionDate;
-        this.lastConnexionDate = lastConnexionDate;
+        this.firstConnectionDate = firstConnectionDate;
+        this.lastConnectionDate = lastConnectionDate;
         this.connectionAccepted = connectionAccepted;
     }
 }

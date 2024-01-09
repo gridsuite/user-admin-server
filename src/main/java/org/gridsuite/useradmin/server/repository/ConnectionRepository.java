@@ -28,7 +28,7 @@ public interface ConnectionRepository extends JpaRepository<ConnectionEntity, UU
     @Modifying
     default void recordNewConnection(@NonNull final String sub, final boolean connectionAccepted) {
         this.findBySub/*IgnoreCase*/(sub).ifPresentOrElse(
-            conn -> this.save(conn.setLastConnexionDate(LocalDateTime.now()).setConnectionAccepted(connectionAccepted)),
+            conn -> this.save(conn.setLastConnectionDate(LocalDateTime.now()).setConnectionAccepted(connectionAccepted)),
             () -> this.save(new ConnectionEntity(sub, LocalDateTime.now(), LocalDateTime.now(), connectionAccepted))
         );
     }

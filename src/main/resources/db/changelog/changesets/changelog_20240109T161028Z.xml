@@ -1,6 +1,6 @@
 <?xml version="1.1" encoding="UTF-8" standalone="no"?>
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
-    <changeSet author="chuinetri" id="1704818243021-0">
+    <changeSet author="chuinetri" id="1704818243021-1">
         <comment>Deduplicate rows before adding unique constraint</comment>
         <delete tableName="user_infos">
             <where>id in (select id from (select row_number() over (partition by sub) as rnb, * from user_infos) subquery where rnb > 1)</where>
@@ -26,8 +26,13 @@
         </delete>
     </changeSet>
 
-    <changeSet author="chuinetri" id="1704818243021-1">
+    <changeSet author="chuinetri" id="1704818243021-2">
         <addUniqueConstraint columnNames="sub" constraintName="UC_USER_INFOSSUB_COL" tableName="user_infos"/>
         <addUniqueConstraint columnNames="sub" constraintName="UC_CONNECTIONSUB_COL" tableName="connection"/>
+    </changeSet>
+
+    <changeSet author="chuinetri" id="1704818243021-3">
+        <renameColumn tableName="connection" oldColumnName="first_connexion_date" newColumnName="first_connection_date"/>
+        <renameColumn tableName="connection" oldColumnName="last_connexion_date" newColumnName="last_connection_date"/>
     </changeSet>
 </databaseChangeLog>
