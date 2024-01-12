@@ -6,8 +6,10 @@
  */
 package org.gridsuite.useradmin.server;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.List;
@@ -15,10 +17,11 @@ import java.util.List;
 /**
  * @author Etienne Homer <etienne.homer at rte-france.com>
  */
-@Getter
-@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
+@Builder
 @ConfigurationProperties(prefix = "useradmin")
 public class UserAdminApplicationProps {
-
     private List<String> admins;
 }

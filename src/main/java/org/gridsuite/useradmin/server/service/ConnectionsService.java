@@ -6,8 +6,12 @@
  */
 package org.gridsuite.useradmin.server.service;
 
+import lombok.NonNull;
+import org.gridsuite.useradmin.server.UserAdminApplicationProps;
 import org.gridsuite.useradmin.server.repository.ConnectionEntity;
 import org.gridsuite.useradmin.server.repository.ConnectionRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,11 +26,11 @@ import java.util.stream.Collectors;
  * @author Etienne Homer <etienne.homer at rte-france.com>
  */
 @Service
-public class ConnectionsService {
+public class ConnectionsService extends AbstractCommonService {
+    private final ConnectionRepository connectionRepository;
 
-    private ConnectionRepository connectionRepository;
-
-    public ConnectionsService(ConnectionRepository connectionRepository) {
+    public ConnectionsService(ConnectionRepository connectionRepository, UserAdminApplicationProps applicationProps) {
+        super(applicationProps);
         this.connectionRepository = Objects.requireNonNull(connectionRepository);
     }
 
