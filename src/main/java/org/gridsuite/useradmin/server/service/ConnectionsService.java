@@ -35,7 +35,7 @@ public class ConnectionsService extends AbstractCommonService {
     }
 
     @Transactional
-    public void recordConnectionAttempt(String sub, Boolean isAllowed) {
+    public void recordConnectionAttempt(String sub, boolean isAllowed) {
         ConnectionEntity connectionEntity = connectionRepository.findBySub(sub).stream().findFirst().orElse(null);
         if (connectionEntity == null) {
             //To avoid consistency issue we truncate the time to microseconds since postgres and h2 can only store a precision of microseconds

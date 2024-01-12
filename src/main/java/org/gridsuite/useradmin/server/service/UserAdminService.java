@@ -7,14 +7,17 @@
 package org.gridsuite.useradmin.server.service;
 
 import org.gridsuite.useradmin.server.UserAdminApplicationProps;
-import org.gridsuite.useradmin.server.repository.ConnectionEntity;
+import org.gridsuite.useradmin.server.dto.UserConnection;
+import org.gridsuite.useradmin.server.dto.UserInfos;
 import org.gridsuite.useradmin.server.repository.UserAdminRepository;
 import org.gridsuite.useradmin.server.repository.UserInfosEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 
 /**
  * @author Etienne Homer <etienne.homer at rte-france.com>
@@ -31,14 +34,14 @@ public class UserAdminService extends AbstractCommonService {
         this.connectionsService = Objects.requireNonNull(connectionsService);
     }
 
-    public List<UserInfosEntity> getUsers(String userId) {
+    public Page<UserInfos> getUsers(@NonNull String userId, Pageable pageable) {
         assertIsAdmin(userId);
-        return userAdminRepository.findAll();
+        return userAdminRepository.findAll(pageable).map(DtoConverter::toDto);
     }
 
-    public List<ConnectionEntity> getConnections(String userId) {
+    public List<UserConnection> getConnections(String userId) {
         assertIsAdmin(userId);
-        return connectionsService.removeDuplicates();
+        return connectionsService.removeDuplicates().stream().map(DtoConverter::toDto).toList();
     }
 
     public void createUser(String sub, String userId) {
@@ -47,14 +50,16 @@ public class UserAdminService extends AbstractCommonService {
         userAdminRepository.save(userInfosEntity);
     }
 
-    public void delete(UUID id, String userId) {
+    public long delete(String sub, String userId) {
         assertIsAdmin(userId);
-        userAdminRepository.deleteById(id);
+        return userAdminRepository.deleteBySub(sub);
     }
 
     public boolean subExists(String sub) {
-        Boolean isAllowed = applicationProps.getAdmins().isEmpty() && userAdminRepository.count() == 0 || applicationProps.getAdmins().contains(sub) || !userAdminRepository.findAllBySub(sub).isEmpty();
+        final boolean isAllowed = applicationProps.getAdmins().isEmpty() && userAdminRepository.count() == 0
+                || applicationProps.getAdmins().contains(sub)
+                || !userAdminRepository.findAllBySub(sub).isEmpty();
         connectionsService.recordConnectionAttempt(sub, isAllowed);
-        return isAllowed.booleanValue();
+        return isAllowed;
     }
 }
