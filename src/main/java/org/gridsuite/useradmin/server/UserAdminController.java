@@ -46,8 +46,8 @@ public class UserAdminController {
         this.connService = connService;
     }
 
-    @GetMapping(value = "/users", produces = {MediaType.APPLICATION_JSON_VALUE})
-    @Operation(summary = "get the users ids")
+    @GetMapping(value = "/users", params = "!search", produces = {MediaType.APPLICATION_JSON_VALUE})
+    @Operation(summary = "get the users")
     @SecurityRequirement(name = "userType", scopes = {"admin"})
     @ApiResponse(responseCode = "200", description = "The users list")
     @PageableAsQueryParam(defaultSize = @Schema(type = "integer", defaultValue = PAGE_DEFAULT_SIZE_DOC),
@@ -55,6 +55,18 @@ public class UserAdminController {
     public ResponseEntity<Page<UserInfos>> getUsers(@RequestHeader("userId") String userId,
                                                     @PageableDefault(size = PAGE_DEFAULT_SIZE, sort = {"sub"}) Pageable pageable) {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getUsers(userId, pageable));
+    }
+
+    @GetMapping(value = "/users", produces = {MediaType.APPLICATION_JSON_VALUE})
+    @Operation(summary = "search users")
+    @SecurityRequirement(name = "userType", scopes = {"admin"})
+    @ApiResponse(responseCode = "200", description = "The users search list")
+    @PageableAsQueryParam(defaultSize = @Schema(type = "integer", defaultValue = PAGE_DEFAULT_SIZE_DOC),
+                          defaultSort = @ArraySchema(schema = @Schema(type = "string", defaultValue = "sub")))
+    public ResponseEntity<Page<UserInfos>> searchUsers(@RequestHeader("userId") String userId,
+                                                       @RequestParam("search") String searchTerm,
+                                                       @PageableDefault(size = PAGE_DEFAULT_SIZE, sort = {"sub"}) Pageable pageable) {
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.searchUsers(userId, searchTerm, pageable));
     }
 
     @PutMapping(value = "/users/{sub}")
@@ -80,7 +92,7 @@ public class UserAdminController {
     }
 
     @RequestMapping(value = "/users/{sub}", method = RequestMethod.HEAD)
-    @Operation(summary = "Test if a sub exists")
+    @Operation(summary = "Test if a user exists")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "sub exists"),
         @ApiResponse(responseCode = "204", description = "sub does not exist"),

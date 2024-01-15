@@ -62,4 +62,9 @@ public class UserAdminService extends AbstractCommonService {
         connectionsService.recordConnectionAttempt(sub, isAllowed);
         return isAllowed;
     }
+
+    public Page<UserInfos> searchUsers(@NonNull String userId, @NonNull String term, Pageable pageable) {
+        assertIsAdmin(userId);
+        return userAdminRepository.findAllBySubContainsAllIgnoreCase(term, pageable).map(DtoConverter::toDto);
+    }
 }

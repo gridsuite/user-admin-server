@@ -6,6 +6,8 @@
  */
 package org.gridsuite.useradmin.server.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
@@ -20,4 +22,6 @@ public interface UserAdminRepository extends JpaRepository<UserInfosEntity, UUID
     boolean existsBySub(@NonNull String sub);
 
     long deleteBySub/*IgnoreCase*/(@NonNull String sub);
+
+    Page<UserInfosEntity> findAllBySubContainsAllIgnoreCase(@NonNull String sub, Pageable pageable);
 }
