@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.gridsuite.useradmin.server.dto.UserConnection;
 import org.gridsuite.useradmin.server.dto.UserInfos;
+import org.gridsuite.useradmin.server.service.ConnectionsService;
 import org.gridsuite.useradmin.server.service.UserAdminService;
 import org.gridsuite.useradmin.server.springdoc.PageableAsQueryParam;
 import org.springframework.data.domain.Page;
@@ -35,9 +36,11 @@ import java.util.List;
 @Tag(name = "User admin server")
 public class UserAdminController {
     private final UserAdminService service;
+    private final ConnectionsService connService;
 
-    public UserAdminController(UserAdminService service) {
-        this.service = service;
+    public UserAdminController(UserAdminService userService, ConnectionsService connService) {
+        this.service = userService;
+        this.connService = connService;
     }
 
     @GetMapping(value = "/users", produces = {MediaType.APPLICATION_JSON_VALUE})
@@ -83,11 +86,22 @@ public class UserAdminController {
         return service.subExists(sub) ? ResponseEntity.ok().build() : ResponseEntity.noContent().build();
     }
 
-    @GetMapping(value = "/connections", produces = {MediaType.APPLICATION_JSON_VALUE})
-    @Operation(summary = "get the connections")
+    @GetMapping(value = "/connections/full", produces = {MediaType.APPLICATION_JSON_VALUE})
+    @Operation(summary = "get the connections", deprecated = true)
     @SecurityRequirement(name = "userType", scopes = {"admin"})
     @ApiResponse(responseCode = "200", description = "The connections list")
     public ResponseEntity<List<UserConnection>> getConnections(@RequestHeader("userId") String userId) {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getConnections(userId));
+    }
+
+    @GetMapping(value = "/connections", produces = {MediaType.APPLICATION_JSON_VALUE})
+    @Operation(summary = "get the connections")
+    @SecurityRequirement(name = "userType", scopes = {"admin"})
+    @ApiResponse(responseCode = "200", description = "The connections paged list")
+    @PageableAsQueryParam(defaultSize = @Schema(type = "integer", defaultValue = "25"),
+                          defaultSort = @ArraySchema(schema = @Schema(type = "string", defaultValue = "sub")))
+    public ResponseEntity<Page<UserConnection>> getPageConnections(@RequestHeader("userId") String userId,
+                                                                   @PageableDefault(size = 25, sort = {"sub"}) Pageable pageable) {
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(connService.getConnections(userId, pageable));
     }
 }

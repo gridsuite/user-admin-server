@@ -8,6 +8,7 @@ package org.gridsuite.useradmin.server.service;
 
 import lombok.NonNull;
 import org.gridsuite.useradmin.server.UserAdminApplicationProps;
+import org.gridsuite.useradmin.server.dto.UserConnection;
 import org.gridsuite.useradmin.server.repository.ConnectionEntity;
 import org.gridsuite.useradmin.server.repository.ConnectionRepository;
 import org.springframework.data.domain.Page;
@@ -64,5 +65,10 @@ public class ConnectionsService extends AbstractCommonService {
             })
         );
         return connectionsBySub.values().stream().map(list -> list.get(0)).collect(Collectors.toList());
+    }
+
+    public Page<UserConnection> getConnections(@NonNull final String userId, Pageable pageable) {
+        assertIsAdmin(userId);
+        return connectionRepository.findAll(pageable).map(DtoConverter::toDto);
     }
 }
