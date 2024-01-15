@@ -10,7 +10,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -18,7 +17,7 @@ import java.util.UUID;
  */
 @Repository
 public interface UserAdminRepository extends JpaRepository<UserInfosEntity, UUID> {
-    List<UserInfosEntity> findAllBySub(String sub);
+    boolean existsBySub(@NonNull String sub);
 
     long deleteBySub/*IgnoreCase*/(@NonNull String sub);
 }

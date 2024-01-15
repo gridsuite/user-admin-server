@@ -58,7 +58,7 @@ public class UserAdminService extends AbstractCommonService {
     public boolean subExists(String sub) {
         final boolean isAllowed = applicationProps.getAdmins().isEmpty() && userAdminRepository.count() == 0
                 || applicationProps.getAdmins().contains(sub)
-                || !userAdminRepository.findAllBySub(sub).isEmpty();
+                || !userAdminRepository.existsBySub(sub);
         connectionsService.recordConnectionAttempt(sub, isAllowed);
         return isAllowed;
     }
