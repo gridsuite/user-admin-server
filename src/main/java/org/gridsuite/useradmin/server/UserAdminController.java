@@ -35,6 +35,9 @@ import java.util.List;
 @RequestMapping(value = "/" + UserAdminApi.API_VERSION)
 @Tag(name = "User admin server")
 public class UserAdminController {
+    private static final int PAGE_DEFAULT_SIZE = 25;
+    private static final String PAGE_DEFAULT_SIZE_DOC = "" + PAGE_DEFAULT_SIZE;
+
     private final UserAdminService service;
     private final ConnectionsService connService;
 
@@ -47,10 +50,10 @@ public class UserAdminController {
     @Operation(summary = "get the users ids")
     @SecurityRequirement(name = "userType", scopes = {"admin"})
     @ApiResponse(responseCode = "200", description = "The users list")
-    @PageableAsQueryParam(defaultSize = @Schema(type = "integer", defaultValue = "25"),
+    @PageableAsQueryParam(defaultSize = @Schema(type = "integer", defaultValue = PAGE_DEFAULT_SIZE_DOC),
                           defaultSort = @ArraySchema(schema = @Schema(type = "string", defaultValue = "sub")))
     public ResponseEntity<Page<UserInfos>> getUsers(@RequestHeader("userId") String userId,
-                                                    @PageableDefault(size = 25, sort = {"sub"}) Pageable pageable) {
+                                                    @PageableDefault(size = PAGE_DEFAULT_SIZE, sort = {"sub"}) Pageable pageable) {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getUsers(userId, pageable));
     }
 
@@ -98,10 +101,10 @@ public class UserAdminController {
     @Operation(summary = "get the connections")
     @SecurityRequirement(name = "userType", scopes = {"admin"})
     @ApiResponse(responseCode = "200", description = "The connections paged list")
-    @PageableAsQueryParam(defaultSize = @Schema(type = "integer", defaultValue = "25"),
+    @PageableAsQueryParam(defaultSize = @Schema(type = "integer", defaultValue = PAGE_DEFAULT_SIZE_DOC),
                           defaultSort = @ArraySchema(schema = @Schema(type = "string", defaultValue = "sub")))
     public ResponseEntity<Page<UserConnection>> getPageConnections(@RequestHeader("userId") String userId,
-                                                                   @PageableDefault(size = 25, sort = {"sub"}) Pageable pageable) {
+                                                                   @PageableDefault(size = PAGE_DEFAULT_SIZE, sort = {"sub"}) Pageable pageable) {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(connService.getConnections(userId, pageable));
     }
 }
