@@ -10,14 +10,15 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Objects;
+import java.util.function.Predicate;
 
 public final class DtoConverter {
     private DtoConverter() {
         throw new IllegalCallerException("Utility class haven't instance.");
     }
 
-    public static UserInfos toDto(@Nullable final UserInfosEntity entity) {
-        return entity == null ? null : new UserInfos(entity.getSub());
+    public static UserInfos toDto(@Nullable final UserInfosEntity entity, Predicate<String> isAdminFn) {
+        return entity == null ? null : new UserInfos(entity.getSub(), isAdminFn.test(entity.getSub()));
     }
 
     public static UserConnection toDto(@Nullable final ConnectionEntity entity) {

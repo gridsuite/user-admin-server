@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.gridsuite.useradmin.server.dto.UserConnection;
@@ -35,6 +34,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping(value = "/" + UserAdminApi.API_VERSION)
 @Tag(name = "User admin server")
+@ApiResponse(responseCode = "403", description = "The current user haven't right to ask these data")
 public class UserAdminController {
     private static final int PAGE_DEFAULT_SIZE = 25;
     private static final String PAGE_DEFAULT_SIZE_DOC = "" + PAGE_DEFAULT_SIZE;
@@ -61,10 +61,20 @@ public class UserAdminController {
                 .orElseGet(() -> service.getUsers(userId, pageable)));
     }
 
+    @GetMapping(value = "/users/{sub}")
+    @Operation(summary = "Get the user informations")
+    @SecurityRequirement(name = "userType", scopes = {"admin"})
+    @ApiResponse(responseCode = "200", description = "The user exist")
+    @ApiResponse(responseCode = "404", description = "The user doesn't exist")
+    public ResponseEntity<UserInfos> getUser(@PathVariable("sub") String sub, @RequestHeader("userId") String userId) {
+        //TODO authorize if userId == sub (if user ask own data)
+        return ResponseEntity.of(service.getUser(sub, userId));
+    }
+
     @PutMapping(value = "/users/{sub}")
     @Operation(summary = "Create the user")
     @SecurityRequirement(name = "userType", scopes = {"admin"})
-    @ApiResponses(value = {@ApiResponse(responseCode = "201", description = "The user has been created")})
+    @ApiResponse(responseCode = "201", description = "The user has been created")
     public ResponseEntity<Void> createUser(@PathVariable("sub") String sub, @RequestHeader("userId") String userId) {
         service.createUser(sub, userId);
         return ResponseEntity.status(HttpStatus.CREATED).build();
@@ -84,13 +94,20 @@ public class UserAdminController {
     }
 
     @RequestMapping(value = "/users/{sub}", method = RequestMethod.HEAD)
-    @Operation(summary = "Test if a user exists")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "sub exists"),
-        @ApiResponse(responseCode = "204", description = "sub does not exist"),
-    })
+    @Operation(summary = "Test if a user exists and record connection attempt")
+    @ApiResponse(responseCode = "200", description = "sub exists")
+    @ApiResponse(responseCode = "204", description = "sub does not exist")
     public ResponseEntity<Void> userExists(@PathVariable("sub") String sub) {
         return service.subExists(sub) ? ResponseEntity.ok().build() : ResponseEntity.noContent().build();
+    }
+
+    @RequestMapping(value = "/users/me/isElevatedUser", method = RequestMethod.HEAD)
+    @Operation(summary = "Test if a user exists and is administrator (record connection attempt)")
+    @ApiResponse(responseCode = "200", description = "user authorized and admin")
+    public ResponseEntity<Void> userIsAdmin(@RequestHeader("userId") String userId) {
+        return service.userIsAuthorizedAdmin(userId)
+                ? ResponseEntity.ok().build()
+                : ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
     @GetMapping(value = "/connections/full", produces = {MediaType.APPLICATION_JSON_VALUE})

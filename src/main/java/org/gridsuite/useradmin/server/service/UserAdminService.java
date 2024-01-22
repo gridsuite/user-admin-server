@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * @author Etienne Homer <etienne.homer at rte-france.com>
@@ -34,9 +35,13 @@ public class UserAdminService extends AbstractCommonService {
         this.connectionsService = Objects.requireNonNull(connectionsService);
     }
 
+    private UserInfos toDtoUserInfo(final UserInfosEntity entity) {
+        return DtoConverter.toDto(entity, this::isAdmin);
+    }
+
     public Page<UserInfos> getUsers(@NonNull String userId, Pageable pageable) {
         assertIsAdmin(userId);
-        return userAdminRepository.findAll(pageable).map(DtoConverter::toDto);
+        return userAdminRepository.findAll(pageable).map(this::toDtoUserInfo);
     }
 
     public List<UserConnection> getConnections(String userId) {
@@ -63,8 +68,17 @@ public class UserAdminService extends AbstractCommonService {
         return isAllowed;
     }
 
+    public Optional<UserInfos> getUser(String sub, String userId) {
+        assertIsAdmin(userId);
+        return userAdminRepository.findBySub(sub).map(this::toDtoUserInfo);
+    }
+
     public Page<UserInfos> searchUsers(@NonNull String userId, @NonNull String term, Pageable pageable) {
         assertIsAdmin(userId);
-        return userAdminRepository.findAllBySubContainsAllIgnoreCase(term, pageable).map(DtoConverter::toDto);
+        return userAdminRepository.findAllBySubContainsAllIgnoreCase(term, pageable).map(this::toDtoUserInfo);
+    }
+
+    public boolean userIsAuthorizedAdmin(@NonNull String userId) {
+        return isAdmin(userId);
     }
 }
