@@ -10,54 +10,44 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.gridsuite.useradmin.server.repository.ConnectionRepository;
 import org.gridsuite.useradmin.server.repository.UserAdminRepository;
 import org.gridsuite.useradmin.server.repository.UserInfosEntity;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.head;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * @author Etienne Homer <etienne.homer at rte-france.com>
  */
-@RunWith(SpringRunner.class)
 @AutoConfigureMockMvc
-@SpringBootTest
-@ContextConfiguration(classes = {UserAdminApplication.class})
+@SpringBootTest(classes = {UserAdminApplication.class})
 @ActiveProfiles({"default", "noadmin"})
-public class NoAdminTest {
+class NoAdminTest {
+    @Autowired
+    MockMvc mockMvc;
 
     @Autowired
-    private MockMvc mockMvc;
+    ObjectMapper objectMapper;
 
     @Autowired
-    ObjectMapper objectMapper = new ObjectMapper();
+    UserAdminRepository userAdminRepository;
 
     @Autowired
-    private UserAdminRepository userAdminRepository;
+    ConnectionRepository connectionRepository;
 
-    @Autowired
-    private ConnectionRepository connectionRepository;
-
-    private void cleanDB() {
+    @BeforeEach
+    public void setup() {
         userAdminRepository.deleteAll();
         connectionRepository.deleteAll();
     }
 
-    @Before
-    public void setup() {
-        cleanDB();
-    }
-
     @Test
-    public void testNoAdmin() throws Exception {
+    void testNoAdmin() throws Exception {
         mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/{sub}", "NOT_REGISTERED_USER"))
                 .andExpect(status().isOk())
                 .andReturn();
