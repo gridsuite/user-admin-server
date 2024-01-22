@@ -7,8 +7,6 @@
 package org.gridsuite.useradmin.server;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -16,10 +14,6 @@ import org.gridsuite.useradmin.server.dto.UserConnection;
 import org.gridsuite.useradmin.server.dto.UserInfos;
 import org.gridsuite.useradmin.server.service.ConnectionsService;
 import org.gridsuite.useradmin.server.service.UserAdminService;
-import org.gridsuite.useradmin.server.springdoc.PageableAsQueryParam;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -36,9 +30,6 @@ import java.util.Optional;
 @Tag(name = "User admin server")
 @ApiResponse(responseCode = "403", description = "The current user haven't right to ask these data")
 public class UserAdminController {
-    private static final int PAGE_DEFAULT_SIZE = 25;
-    private static final String PAGE_DEFAULT_SIZE_DOC = "" + PAGE_DEFAULT_SIZE;
-
     private final UserAdminService service;
     private final ConnectionsService connService;
 
@@ -51,14 +42,11 @@ public class UserAdminController {
     @Operation(summary = "get the users")
     @SecurityRequirement(name = "userType", scopes = {"admin"})
     @ApiResponse(responseCode = "200", description = "The users list")
-    @PageableAsQueryParam(defaultSize = @Schema(type = "integer", defaultValue = PAGE_DEFAULT_SIZE_DOC),
-                          defaultSort = @ArraySchema(schema = @Schema(type = "string", defaultValue = "sub")))
-    public ResponseEntity<Page<UserInfos>> getUsers(@RequestHeader("userId") String userId,
-                                                    @RequestParam(value = "search", required = false) Optional<String> searchTerm,
-                                                    @PageableDefault(size = PAGE_DEFAULT_SIZE, sort = {"sub"}) Pageable pageable) {
+    public ResponseEntity<List<UserInfos>> getUsers(@RequestHeader("userId") String userId,
+                                                    @RequestParam(value = "search", required = false) Optional<String> searchTerm) {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(searchTerm
-                .map(term -> service.searchUsers(userId, term, pageable))
-                .orElseGet(() -> service.getUsers(userId, pageable)));
+                .map(term -> service.searchUsers(userId, term))
+                .orElseGet(() -> service.getUsers(userId)));
     }
 
     @GetMapping(value = "/users/{sub}")
@@ -110,7 +98,7 @@ public class UserAdminController {
                 : ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
-    @GetMapping(value = "/connections/full", produces = {MediaType.APPLICATION_JSON_VALUE})
+    @GetMapping(value = "/connections/dedup", produces = {MediaType.APPLICATION_JSON_VALUE})
     @Operation(summary = "get the connections", deprecated = true)
     @SecurityRequirement(name = "userType", scopes = {"admin"})
     @ApiResponse(responseCode = "200", description = "The connections list")
@@ -121,11 +109,8 @@ public class UserAdminController {
     @GetMapping(value = "/connections", produces = {MediaType.APPLICATION_JSON_VALUE})
     @Operation(summary = "get the connections")
     @SecurityRequirement(name = "userType", scopes = {"admin"})
-    @ApiResponse(responseCode = "200", description = "The connections paged list")
-    @PageableAsQueryParam(defaultSize = @Schema(type = "integer", defaultValue = PAGE_DEFAULT_SIZE_DOC),
-                          defaultSort = @ArraySchema(schema = @Schema(type = "string", defaultValue = "sub")))
-    public ResponseEntity<Page<UserConnection>> getPageConnections(@RequestHeader("userId") String userId,
-                                                                   @PageableDefault(size = PAGE_DEFAULT_SIZE, sort = {"sub"}) Pageable pageable) {
-        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(connService.getConnections(userId, pageable));
+    @ApiResponse(responseCode = "200", description = "The connections list")
+    public ResponseEntity<List<UserConnection>> getPageConnections(@RequestHeader("userId") String userId) {
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(connService.getConnections(userId));
     }
 }

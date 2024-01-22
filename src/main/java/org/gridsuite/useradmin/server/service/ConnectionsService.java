@@ -11,8 +11,6 @@ import org.gridsuite.useradmin.server.UserAdminApplicationProps;
 import org.gridsuite.useradmin.server.dto.UserConnection;
 import org.gridsuite.useradmin.server.repository.ConnectionEntity;
 import org.gridsuite.useradmin.server.repository.ConnectionRepository;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,8 +65,8 @@ public class ConnectionsService extends AbstractCommonService {
         return connectionsBySub.values().stream().map(list -> list.get(0)).collect(Collectors.toList());
     }
 
-    public Page<UserConnection> getConnections(@NonNull final String userId, Pageable pageable) {
+    public List<UserConnection> getConnections(@NonNull final String userId) {
         assertIsAdmin(userId);
-        return connectionRepository.findAll(pageable).map(DtoConverter::toDto);
+        return connectionRepository.findAll().stream().map(DtoConverter::toDto).toList();
     }
 }

@@ -11,8 +11,6 @@ import org.gridsuite.useradmin.server.dto.UserConnection;
 import org.gridsuite.useradmin.server.dto.UserInfos;
 import org.gridsuite.useradmin.server.repository.UserAdminRepository;
 import org.gridsuite.useradmin.server.repository.UserInfosEntity;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
@@ -39,9 +37,9 @@ public class UserAdminService extends AbstractCommonService {
         return DtoConverter.toDto(entity, this::isAdmin);
     }
 
-    public Page<UserInfos> getUsers(@NonNull String userId, Pageable pageable) {
+    public List<UserInfos> getUsers(@NonNull String userId) {
         assertIsAdmin(userId);
-        return userAdminRepository.findAll(pageable).map(this::toDtoUserInfo);
+        return userAdminRepository.findAll().stream().map(this::toDtoUserInfo).toList();
     }
 
     public List<UserConnection> getConnections(String userId) {
@@ -73,9 +71,9 @@ public class UserAdminService extends AbstractCommonService {
         return userAdminRepository.findBySub(sub).map(this::toDtoUserInfo);
     }
 
-    public Page<UserInfos> searchUsers(@NonNull String userId, @NonNull String term, Pageable pageable) {
+    public List<UserInfos> searchUsers(@NonNull String userId, @NonNull String term) {
         assertIsAdmin(userId);
-        return userAdminRepository.findAllBySubContainsAllIgnoreCase(term, pageable).map(this::toDtoUserInfo);
+        return userAdminRepository.findAllBySubContainsAllIgnoreCase(term).stream().map(this::toDtoUserInfo).toList();
     }
 
     public boolean userIsAuthorizedAdmin(@NonNull String userId) {
