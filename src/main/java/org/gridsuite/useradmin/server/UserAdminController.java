@@ -45,7 +45,7 @@ public class UserAdminController {
     public ResponseEntity<List<UserInfos>> getUsers(@RequestHeader("userId") String userId,
                                                     @RequestParam(value = "search", required = false) Optional<String> searchTerm) {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(searchTerm
-                .map(term -> service.searchUsers(userId, term))
+                .map(term -> service.searchUsers(term, userId))
                 .orElseGet(() -> service.getUsers(userId)));
     }
 
@@ -74,7 +74,7 @@ public class UserAdminController {
     @ApiResponse(responseCode = "204", description = "User deleted")
     @ApiResponse(responseCode = "404", description = "User not found")
     public ResponseEntity<Void> deleteUser(@RequestHeader("userId") String userId, @PathVariable("sub") String sub) {
-        if (service.delete(userId, sub) > 0L) {
+        if (service.delete(sub, userId) > 0L) {
             return ResponseEntity.noContent().build();
         } else {
             return ResponseEntity.notFound().build();

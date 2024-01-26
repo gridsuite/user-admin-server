@@ -6,12 +6,9 @@
  */
 package org.gridsuite.useradmin.server.repository;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 import jakarta.persistence.*;
+import lombok.*;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -20,11 +17,12 @@ import java.util.UUID;
  */
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString //for tests
 @Getter
 @Setter
 @Entity
 @Table(name = "connection", indexes = {@Index(name = "connection_sub_index", columnList = "sub")})
-public class ConnectionEntity {
+public class ConnectionEntity extends AbstractEntityEquals<ConnectionEntity, UUID> {
 
     @Id
     @Column(name = "id")

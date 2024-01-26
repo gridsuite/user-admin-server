@@ -14,6 +14,7 @@ import org.gridsuite.useradmin.server.repository.ConnectionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -27,10 +28,13 @@ import java.util.stream.Collectors;
 @Service
 public class ConnectionsService extends AbstractCommonService {
     private final ConnectionRepository connectionRepository;
+    private final Clock clock;
 
-    public ConnectionsService(ConnectionRepository connectionRepository, UserAdminApplicationProps applicationProps) {
+    public ConnectionsService(final ConnectionRepository connectionRepository,
+                              final UserAdminApplicationProps applicationProps, final Clock clock) {
         super(applicationProps);
         this.connectionRepository = Objects.requireNonNull(connectionRepository);
+        this.clock = Objects.requireNonNull(clock);
     }
 
     @Transactional
@@ -38,12 +42,13 @@ public class ConnectionsService extends AbstractCommonService {
         ConnectionEntity connectionEntity = connectionRepository.findBySub(sub).stream().findFirst().orElse(null);
         if (connectionEntity == null) {
             //To avoid consistency issue we truncate the time to microseconds since postgres and h2 can only store a precision of microseconds
-            connectionEntity = new ConnectionEntity(sub, LocalDateTime.now().truncatedTo(ChronoUnit.MICROS), LocalDateTime.now().truncatedTo(ChronoUnit.MICROS), isAllowed);
-            connectionRepository.save(connectionEntity);
+            connectionEntity = new ConnectionEntity(sub, LocalDateTime.now(clock).truncatedTo(ChronoUnit.MICROS),
+                    LocalDateTime.now(clock).truncatedTo(ChronoUnit.MICROS), isAllowed);
         } else {
-            connectionEntity.setLastConnexionDate(LocalDateTime.now().truncatedTo(ChronoUnit.MICROS));
+            connectionEntity.setLastConnexionDate(LocalDateTime.now(clock).truncatedTo(ChronoUnit.MICROS));
             connectionEntity.setConnectionAccepted(isAllowed);
         }
+        connectionRepository.save(connectionEntity);
     }
 
     @Transactional

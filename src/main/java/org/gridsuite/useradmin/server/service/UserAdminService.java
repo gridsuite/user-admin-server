@@ -59,9 +59,10 @@ public class UserAdminService extends AbstractCommonService {
     }
 
     public boolean subExists(String sub) {
-        final boolean isAllowed = applicationProps.getAdmins().isEmpty() && userAdminRepository.count() == 0
-                || applicationProps.getAdmins().contains(sub)
-                || !userAdminRepository.existsBySub(sub);
+        final List<String> admins = applicationProps.getAdmins();
+        final boolean isAllowed = admins.isEmpty() && userAdminRepository.count() == 0L
+                || admins.contains(sub)
+                || userAdminRepository.existsBySub(sub);
         connectionsService.recordConnectionAttempt(sub, isAllowed);
         return isAllowed;
     }
@@ -71,7 +72,7 @@ public class UserAdminService extends AbstractCommonService {
         return userAdminRepository.findBySub(sub).map(this::toDtoUserInfo);
     }
 
-    public List<UserInfos> searchUsers(@NonNull String userId, @NonNull String term) {
+    public List<UserInfos> searchUsers(@NonNull String term, @NonNull String userId) {
         assertIsAdmin(userId);
         return userAdminRepository.findAllBySubContainsAllIgnoreCase(term).stream().map(this::toDtoUserInfo).toList();
     }
