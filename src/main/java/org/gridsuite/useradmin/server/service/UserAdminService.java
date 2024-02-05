@@ -7,70 +7,86 @@
 package org.gridsuite.useradmin.server.service;
 
 import org.gridsuite.useradmin.server.UserAdminApplicationProps;
-import org.gridsuite.useradmin.server.UserAdminException;
-import org.gridsuite.useradmin.server.repository.ConnectionEntity;
+import org.gridsuite.useradmin.server.dto.UserConnection;
+import org.gridsuite.useradmin.server.dto.UserInfos;
 import org.gridsuite.useradmin.server.repository.UserAdminRepository;
 import org.gridsuite.useradmin.server.repository.UserInfosEntity;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
-
-import static org.gridsuite.useradmin.server.UserAdminException.Type.FORBIDDEN;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * @author Etienne Homer <etienne.homer at rte-france.com>
  */
 @Service
-public class UserAdminService {
-    private UserAdminRepository userAdminRepository;
+public class UserAdminService extends AbstractCommonService {
+    private final UserAdminRepository userAdminRepository;
+    private final ConnectionsService connectionsService;
 
-    private ConnectionsService connectionsService;
-
-    @Autowired
-    private UserAdminApplicationProps applicationProps;
-
-    public UserAdminService(UserAdminRepository userAdminRepository, ConnectionsService connectionsService) {
+    public UserAdminService(final UserAdminApplicationProps applicationProps,
+                            final UserAdminRepository userAdminRepository,
+                            final ConnectionsService connectionsService) {
+        super(applicationProps);
         this.userAdminRepository = Objects.requireNonNull(userAdminRepository);
         this.connectionsService = Objects.requireNonNull(connectionsService);
     }
 
-    public List<UserInfosEntity> getUsers(String userId) {
-        if (!isAdmin(userId)) {
-            throw new UserAdminException(FORBIDDEN);
-        }
-        return userAdminRepository.findAll();
+    private UserInfos toDtoUserInfo(final UserInfosEntity entity) {
+        return DtoConverter.toDto(entity, this::isAdmin);
     }
 
-    public List<ConnectionEntity> getConnections(String userId) {
-        if (!isAdmin(userId)) {
-            throw new UserAdminException(FORBIDDEN);
-        }
+    @Transactional(readOnly = true)
+    public List<UserInfos> getUsers(String userId) {
+        assertIsAdmin(userId);
+        return userAdminRepository.findAll().stream().map(this::toDtoUserInfo).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserConnection> getConnections(String userId) {
+        assertIsAdmin(userId);
         return connectionsService.removeDuplicates();
     }
 
+    @Transactional
     public void createUser(String sub, String userId) {
-        if (!isAdmin(userId)) {
-            throw new UserAdminException(FORBIDDEN);
-        }
-        UserInfosEntity userInfosEntity = new UserInfosEntity(sub);
-        userAdminRepository.save(userInfosEntity);
+        assertIsAdmin(userId);
+        userAdminRepository.save(new UserInfosEntity(sub));
     }
 
-    public void delete(UUID id, String userId) {
-        if (!isAdmin(userId)) {
-            throw new UserAdminException(FORBIDDEN);
-        }
-        userAdminRepository.deleteById(id);
+    @Transactional
+    public long delete(String sub, String userId) {
+        assertIsAdmin(userId);
+        return userAdminRepository.deleteBySub(sub);
     }
 
+    @Transactional
     public boolean subExists(String sub) {
-        Boolean isAllowed = applicationProps.getAdmins().isEmpty() && userAdminRepository.count() == 0 || applicationProps.getAdmins().contains(sub) || !userAdminRepository.findAllBySub(sub).isEmpty();
+        final List<String> admins = applicationProps.getAdmins();
+        final boolean isAllowed = admins.isEmpty() && userAdminRepository.count() == 0L
+                                || admins.contains(sub)
+                                || userAdminRepository.existsBySub(sub);
         connectionsService.recordConnectionAttempt(sub, isAllowed);
-        return isAllowed.booleanValue();
+        return isAllowed;
     }
 
-    private boolean isAdmin(String sub) {
-        return applicationProps.getAdmins().contains(sub);
+    @Transactional(readOnly = true)
+    public Optional<UserInfos> getUser(String sub, String userId) {
+        assertIsAdmin(userId);
+        return userAdminRepository.findBySub(sub).map(this::toDtoUserInfo);
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserInfos> searchUsers(@NonNull String term, @NonNull String userId) {
+        assertIsAdmin(userId);
+        return userAdminRepository.findAllBySubContainsAllIgnoreCase(term).stream().map(this::toDtoUserInfo).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public boolean userIsAuthorizedAdmin(@NonNull String userId) {
+        return isAdmin(userId);
     }
 }
