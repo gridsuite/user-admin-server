@@ -13,7 +13,6 @@ import org.gridsuite.useradmin.server.repository.UserAdminRepository;
 import org.gridsuite.useradmin.server.repository.UserInfosEntity;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
@@ -27,9 +26,8 @@ public class UserAdminService extends AbstractCommonService {
     private final UserAdminRepository userAdminRepository;
     private final ConnectionsService connectionsService;
 
-    public UserAdminService(final UserAdminApplicationProps applicationProps,
-                            final UserAdminRepository userAdminRepository,
-                            final ConnectionsService connectionsService) {
+    public UserAdminService(UserAdminRepository userAdminRepository,
+                            ConnectionsService connectionsService, UserAdminApplicationProps applicationProps) {
         super(applicationProps);
         this.userAdminRepository = Objects.requireNonNull(userAdminRepository);
         this.connectionsService = Objects.requireNonNull(connectionsService);
@@ -39,53 +37,46 @@ public class UserAdminService extends AbstractCommonService {
         return DtoConverter.toDto(entity, this::isAdmin);
     }
 
-    @Transactional(readOnly = true)
-    public List<UserInfos> getUsers(String userId) {
+    public List<UserInfos> getUsers(@NonNull String userId) {
         assertIsAdmin(userId);
         return userAdminRepository.findAll().stream().map(this::toDtoUserInfo).toList();
     }
 
-    @Transactional(readOnly = true)
     public List<UserConnection> getConnections(String userId) {
         assertIsAdmin(userId);
-        return connectionsService.removeDuplicates();
+        return connectionsService.removeDuplicates().stream().map(DtoConverter::toDto).toList();
     }
 
-    @Transactional
     public void createUser(String sub, String userId) {
         assertIsAdmin(userId);
-        userAdminRepository.save(new UserInfosEntity(sub));
+        UserInfosEntity userInfosEntity = new UserInfosEntity(sub);
+        userAdminRepository.save(userInfosEntity);
     }
 
-    @Transactional
     public long delete(String sub, String userId) {
         assertIsAdmin(userId);
         return userAdminRepository.deleteBySub(sub);
     }
 
-    @Transactional
     public boolean subExists(String sub) {
         final List<String> admins = applicationProps.getAdmins();
         final boolean isAllowed = admins.isEmpty() && userAdminRepository.count() == 0L
-                                || admins.contains(sub)
-                                || userAdminRepository.existsBySub(sub);
+                || admins.contains(sub)
+                || userAdminRepository.existsBySub(sub);
         connectionsService.recordConnectionAttempt(sub, isAllowed);
         return isAllowed;
     }
 
-    @Transactional(readOnly = true)
     public Optional<UserInfos> getUser(String sub, String userId) {
         assertIsAdmin(userId);
         return userAdminRepository.findBySub(sub).map(this::toDtoUserInfo);
     }
 
-    @Transactional(readOnly = true)
     public List<UserInfos> searchUsers(@NonNull String term, @NonNull String userId) {
         assertIsAdmin(userId);
         return userAdminRepository.findAllBySubContainsAllIgnoreCase(term).stream().map(this::toDtoUserInfo).toList();
     }
 
-    @Transactional(readOnly = true)
     public boolean userIsAuthorizedAdmin(@NonNull String userId) {
         return isAdmin(userId);
     }

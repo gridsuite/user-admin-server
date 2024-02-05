@@ -8,16 +8,13 @@ package org.gridsuite.useradmin.server;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
 /**
  * @author Etienne Homer <etienne.homer at rte-france.com>
  */
 @SuppressWarnings("checkstyle:HideUtilityClassConstructor")
-@SpringBootApplication
-@EnableConfigurationProperties(UserAdminApplicationProps.class)
+@SpringBootApplication(scanBasePackageClasses = { UserAdminApplication.class })
 public class UserAdminApplication {
-
     public static void main(String[] args) {
         SpringApplication.run(UserAdminApplication.class, args);
     }

@@ -6,6 +6,7 @@
  */
 package org.gridsuite.useradmin.server.service;
 
+import lombok.NonNull;
 import org.gridsuite.useradmin.server.UserAdminApplicationProps;
 import org.gridsuite.useradmin.server.dto.UserConnection;
 import org.gridsuite.useradmin.server.repository.ConnectionEntity;
@@ -13,6 +14,7 @@ import org.gridsuite.useradmin.server.repository.ConnectionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -26,30 +28,33 @@ import java.util.stream.Collectors;
 @Service
 public class ConnectionsService extends AbstractCommonService {
     private final ConnectionRepository connectionRepository;
+    private final Clock clock;
 
-    public ConnectionsService(final UserAdminApplicationProps applicationProps,
-                              final ConnectionRepository connectionRepository) {
+    public ConnectionsService(final ConnectionRepository connectionRepository,
+                              final UserAdminApplicationProps applicationProps, final Clock clock) {
         super(applicationProps);
         this.connectionRepository = Objects.requireNonNull(connectionRepository);
+        this.clock = Objects.requireNonNull(clock);
     }
 
     @Transactional
     public void recordConnectionAttempt(String sub, boolean isAllowed) {
         ConnectionEntity connectionEntity = connectionRepository.findBySub(sub).stream().findFirst().orElse(null);
         if (connectionEntity == null) {
-            //To avoid consistency issue, we truncate the time to microseconds since postgres and h2 can only store a precision of microseconds
-            connectionEntity = new ConnectionEntity(sub, LocalDateTime.now().truncatedTo(ChronoUnit.MICROS),
-                                                    LocalDateTime.now().truncatedTo(ChronoUnit.MICROS), isAllowed);
+            //To avoid consistency issue we truncate the time to microseconds since postgres and h2 can only store a precision of microseconds
+            connectionEntity = new ConnectionEntity(sub, LocalDateTime.now(clock).truncatedTo(ChronoUnit.MICROS),
+                    LocalDateTime.now(clock).truncatedTo(ChronoUnit.MICROS), isAllowed);
         } else {
-            connectionEntity.setLastConnexionDate(LocalDateTime.now().truncatedTo(ChronoUnit.MICROS));
+            connectionEntity.setLastConnexionDate(LocalDateTime.now(clock).truncatedTo(ChronoUnit.MICROS));
             connectionEntity.setConnectionAccepted(isAllowed);
         }
         connectionRepository.save(connectionEntity);
     }
 
     @Transactional
-    public List<UserConnection> removeDuplicates() {
+    public List<ConnectionEntity> removeDuplicates() {
         Map<String, List<ConnectionEntity>> connectionsBySub = connectionRepository.findAll().stream().collect(Collectors.groupingBy(ConnectionEntity::getSub));
+
         connectionsBySub.keySet().forEach(sub ->
             connectionsBySub.get(sub).stream().skip(1).forEach(connectionEntity -> {
                 ConnectionEntity groupedEntity = connectionsBySub.get(sub).get(0);
@@ -62,6 +67,11 @@ public class ConnectionsService extends AbstractCommonService {
                 connectionRepository.delete(connectionEntity);
             })
         );
-        return connectionsBySub.values().stream().map(list -> list.get(0)).map(DtoConverter::toDto).collect(Collectors.toList());
+        return connectionsBySub.values().stream().map(list -> list.get(0)).collect(Collectors.toList());
+    }
+
+    public List<UserConnection> getConnections(@NonNull final String userId) {
+        assertIsAdmin(userId);
+        return connectionRepository.findAll().stream().map(DtoConverter::toDto).toList();
     }
 }
