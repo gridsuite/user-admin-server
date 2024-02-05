@@ -12,7 +12,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.gridsuite.useradmin.server.dto.UserConnection;
 import org.gridsuite.useradmin.server.dto.UserInfos;
-import org.gridsuite.useradmin.server.service.ConnectionsService;
 import org.gridsuite.useradmin.server.service.UserAdminService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -31,11 +30,9 @@ import java.util.Optional;
 @ApiResponse(responseCode = "403", description = "The current user haven't right to ask these data")
 public class UserAdminController {
     private final UserAdminService service;
-    private final ConnectionsService connService;
 
-    public UserAdminController(UserAdminService userService, ConnectionsService connService) {
+    public UserAdminController(UserAdminService userService) {
         this.service = userService;
-        this.connService = connService;
     }
 
     @GetMapping(value = "/users", produces = {MediaType.APPLICATION_JSON_VALUE})
@@ -98,19 +95,11 @@ public class UserAdminController {
                 : ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
-    @GetMapping(value = "/connections/dedup", produces = {MediaType.APPLICATION_JSON_VALUE})
-    @Operation(summary = "get the connections", deprecated = true)
-    @SecurityRequirement(name = "userType", scopes = {"admin"})
-    @ApiResponse(responseCode = "200", description = "The connections list")
-    public ResponseEntity<List<UserConnection>> getConnections(@RequestHeader("userId") String userId) {
-        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getConnections(userId));
-    }
-
     @GetMapping(value = "/connections", produces = {MediaType.APPLICATION_JSON_VALUE})
     @Operation(summary = "get the connections")
     @SecurityRequirement(name = "userType", scopes = {"admin"})
     @ApiResponse(responseCode = "200", description = "The connections list")
-    public ResponseEntity<List<UserConnection>> getPageConnections(@RequestHeader("userId") String userId) {
-        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(connService.getConnections(userId));
+    public ResponseEntity<List<UserConnection>> getConnections(@RequestHeader("userId") String userId) {
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getConnections(userId));
     }
 }

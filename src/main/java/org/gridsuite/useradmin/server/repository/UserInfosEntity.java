@@ -6,9 +6,12 @@
  */
 package org.gridsuite.useradmin.server.repository;
 
-import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+import jakarta.persistence.*;
 import java.util.UUID;
 
 /**
@@ -18,10 +21,9 @@ import java.util.UUID;
 @AllArgsConstructor
 @Getter
 @Setter
-@ToString //for tests
 @Entity
 @Table(name = "user_infos", indexes = {@Index(name = "user_infos_sub_index", columnList = "sub")})
-public class UserInfosEntity extends AbstractEntityEquals<UserInfosEntity, UUID> {
+public class UserInfosEntity {
 
     public UserInfosEntity(String sub) {
         this(UUID.randomUUID(), sub);
