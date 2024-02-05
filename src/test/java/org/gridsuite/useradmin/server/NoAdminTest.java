@@ -27,7 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = {UserAdminApplication.class})
 @ActiveProfiles({"default", "noadmin"})
 class NoAdminTest {
-    private final static String USER_NOT_REGISTERED = "NOT_REGISTERED_USER";
+    private static final String USER_NOT_REGISTERED = "NOT_REGISTERED_USER";
 
     @Autowired
     private MockMvc mockMvc;
