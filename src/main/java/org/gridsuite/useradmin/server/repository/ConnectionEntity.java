@@ -6,14 +6,16 @@
  */
 package org.gridsuite.useradmin.server.repository;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 /**
  * @author Etienne Homer <etienne.homer at rte-france.com>
@@ -24,25 +26,20 @@ import java.util.UUID;
 @Setter
 @Entity
 @Table(name = "connection", indexes = {@Index(name = "connection_sub_index", columnList = "sub")})
-public class ConnectionEntity {
+public class ConnectionEntity extends AbstractUserEntity {
+    @Column(name = "firstConnectionDate", nullable = false)
+    private LocalDateTime firstConnectionDate;
 
-    @Id
-    @Column(name = "id")
-    private UUID id;
-
-    @Column(name = "sub", nullable = false)
-    private String sub;
-
-    @Column(name = "firstConnexionDate", nullable = false)
-    private LocalDateTime firstConnexionDate;
-
-    @Column(name = "lastConnexionDate", nullable = false)
-    private LocalDateTime lastConnexionDate;
+    @Column(name = "lastConnectionDate", nullable = false)
+    private LocalDateTime lastConnectionDate;
 
     @Column(name = "connectionAccepted", nullable = false)
     private Boolean connectionAccepted;
 
-    public ConnectionEntity(String sub, LocalDateTime firstConnexionDate, LocalDateTime lastConnexionDate, Boolean connectionAccepted) {
-        this(UUID.randomUUID(), sub, firstConnexionDate, lastConnexionDate, connectionAccepted);
+    public ConnectionEntity(String sub, LocalDateTime firstConnectionDate, LocalDateTime lastConnectionDate, Boolean connectionAccepted) {
+        super(sub);
+        this.firstConnectionDate = firstConnectionDate;
+        this.lastConnectionDate = lastConnectionDate;
+        this.connectionAccepted = connectionAccepted;
     }
 }
