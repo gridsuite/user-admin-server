@@ -19,5 +19,6 @@ import java.util.List;
 @Setter
 @ConfigurationProperties(prefix = "useradmin")
 public class UserAdminApplicationProps {
+
     private List<String> admins;
 }

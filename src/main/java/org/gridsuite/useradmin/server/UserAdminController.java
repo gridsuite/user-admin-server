@@ -84,6 +84,7 @@ public class UserAdminController {
     @ApiResponse(responseCode = "204", description = "sub does not exist")
     public ResponseEntity<Void> userExists(@PathVariable("sub") String sub) {
         return service.subExists(sub) ? ResponseEntity.ok().build() : ResponseEntity.noContent().build();
+        //TODO notFound instead of noContent
     }
 
     @RequestMapping(value = "/users/me/isElevatedUser", method = RequestMethod.HEAD)
