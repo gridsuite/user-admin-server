@@ -60,6 +60,16 @@ class UserAdminTest {
 
     @Test
     void testUserAdmin() throws Exception {
+        mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/me/isElevatedUser")
+                        .header("userId", USER_SUB))
+                .andExpect(status().isForbidden())
+                .andReturn();
+
+        mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/me/isElevatedUser")
+                        .header("userId", ADMIN_USER))
+                .andExpect(status().isOk())
+                .andReturn();
+
         List<UserInfosEntity> userEntities = objectMapper.readValue(
                 mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users")
                                 .header("userId", ADMIN_USER)
