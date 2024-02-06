@@ -27,12 +27,15 @@ public class UserAdminService {
 
     private ConnectionsService connectionsService;
 
+    private NotificationService notificationService;
+
     @Autowired
     private UserAdminApplicationProps applicationProps;
 
-    public UserAdminService(UserAdminRepository userAdminRepository, ConnectionsService connectionsService) {
+    public UserAdminService(UserAdminRepository userAdminRepository, ConnectionsService connectionsService, NotificationService notificationService) {
         this.userAdminRepository = Objects.requireNonNull(userAdminRepository);
         this.connectionsService = Objects.requireNonNull(connectionsService);
+        this.notificationService = Objects.requireNonNull(notificationService);
     }
 
     public List<UserInfosEntity> getUsers(String userId) {
@@ -68,6 +71,24 @@ public class UserAdminService {
         Boolean isAllowed = applicationProps.getAdmins().isEmpty() && userAdminRepository.count() == 0 || applicationProps.getAdmins().contains(sub) || !userAdminRepository.findAllBySub(sub).isEmpty();
         connectionsService.recordConnectionAttempt(sub, isAllowed);
         return isAllowed.booleanValue();
+    }
+
+    public void sendMaintenanceMessage(String userId, Integer durationInSeconds, String message) {
+        if (!isAdmin(userId)) {
+            throw new UserAdminException(FORBIDDEN);
+        }
+        if (durationInSeconds == null) {
+            notificationService.emitMaintenanceMessage(message);
+        } else {
+            notificationService.emitMaintenanceMessage(message, durationInSeconds);
+        }
+    }
+
+    public void sendCancelMaintenanceMessage(String userId) {
+        if (!isAdmin(userId)) {
+            throw new UserAdminException(FORBIDDEN);
+        }
+        notificationService.emitCancelMaintenanceMessage();
     }
 
     private boolean isAdmin(String sub) {

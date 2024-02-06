@@ -1,6 +1,12 @@
 spring:
   application:
     name: user-admin
+  cloud:
+    stream:
+      bindings:
+        publishMessage-out-0:
+          destination: ${powsybl-ws.rabbitmq.destination.prefix:}config.message
+      output-bindings: publishMessage-out-0
 
 powsybl-ws:
   database:

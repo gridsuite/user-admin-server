@@ -4,3 +4,7 @@ server:
 powsybl-ws:
   database:
     host: localhost
+
+spring:
+  rabbitmq:
+    addresses: localhost
