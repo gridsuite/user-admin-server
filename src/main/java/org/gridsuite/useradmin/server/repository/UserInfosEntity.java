@@ -33,6 +33,6 @@ public class UserInfosEntity {
     @Column(name = "id")
     private UUID id;
 
-    @Column(name = "sub", nullable = false)
+    @Column(name = "sub", nullable = false, unique = true)
     private String sub;
 }
