@@ -87,10 +87,10 @@ public class UserAdminController {
         //TODO notFound instead of noContent
     }
 
-    @RequestMapping(value = "/users/me/isElevatedUser", method = RequestMethod.HEAD)
+    @RequestMapping(value = "/users/{sub}/isElevatedUser", method = RequestMethod.HEAD)
     @Operation(summary = "Test if a user exists and is administrator (record connection attempt)")
     @ApiResponse(responseCode = "200", description = "user authorized and admin")
-    public ResponseEntity<Void> userIsAdmin(@RequestHeader("userId") String userId) {
+    public ResponseEntity<Void> userIsAdmin(@PathVariable("sub") String userId) {
         return service.userIsAuthorizedAdmin(userId)
                 ? ResponseEntity.ok().build()
                 : ResponseEntity.status(HttpStatus.FORBIDDEN).build();
