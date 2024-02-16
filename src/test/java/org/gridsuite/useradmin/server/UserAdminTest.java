@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
@@ -33,6 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @AutoConfigureMockMvc
 @SpringBootTest(classes = {UserAdminApplication.class})
+@ActiveProfiles({"default"})
 class UserAdminTest {
     @Autowired
     private MockMvc mockMvc;
@@ -60,13 +62,11 @@ class UserAdminTest {
 
     @Test
     void testUserAdmin() throws Exception {
-        mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/me/isElevatedUser")
-                        .header("userId", USER_SUB))
+        mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/{sub}/isElevatedUser", USER_SUB))
                 .andExpect(status().isForbidden())
                 .andReturn();
 
-        mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/me/isElevatedUser")
-                        .header("userId", ADMIN_USER))
+        mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/{sub}/isElevatedUser", ADMIN_USER))
                 .andExpect(status().isOk())
                 .andReturn();
 

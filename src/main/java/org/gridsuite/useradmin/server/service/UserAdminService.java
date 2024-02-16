@@ -80,12 +80,6 @@ public class UserAdminService extends AbstractCommonService {
     }
 
     @Transactional(readOnly = true)
-    public List<UserInfos> searchUsers(@NonNull String term, @NonNull String userId) {
-        assertIsAdmin(userId);
-        return userAdminRepository.findAllBySubContainsAllIgnoreCase(term).stream().map(this::toDtoUserInfo).toList();
-    }
-
-    @Transactional(readOnly = true)
     public boolean userIsAuthorizedAdmin(@NonNull String userId) {
         return isAdmin(userId);
     }

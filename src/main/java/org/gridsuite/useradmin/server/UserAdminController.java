@@ -19,7 +19,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * @author Etienne Homer <etienne.homer at rte-france.com>
@@ -27,7 +26,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping(value = "/" + UserAdminApi.API_VERSION)
 @Tag(name = "User admin server")
-@ApiResponse(responseCode = "403", description = "The current user haven't right to ask these data")
+@ApiResponse(responseCode = "403", description = "The current user does not have right to ask these data")
 public class UserAdminController {
     private final UserAdminService service;
 
@@ -39,11 +38,8 @@ public class UserAdminController {
     @Operation(summary = "get the users")
     @SecurityRequirement(name = "userType", scopes = {"admin"})
     @ApiResponse(responseCode = "200", description = "The users list")
-    public ResponseEntity<List<UserInfos>> getUsers(@RequestHeader("userId") String userId,
-                                                    @RequestParam(value = "search", required = false) Optional<String> searchTerm) {
-        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(searchTerm
-                .map(term -> service.searchUsers(term, userId))
-                .orElseGet(() -> service.getUsers(userId)));
+    public ResponseEntity<List<UserInfos>> getUsers(@RequestHeader("userId") String userId) {
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getUsers(userId));
     }
 
     @GetMapping(value = "/users/{sub}")
