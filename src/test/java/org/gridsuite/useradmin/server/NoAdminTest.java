@@ -58,7 +58,7 @@ class NoAdminTest {
 
         mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/me/isElevatedUser")
                         .header("userId", USER_NOT_REGISTERED))
-                .andExpect(status().isOk())
+                .andExpect(status().isForbidden())
                 .andReturn();
     }
 }

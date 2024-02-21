@@ -22,7 +22,7 @@ abstract class AbstractCommonService {
 
     protected boolean isAdmin(@NonNull String sub) {
         final List<String> admins = applicationProps.getAdmins();
-        return admins.isEmpty() || admins.contains(sub);
+        return admins.contains(sub);
     }
 
     protected void assertIsAdmin(@NonNull String sub) throws UserAdminException {
