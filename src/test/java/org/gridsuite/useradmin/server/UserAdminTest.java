@@ -62,11 +62,11 @@ class UserAdminTest {
 
     @Test
     void testUserAdmin() throws Exception {
-        mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/{sub}/isElevatedUser", USER_SUB))
+        mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/{sub}/isAdmin", USER_SUB))
                 .andExpect(status().isForbidden())
                 .andReturn();
 
-        mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/{sub}/isElevatedUser", ADMIN_USER))
+        mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/{sub}/isAdmin", ADMIN_USER))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -85,7 +85,7 @@ class UserAdminTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        mockMvc.perform(put("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB)
+        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB)
                         .header("userId", ADMIN_USER)
                 )
                 .andExpect(status().isCreated())
@@ -149,7 +149,7 @@ class UserAdminTest {
                 .andExpect(status().isForbidden())
                 .andReturn();
 
-        mockMvc.perform(put("/" + UserAdminApi.API_VERSION + "/users/{id}", USER_SUB)
+        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/users/{id}", USER_SUB)
                         .header("userId", NOT_ADMIN)
                 )
                 .andExpect(status().isForbidden())
@@ -158,13 +158,13 @@ class UserAdminTest {
 
     @Test
     void testGetConnections() throws Exception {
-        mockMvc.perform(put("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB)
+        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB)
                         .header("userId", ADMIN_USER)
                 )
                 .andExpect(status().isCreated())
                 .andReturn();
 
-        mockMvc.perform(put("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB2)
+        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB2)
                         .header("userId", ADMIN_USER)
                 )
                 .andExpect(status().isCreated())

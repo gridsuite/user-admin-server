@@ -7,6 +7,7 @@
 package org.gridsuite.useradmin.server.service;
 
 import org.gridsuite.useradmin.server.UserAdminApplicationProps;
+import org.gridsuite.useradmin.server.UserAdminException;
 import org.gridsuite.useradmin.server.dto.UserConnection;
 import org.gridsuite.useradmin.server.dto.UserInfos;
 import org.gridsuite.useradmin.server.repository.UserAdminRepository;
@@ -19,24 +20,38 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import static org.gridsuite.useradmin.server.UserAdminException.Type.FORBIDDEN;
+
 /**
  * @author Etienne Homer <etienne.homer at rte-france.com>
  */
 @Service
-public class UserAdminService extends AbstractCommonService {
+public class UserAdminService {
     private final UserAdminRepository userAdminRepository;
     private final ConnectionsService connectionsService;
+    private final UserAdminApplicationProps applicationProps;
 
     public UserAdminService(final UserAdminApplicationProps applicationProps,
                             final UserAdminRepository userAdminRepository,
                             final ConnectionsService connectionsService) {
-        super(applicationProps);
+        this.applicationProps = Objects.requireNonNull(applicationProps);
         this.userAdminRepository = Objects.requireNonNull(userAdminRepository);
         this.connectionsService = Objects.requireNonNull(connectionsService);
     }
 
+    private boolean isAdmin(@lombok.NonNull String sub) {
+        final List<String> admins = applicationProps.getAdmins();
+        return admins.contains(sub);
+    }
+
+    private void assertIsAdmin(@lombok.NonNull String sub) throws UserAdminException {
+        if (!this.isAdmin(sub)) {
+            throw new UserAdminException(FORBIDDEN);
+        }
+    }
+
     private UserInfos toDtoUserInfo(final UserInfosEntity entity) {
-        return DtoConverter.toDto(entity, this::isAdmin);
+        return UserInfosEntity.toDto(entity, this::isAdmin);
     }
 
     @Transactional(readOnly = true)
@@ -80,7 +95,7 @@ public class UserAdminService extends AbstractCommonService {
     }
 
     @Transactional(readOnly = true)
-    public boolean userIsAuthorizedAdmin(@NonNull String userId) {
+    public boolean userIsAdmin(@NonNull String userId) {
         return isAdmin(userId);
     }
 }

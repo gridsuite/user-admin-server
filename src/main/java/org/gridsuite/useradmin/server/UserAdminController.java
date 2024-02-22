@@ -52,7 +52,7 @@ public class UserAdminController {
         return ResponseEntity.of(service.getUser(sub, userId));
     }
 
-    @PutMapping(value = "/users/{sub}")
+    @PostMapping(value = "/users/{sub}")
     @Operation(summary = "Create the user")
     @SecurityRequirement(name = "userType", scopes = {"admin"})
     @ApiResponse(responseCode = "201", description = "The user has been created")
@@ -80,14 +80,13 @@ public class UserAdminController {
     @ApiResponse(responseCode = "204", description = "sub does not exist")
     public ResponseEntity<Void> userExists(@PathVariable("sub") String sub) {
         return service.subExists(sub) ? ResponseEntity.ok().build() : ResponseEntity.noContent().build();
-        //TODO notFound instead of noContent
     }
 
-    @RequestMapping(value = "/users/{sub}/isElevatedUser", method = RequestMethod.HEAD)
+    @RequestMapping(value = "/users/{sub}/isAdmin", method = RequestMethod.HEAD)
     @Operation(summary = "Test if a user exists and is administrator (record connection attempt)")
     @ApiResponse(responseCode = "200", description = "user authorized and admin")
     public ResponseEntity<Void> userIsAdmin(@PathVariable("sub") String userId) {
-        return service.userIsAuthorizedAdmin(userId)
+        return service.userIsAdmin(userId)
                 ? ResponseEntity.ok().build()
                 : ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }

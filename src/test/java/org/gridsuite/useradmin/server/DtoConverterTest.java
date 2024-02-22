@@ -1,4 +1,4 @@
-package org.gridsuite.useradmin.server.service;
+package org.gridsuite.useradmin.server;
 
 import org.assertj.core.api.WithAssertions;
 import org.gridsuite.useradmin.server.dto.UserConnection;
@@ -18,7 +18,7 @@ class DtoConverterTest implements WithAssertions {
         @Test
         void testConversionToDtoOfUserInfos() {
             final UUID uuid = UUID.randomUUID();
-            assertThat(DtoConverter.toDto(new UserInfosEntity(uuid, "sub_user"), sub -> true))
+            assertThat(UserInfosEntity.toDto(new UserInfosEntity(uuid, "sub_user"), sub -> true))
                     .as("dto result")
                     .isEqualTo(new UserInfos("sub_user", true));
         }
@@ -27,7 +27,7 @@ class DtoConverterTest implements WithAssertions {
         void testConversionToDtoOfUserInfosAdminPredicate() {
             final UUID uuid = UUID.randomUUID();
             final AtomicReference<String> valuePredicateSubmitted = new AtomicReference<>(null);
-            assertThat(DtoConverter.toDto(new UserInfosEntity(uuid, "admin_user"), sub -> {
+            assertThat(UserInfosEntity.toDto(new UserInfosEntity(uuid, "admin_user"), sub -> {
                 valuePredicateSubmitted.set(sub);
                 return false;
             }))
@@ -38,7 +38,7 @@ class DtoConverterTest implements WithAssertions {
 
         @Test
         void testConversionToDtoOfUserInfosNull() {
-            assertThat(DtoConverter.toDto((UserInfosEntity) null, null)).isNull();
+            assertThat(UserInfosEntity.toDto(null, null)).isNull();
         }
     }
 
@@ -48,7 +48,7 @@ class DtoConverterTest implements WithAssertions {
         void testConversionToDtoOfUserConnection() {
             final UUID uuid = UUID.randomUUID();
             final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
-            assertThat(DtoConverter.toDto(new ConnectionEntity(uuid, "user1", LocalDateTime.ofInstant(Instant.EPOCH, ZoneOffset.UTC),
+            assertThat(ConnectionEntity.toDto(new ConnectionEntity(uuid, "user1", LocalDateTime.ofInstant(Instant.EPOCH, ZoneOffset.UTC),
                                                                LocalDateTime.now(clock), false)))
                 .as("dto result")
                 .isEqualTo(new UserConnection("user1", Instant.EPOCH, Instant.now(clock), false));
@@ -56,19 +56,19 @@ class DtoConverterTest implements WithAssertions {
 
         @Test
         void testConversionToDtoOfUserConnectionNull() {
-            assertThat(DtoConverter.toDto((ConnectionEntity) null)).isNull();
+            assertThat(ConnectionEntity.toDto(null)).isNull();
         }
     }
 
     @Test
     void testInstantConversion() {
-        assertThat(DtoConverter.convert(LocalDateTime.of(2000, Month.JANUARY, 1, 1, 42, 42)))
+        assertThat(Utils.convert(LocalDateTime.of(2000, Month.JANUARY, 1, 1, 42, 42)))
                 .as("instant result").isEqualTo(Instant.ofEpochSecond(946690962));
     }
 
     @Test
     void testInstantConversionNull() {
-        assertThat(DtoConverter.convert(null))
+        assertThat(Utils.convert(null))
                 .as("instant result").isNull();
     }
 }

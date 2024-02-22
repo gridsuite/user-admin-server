@@ -18,9 +18,9 @@ import java.util.UUID;
  */
 @Repository
 public interface UserAdminRepository extends JpaRepository<UserInfosEntity, UUID> {
-    boolean existsBySub/*IgnoreCase*/(@NonNull String sub);
+    boolean existsBySub(@NonNull String sub);
 
-    Optional<UserInfosEntity> findBySub/*IgnoreCase*/(@NonNull String sub);
+    Optional<UserInfosEntity> findBySub(@NonNull String sub);
 
-    long deleteBySub/*IgnoreCase*/(@NonNull String sub);
+    long deleteBySub(@NonNull String sub);
 }

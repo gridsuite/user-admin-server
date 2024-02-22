@@ -6,7 +6,6 @@
  */
 package org.gridsuite.useradmin.server.service;
 
-import org.gridsuite.useradmin.server.UserAdminApplicationProps;
 import org.gridsuite.useradmin.server.dto.UserConnection;
 import org.gridsuite.useradmin.server.repository.ConnectionEntity;
 import org.gridsuite.useradmin.server.repository.ConnectionRepository;
@@ -24,12 +23,10 @@ import java.util.stream.Collectors;
  * @author Etienne Homer <etienne.homer at rte-france.com>
  */
 @Service
-public class ConnectionsService extends AbstractCommonService {
+public class ConnectionsService {
     private final ConnectionRepository connectionRepository;
 
-    public ConnectionsService(final UserAdminApplicationProps applicationProps,
-                              final ConnectionRepository connectionRepository) {
-        super(applicationProps);
+    public ConnectionsService(final ConnectionRepository connectionRepository) {
         this.connectionRepository = Objects.requireNonNull(connectionRepository);
     }
 
@@ -62,6 +59,6 @@ public class ConnectionsService extends AbstractCommonService {
                 connectionRepository.delete(connectionEntity);
             })
         );
-        return connectionsBySub.values().stream().map(list -> list.get(0)).map(DtoConverter::toDto).collect(Collectors.toList());
+        return connectionsBySub.values().stream().map(list -> list.get(0)).map(ConnectionEntity::toDto).collect(Collectors.toList());
     }
 }
