@@ -21,6 +21,8 @@ import java.util.List;
 
 /**
  * @author Etienne Homer <etienne.homer at rte-france.com>
+ *
+ * @implNote /!\ TO DEV: remember to maintain list access restricted in operations' description
  */
 @RestController
 @RequestMapping(value = "/" + UserAdminApi.API_VERSION)
@@ -34,16 +36,14 @@ public class UserAdminController {
     }
 
     @GetMapping(value = "/users", produces = {MediaType.APPLICATION_JSON_VALUE})
-    @Operation(summary = "get the users")
-    @ApiRestriction("admin")
+    @Operation(summary = "get the users", description = "Access restricted to users of type: `admin`")
     @ApiResponse(responseCode = "200", description = "The users list")
     public ResponseEntity<List<UserInfos>> getUsers(@RequestHeader("userId") String userId) {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getUsers(userId));
     }
 
     @GetMapping(value = "/users/{sub}")
-    @Operation(summary = "Get the user informations")
-    @ApiRestriction("admin")
+    @Operation(summary = "Get the user informations", description = "Access restricted to users of type: `admin`")
     @ApiResponse(responseCode = "200", description = "The user exist")
     @ApiResponse(responseCode = "404", description = "The user doesn't exist")
     public ResponseEntity<UserInfos> getUser(@PathVariable("sub") String sub, @RequestHeader("userId") String userId) {
@@ -52,8 +52,7 @@ public class UserAdminController {
     }
 
     @PostMapping(value = "/users/{sub}")
-    @Operation(summary = "Create the user")
-    @ApiRestriction("admin")
+    @Operation(summary = "Create the user", description = "Access restricted to users of type: `admin`")
     @ApiResponse(responseCode = "201", description = "The user has been created")
     public ResponseEntity<Void> createUser(@PathVariable("sub") String sub, @RequestHeader("userId") String userId) {
         service.createUser(sub, userId);
@@ -61,8 +60,7 @@ public class UserAdminController {
     }
 
     @DeleteMapping(value = "/users/{sub}")
-    @Operation(summary = "delete the user")
-    @ApiRestriction("admin")
+    @Operation(summary = "delete the user", description = "Access restricted to users of type: `admin`")
     @ApiResponse(responseCode = "204", description = "User deleted")
     @ApiResponse(responseCode = "404", description = "User not found")
     public ResponseEntity<Void> deleteUser(@RequestHeader("userId") String userId, @PathVariable("sub") String sub) {
@@ -91,8 +89,7 @@ public class UserAdminController {
     }
 
     @GetMapping(value = "/connections", produces = {MediaType.APPLICATION_JSON_VALUE})
-    @Operation(summary = "get the connections")
-    @ApiRestriction("admin")
+    @Operation(summary = "get the connections", description = "Access restricted to users of type: `admin`")
     @ApiResponse(responseCode = "200", description = "The connections list")
     public ResponseEntity<List<UserConnection>> getConnections(@RequestHeader("userId") String userId) {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getConnections(userId));
