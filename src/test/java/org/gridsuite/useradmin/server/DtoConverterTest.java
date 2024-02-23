@@ -7,10 +7,12 @@ import org.gridsuite.useradmin.server.repository.ConnectionEntity;
 import org.gridsuite.useradmin.server.repository.UserInfosEntity;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
 import java.time.*;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Predicate;
 
 class DtoConverterTest implements WithAssertions {
     @Nested
@@ -26,14 +28,14 @@ class DtoConverterTest implements WithAssertions {
         @Test
         void testConversionToDtoOfUserInfosAdminPredicate() {
             final UUID uuid = UUID.randomUUID();
-            final AtomicReference<String> valuePredicateSubmitted = new AtomicReference<>(null);
-            assertThat(UserInfosEntity.toDto(new UserInfosEntity(uuid, "admin_user"), sub -> {
-                valuePredicateSubmitted.set(sub);
-                return false;
-            }))
+            Predicate<String> isAdminTest = Mockito.mock(Predicate.class);
+            Mockito.when(isAdminTest.test(Mockito.anyString())).thenReturn(false);
+            assertThat(UserInfosEntity.toDto(new UserInfosEntity(uuid, "admin_user"), isAdminTest))
                 .as("dto result")
                 .isEqualTo(new UserInfos("admin_user", false));
-            assertThat(valuePredicateSubmitted).as("value predicate submitted").hasValue("admin_user");
+            ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
+            Mockito.verify(isAdminTest, Mockito.times(1)).test(argument.capture());
+            assertThat(argument.getValue()).as("value predicate submitted").isEqualTo("admin_user");
         }
 
         @Test
