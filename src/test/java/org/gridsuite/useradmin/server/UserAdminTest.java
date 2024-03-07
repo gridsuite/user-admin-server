@@ -154,6 +154,20 @@ class UserAdminTest {
                 )
                 .andExpect(status().isForbidden())
                 .andReturn();
+
+        mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/users")
+                        .header("userId", NOT_ADMIN)
+                        .contentType(APPLICATION_JSON)
+                        .content("[]"))
+                .andExpect(status().isForbidden())
+                .andReturn();
+
+        mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/users")
+                        .header("userId", ADMIN_USER)
+                        .contentType(APPLICATION_JSON)
+                        .content("[\"" + USER_UNKNOWN + "\"]"))
+                .andExpect(status().isNotFound())
+                .andReturn();
     }
 
     @Test

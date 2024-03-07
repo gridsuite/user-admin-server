@@ -9,6 +9,7 @@ package org.gridsuite.useradmin.server;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.NotEmpty;
 import org.gridsuite.useradmin.server.dto.UserConnection;
 import org.gridsuite.useradmin.server.dto.UserInfos;
 import org.gridsuite.useradmin.server.service.UserAdminService;
@@ -40,6 +41,18 @@ public class UserAdminController {
     @ApiResponse(responseCode = "200", description = "The users list")
     public ResponseEntity<List<UserInfos>> getUsers(@RequestHeader("userId") String userId) {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getUsers(userId));
+    }
+
+    @DeleteMapping(value = "/users", consumes = {MediaType.APPLICATION_JSON_VALUE})
+    @Operation(summary = "delete the users", description = "Access restricted to users of type: `admin`")
+    @ApiResponse(responseCode = "204", description = "Users deleted")
+    @ApiResponse(responseCode = "404", description = "One or more user(s) not found")
+    public ResponseEntity<Void> deleteUser(@RequestHeader("userId") String userId, @RequestBody @NotEmpty List<String> subs) {
+        if (service.delete(subs, userId) > 0L) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping(value = "/users/{sub}")

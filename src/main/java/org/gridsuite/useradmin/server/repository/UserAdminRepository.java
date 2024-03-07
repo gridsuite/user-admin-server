@@ -23,4 +23,6 @@ public interface UserAdminRepository extends JpaRepository<UserInfosEntity, UUID
     Optional<UserInfosEntity> findBySub(@NonNull String sub);
 
     long deleteBySub(@NonNull String sub);
+
+    long deleteAllBySubIn(@NonNull Iterable<String> subs);
 }
