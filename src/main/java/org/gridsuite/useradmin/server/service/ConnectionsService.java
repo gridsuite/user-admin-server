@@ -6,6 +6,7 @@
  */
 package org.gridsuite.useradmin.server.service;
 
+import org.gridsuite.useradmin.server.dto.UserConnection;
 import org.gridsuite.useradmin.server.repository.ConnectionEntity;
 import org.gridsuite.useradmin.server.repository.ConnectionRepository;
 import org.springframework.stereotype.Service;
@@ -23,30 +24,29 @@ import java.util.stream.Collectors;
  */
 @Service
 public class ConnectionsService {
+    private final ConnectionRepository connectionRepository;
 
-    private ConnectionRepository connectionRepository;
-
-    public ConnectionsService(ConnectionRepository connectionRepository) {
+    public ConnectionsService(final ConnectionRepository connectionRepository) {
         this.connectionRepository = Objects.requireNonNull(connectionRepository);
     }
 
     @Transactional
-    public void recordConnectionAttempt(String sub, Boolean isAllowed) {
+    public void recordConnectionAttempt(String sub, boolean isAllowed) {
         ConnectionEntity connectionEntity = connectionRepository.findBySub(sub).stream().findFirst().orElse(null);
         if (connectionEntity == null) {
-            //To avoid consistency issue we truncate the time to microseconds since postgres and h2 can only store a precision of microseconds
-            connectionEntity = new ConnectionEntity(sub, LocalDateTime.now().truncatedTo(ChronoUnit.MICROS), LocalDateTime.now().truncatedTo(ChronoUnit.MICROS), isAllowed);
-            connectionRepository.save(connectionEntity);
+            //To avoid consistency issue, we truncate the time to microseconds since postgres and h2 can only store a precision of microseconds
+            connectionEntity = new ConnectionEntity(sub, LocalDateTime.now().truncatedTo(ChronoUnit.MICROS),
+                                                    LocalDateTime.now().truncatedTo(ChronoUnit.MICROS), isAllowed);
         } else {
             connectionEntity.setLastConnexionDate(LocalDateTime.now().truncatedTo(ChronoUnit.MICROS));
             connectionEntity.setConnectionAccepted(isAllowed);
         }
+        connectionRepository.save(connectionEntity);
     }
 
     @Transactional
-    public List<ConnectionEntity> removeDuplicates() {
+    public List<UserConnection> removeDuplicates() {
         Map<String, List<ConnectionEntity>> connectionsBySub = connectionRepository.findAll().stream().collect(Collectors.groupingBy(ConnectionEntity::getSub));
-
         connectionsBySub.keySet().forEach(sub ->
             connectionsBySub.get(sub).stream().skip(1).forEach(connectionEntity -> {
                 ConnectionEntity groupedEntity = connectionsBySub.get(sub).get(0);
@@ -59,6 +59,6 @@ public class ConnectionsService {
                 connectionRepository.delete(connectionEntity);
             })
         );
-        return connectionsBySub.values().stream().map(list -> list.get(0)).collect(Collectors.toList());
+        return connectionsBySub.values().stream().map(list -> list.get(0)).map(ConnectionEntity::toDto).collect(Collectors.toList());
     }
 }

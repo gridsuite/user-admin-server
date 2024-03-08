@@ -6,13 +6,16 @@
  */
 package org.gridsuite.useradmin.server.repository;
 
+import jakarta.annotation.Nullable;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.gridsuite.useradmin.server.dto.UserInfos;
 
-import jakarta.persistence.*;
 import java.util.UUID;
+import java.util.function.Predicate;
 
 /**
  * @author Etienne Homer <etienne.homer at rte-france.com>
@@ -33,6 +36,10 @@ public class UserInfosEntity {
     @Column(name = "id")
     private UUID id;
 
-    @Column(name = "sub", nullable = false)
+    @Column(name = "sub", nullable = false, unique = true)
     private String sub;
+
+    public static UserInfos toDto(@Nullable final UserInfosEntity entity, Predicate<String> isAdminFn) {
+        return entity == null ? null : new UserInfos(entity.getSub(), isAdminFn.test(entity.getSub()));
+    }
 }

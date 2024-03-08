@@ -6,13 +6,17 @@
  */
 package org.gridsuite.useradmin.server.repository;
 
+import jakarta.annotation.Nullable;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.gridsuite.useradmin.server.Utils;
+import org.gridsuite.useradmin.server.dto.UserConnection;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -44,5 +48,10 @@ public class ConnectionEntity {
 
     public ConnectionEntity(String sub, LocalDateTime firstConnexionDate, LocalDateTime lastConnexionDate, Boolean connectionAccepted) {
         this(UUID.randomUUID(), sub, firstConnexionDate, lastConnexionDate, connectionAccepted);
+    }
+
+    public static UserConnection toDto(@Nullable final ConnectionEntity entity) {
+        return entity == null ? null : new UserConnection(entity.getSub(), Utils.convert(entity.getFirstConnexionDate()),
+                Utils.convert(entity.getLastConnexionDate()), Objects.requireNonNullElse(entity.getConnectionAccepted(), Boolean.FALSE));
     }
 }
