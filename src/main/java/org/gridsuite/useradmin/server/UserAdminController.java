@@ -60,7 +60,6 @@ public class UserAdminController {
     @ApiResponse(responseCode = "200", description = "The user exist")
     @ApiResponse(responseCode = "404", description = "The user doesn't exist")
     public ResponseEntity<UserInfos> getUser(@PathVariable("sub") String sub, @RequestHeader("userId") String userId) {
-        //TODO authorize if userId == sub (if user ask own data)
         return ResponseEntity.of(service.getUser(sub, userId));
     }
 
