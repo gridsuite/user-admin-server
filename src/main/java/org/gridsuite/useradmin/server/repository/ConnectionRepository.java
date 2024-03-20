@@ -6,6 +6,7 @@
  */
 package org.gridsuite.useradmin.server.repository;
 
+import org.gridsuite.useradmin.server.entity.ConnectionEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

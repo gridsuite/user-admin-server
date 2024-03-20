@@ -6,10 +6,12 @@
  */
 package org.gridsuite.useradmin.server.repository;
 
+import org.gridsuite.useradmin.server.entity.UserInfosEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -24,5 +26,5 @@ public interface UserAdminRepository extends JpaRepository<UserInfosEntity, UUID
 
     long deleteBySub(@NonNull String sub);
 
-    long deleteAllBySubIn(@NonNull Iterable<String> subs);
+    long deleteAllBySubIn(@NonNull List<String> subs);
 }
