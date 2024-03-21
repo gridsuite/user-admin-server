@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotEmpty;
 import org.gridsuite.useradmin.server.dto.UserConnection;
 import org.gridsuite.useradmin.server.dto.UserInfos;
+import org.gridsuite.useradmin.server.dto.UserProfile;
 import org.gridsuite.useradmin.server.service.UserAdminService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -105,5 +106,12 @@ public class UserAdminController {
     @ApiResponse(responseCode = "200", description = "The connections list")
     public ResponseEntity<List<UserConnection>> getConnections(@RequestHeader("userId") String userId) {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getConnections(userId));
+    }
+
+    @GetMapping(value = "/profiles", produces = {MediaType.APPLICATION_JSON_VALUE})
+    @Operation(summary = "get all the user profiles")
+    @ApiResponse(responseCode = "200", description = "The profiles list")
+    public ResponseEntity<List<UserProfile>> getProfiles(@RequestHeader("userId") String userId) {
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getProfiles(userId));
     }
 }

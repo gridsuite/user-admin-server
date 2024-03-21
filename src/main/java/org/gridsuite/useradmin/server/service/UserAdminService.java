@@ -10,8 +10,11 @@ import org.gridsuite.useradmin.server.UserAdminApplicationProps;
 import org.gridsuite.useradmin.server.UserAdminException;
 import org.gridsuite.useradmin.server.dto.UserConnection;
 import org.gridsuite.useradmin.server.dto.UserInfos;
+import org.gridsuite.useradmin.server.dto.UserProfile;
+import org.gridsuite.useradmin.server.entity.UserProfileEntity;
 import org.gridsuite.useradmin.server.repository.UserAdminRepository;
 import org.gridsuite.useradmin.server.entity.UserInfosEntity;
+import org.gridsuite.useradmin.server.repository.UserProfileRepository;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,14 +31,17 @@ import static org.gridsuite.useradmin.server.UserAdminException.Type.FORBIDDEN;
 @Service
 public class UserAdminService {
     private final UserAdminRepository userAdminRepository;
+    private final UserProfileRepository userProfileRepository;
     private final ConnectionsService connectionsService;
     private final UserAdminApplicationProps applicationProps;
 
     public UserAdminService(final UserAdminApplicationProps applicationProps,
                             final UserAdminRepository userAdminRepository,
+                            final UserProfileRepository userProfileRepository,
                             final ConnectionsService connectionsService) {
         this.applicationProps = Objects.requireNonNull(applicationProps);
         this.userAdminRepository = Objects.requireNonNull(userAdminRepository);
+        this.userProfileRepository = Objects.requireNonNull(userProfileRepository);
         this.connectionsService = Objects.requireNonNull(connectionsService);
     }
 
@@ -103,5 +109,15 @@ public class UserAdminService {
     @Transactional(readOnly = true)
     public boolean userIsAdmin(@NonNull String userId) {
         return isAdmin(userId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserProfile> getProfiles(String userId) {
+        assertIsAdmin(userId);
+        return userProfileRepository.findAll().stream().map(this::toDtoUserProfile).toList();
+    }
+
+    private UserProfile toDtoUserProfile(final UserProfileEntity entity) {
+        return UserProfileEntity.toDto(entity);
     }
 }
