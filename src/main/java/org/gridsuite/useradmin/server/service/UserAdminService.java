@@ -31,13 +31,16 @@ public class UserAdminService {
     private final UserAdminRepository userAdminRepository;
     private final ConnectionsService connectionsService;
     private final UserAdminApplicationProps applicationProps;
+    private final NotificationService notificationService;
 
     public UserAdminService(final UserAdminApplicationProps applicationProps,
                             final UserAdminRepository userAdminRepository,
-                            final ConnectionsService connectionsService) {
+                            final ConnectionsService connectionsService,
+                            final NotificationService notificationService) {
         this.applicationProps = Objects.requireNonNull(applicationProps);
         this.userAdminRepository = Objects.requireNonNull(userAdminRepository);
         this.connectionsService = Objects.requireNonNull(connectionsService);
+        this.notificationService = Objects.requireNonNull(notificationService);
     }
 
     private boolean isAdmin(@lombok.NonNull String sub) {
@@ -104,5 +107,23 @@ public class UserAdminService {
     @Transactional(readOnly = true)
     public boolean userIsAdmin(@NonNull String userId) {
         return isAdmin(userId);
+    }
+
+    public void sendMaintenanceMessage(String userId, Integer durationInSeconds, String message) {
+        if (!isAdmin(userId)) {
+            throw new UserAdminException(FORBIDDEN);
+        }
+        if (durationInSeconds == null) {
+            notificationService.emitMaintenanceMessage(message);
+        } else {
+            notificationService.emitMaintenanceMessage(message, durationInSeconds);
+        }
+    }
+
+    public void sendCancelMaintenanceMessage(String userId) {
+        if (!isAdmin(userId)) {
+            throw new UserAdminException(FORBIDDEN);
+        }
+        notificationService.emitCancelMaintenanceMessage();
     }
 }

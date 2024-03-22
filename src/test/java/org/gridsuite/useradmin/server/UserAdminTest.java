@@ -12,11 +12,17 @@ import org.gridsuite.useradmin.server.repository.ConnectionEntity;
 import org.gridsuite.useradmin.server.repository.ConnectionRepository;
 import org.gridsuite.useradmin.server.repository.UserAdminRepository;
 import org.gridsuite.useradmin.server.repository.UserInfosEntity;
+import org.gridsuite.useradmin.server.service.NotificationService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cloud.stream.binder.test.OutputDestination;
+import org.springframework.cloud.stream.binder.test.TestChannelBinderConfiguration;
+import org.springframework.http.MediaType;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHeaders;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -24,6 +30,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 
+import static org.gridsuite.useradmin.server.service.NotificationService.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -33,7 +40,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author Etienne Homer <etienne.homer at rte-france.com>
  */
 @AutoConfigureMockMvc
-@SpringBootTest(classes = {UserAdminApplication.class})
+@SpringBootTest(classes = {UserAdminApplication.class, TestChannelBinderConfiguration.class})
 @ActiveProfiles({"default"})
 class UserAdminTest {
     @Autowired
@@ -47,6 +54,16 @@ class UserAdminTest {
 
     @Autowired
     private ConnectionRepository connectionRepository;
+
+    @Autowired
+    private NotificationService notificationService;
+
+    @Autowired
+    private OutputDestination output;
+
+    private final String maintenanceMessageDestination = "config.message";
+
+    private static final long TIMEOUT = 1000;
 
     @AfterEach
     public void cleanDB() {
@@ -232,5 +249,65 @@ class UserAdminTest {
                         .header("userId", NOT_ADMIN)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void testSendMaintenanceMessage() throws Exception {
+        //Send a maintenance message and expect everything to be ok
+        String requestBody = objectMapper.writeValueAsString("The application will be on maintenance until the end of the maintenance");
+        Integer duration = 300;
+        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/messages/maintenance", USER_SUB)
+                .queryParam("durationInSeconds", duration.toString())
+                .header("userId", ADMIN_USER)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
+                .andExpect(status().isOk());
+        assertMaintenanceMessageSent(requestBody, duration);
+
+        //Send a maintenance message without duration and expect everything to be ok
+        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/messages/maintenance")
+                        .header("userId", ADMIN_USER)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isOk());
+        assertMaintenanceMessageSent(requestBody, null);
+
+        //Send a maintenance message with a user that's not an admin and expect 403 FORBIDDEN
+        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/messages/maintenance")
+                        .queryParam("durationInSeconds", String.valueOf(duration))
+                        .header("userId", NOT_ADMIN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isForbidden());
+
+    }
+
+    @Test
+    public void testCancelMaintenanceMessage() throws Exception {
+        //Send a cancel maintenance message and expect everything to be ok
+        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/messages/cancel-maintenance")
+                        .header("userId", ADMIN_USER))
+                .andExpect(status().isOk());
+        assertCancelMaintenanceMessageSent();
+
+        //Send a cancel maintenance message with a user that's not an admin and expect 403 FORBIDDEN
+        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/messages/cancel-maintenance")
+                        .header("userId", NOT_ADMIN))
+                .andExpect(status().isForbidden());
+    }
+
+    private void assertMaintenanceMessageSent(String maintenanceMessage, Integer duration) {
+        Message<byte[]> message = output.receive(TIMEOUT, maintenanceMessageDestination);
+        assertEquals(maintenanceMessage, new String(message.getPayload()));
+        MessageHeaders headers = message.getHeaders();
+        assertEquals(MESSAGE_TYPE_MAINTENANCE, headers.get(HEADER_MESSAGE_TYPE));
+        assertEquals(duration, headers.get(HEADER_DURATION));
+    }
+
+    private void assertCancelMaintenanceMessageSent() {
+        Message<byte[]> message = output.receive(TIMEOUT, maintenanceMessageDestination);
+        assertEquals("", new String(message.getPayload()));
+        MessageHeaders headers = message.getHeaders();
+        assertEquals(MESSAGE_TYPE_CANCEL_MAINTENANCE, headers.get(HEADER_MESSAGE_TYPE));
     }
 }
