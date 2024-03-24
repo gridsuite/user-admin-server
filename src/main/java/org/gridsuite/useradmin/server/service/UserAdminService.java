@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.gridsuite.useradmin.server.UserAdminException.Type.FORBIDDEN;
 
@@ -115,6 +116,33 @@ public class UserAdminService {
     public List<UserProfile> getProfiles(String userId) {
         assertIsAdmin(userId);
         return userProfileRepository.findAll().stream().map(this::toDtoUserProfile).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<UserProfile> getProfile(UUID profileUuid, String userId) {
+        assertIsAdmin(userId);
+        return userProfileRepository.findById(profileUuid).map(this::toDtoUserProfile);
+    }
+
+    @Transactional()
+    public void updateProfile(UUID profileUuid, String userId, UserProfile userProfile) {
+        assertIsAdmin(userId);
+        userProfileRepository
+            .findById(profileUuid)
+            .get()
+            .update(userProfile);
+    }
+
+    @Transactional
+    public void createProfile(String profileName, String userId) {
+        assertIsAdmin(userId);
+        userProfileRepository.save(new UserProfileEntity(profileName));
+    }
+
+    @Transactional
+    public long deleteProfiles(List<String> names, String userId) {
+        assertIsAdmin(userId);
+        return userProfileRepository.deleteAllByNameIn(names);
     }
 
     private UserProfile toDtoUserProfile(final UserProfileEntity entity) {

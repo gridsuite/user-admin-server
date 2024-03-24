@@ -8,8 +8,8 @@ package org.gridsuite.useradmin.server.dto;
 
 import java.util.UUID;
 
-public record UserProfile(
+public record ParameterInfos(
     UUID id,
-    String name,
-    ParameterInfos loadFlowParameter
+    UUID parameterId,
+    String fullName
 ) { }

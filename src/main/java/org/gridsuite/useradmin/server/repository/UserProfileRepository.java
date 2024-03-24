@@ -8,8 +8,10 @@ package org.gridsuite.useradmin.server.repository;
 
 import org.gridsuite.useradmin.server.entity.UserProfileEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -17,4 +19,5 @@ import java.util.UUID;
  */
 @Repository
 public interface UserProfileRepository extends JpaRepository<UserProfileEntity, UUID> {
+    long deleteAllByNameIn(@NonNull List<String> names);
 }

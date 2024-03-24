@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.gridsuite.useradmin.server.dto.ParameterInfos;
 import org.gridsuite.useradmin.server.dto.UserProfile;
 
 import java.util.UUID;
@@ -43,7 +44,20 @@ public class UserProfileEntity {
     private ParameterEntity loadFlowParameter;
 
     public static UserProfile toDto(@Nullable final UserProfileEntity entity) {
-        return entity == null ? null : new UserProfile(entity.getName());
+        if (entity == null) {
+            return null;
+        }
+        ParameterInfos lf = entity.getLoadFlowParameter() == null ? null : ParameterEntity.toDto(entity.getLoadFlowParameter());
+        return new UserProfile(entity.getId(), entity.getName(), lf);
+    }
+
+    public void update(UserProfile userProfile) {
+        this.setName(userProfile.name());
+        if (userProfile.loadFlowParameter() == null) {
+            this.setLoadFlowParameter(null);
+        } else {
+            loadFlowParameter = new ParameterEntity(userProfile.loadFlowParameter());
+        }
     }
 }
 
