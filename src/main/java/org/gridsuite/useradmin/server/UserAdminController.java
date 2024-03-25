@@ -89,7 +89,7 @@ public class UserAdminController {
     @Operation(summary = "update a user", description = "Access restricted to users of type: `admin`")
     @ApiResponse(responseCode = "200", description = "The user exists")
     @ApiResponse(responseCode = "404", description = "The user does not exist")
-    public ResponseEntity<UserProfile> getUser(@PathVariable("sub") String sub,
+    public ResponseEntity<UserProfile> updateUser(@PathVariable("sub") String sub,
                                                @RequestHeader("userId") String userId,
                                                @RequestBody UserInfos userInfos) {
         service.updateUser(sub, userId, userInfos);
@@ -131,7 +131,7 @@ public class UserAdminController {
     @Operation(summary = "get the profile information", description = "Access restricted to users of type: `admin`")
     @ApiResponse(responseCode = "200", description = "The profile exist")
     @ApiResponse(responseCode = "404", description = "The profile does not exist")
-    public ResponseEntity<UserProfile> getUser(@PathVariable("profileUuid") UUID profileUuid, @RequestHeader("userId") String userId) {
+    public ResponseEntity<UserProfile> getProfile(@PathVariable("profileUuid") UUID profileUuid, @RequestHeader("userId") String userId) {
         return ResponseEntity.of(service.getProfile(profileUuid, userId));
     }
 
@@ -139,7 +139,7 @@ public class UserAdminController {
     @Operation(summary = "update a profile", description = "Access restricted to users of type: `admin`")
     @ApiResponse(responseCode = "200", description = "The profile exists")
     @ApiResponse(responseCode = "404", description = "The profile does not exist")
-    public ResponseEntity<UserProfile> getUser(@PathVariable("profileUuid") UUID profileUuid,
+    public ResponseEntity<UserProfile> updateProfile(@PathVariable("profileUuid") UUID profileUuid,
                                                @RequestHeader("userId") String userId,
                                                @RequestBody UserProfile userProfile) {
         service.updateProfile(profileUuid, userId, userProfile);

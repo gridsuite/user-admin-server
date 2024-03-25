@@ -11,6 +11,7 @@ import org.gridsuite.useradmin.server.UserAdminException;
 import org.gridsuite.useradmin.server.dto.UserConnection;
 import org.gridsuite.useradmin.server.dto.UserInfos;
 import org.gridsuite.useradmin.server.dto.UserProfile;
+import org.gridsuite.useradmin.server.entity.ParameterEntity;
 import org.gridsuite.useradmin.server.entity.UserProfileEntity;
 import org.gridsuite.useradmin.server.repository.UserAdminRepository;
 import org.gridsuite.useradmin.server.entity.UserInfosEntity;
@@ -19,10 +20,12 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Set;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static org.gridsuite.useradmin.server.UserAdminException.Type.FORBIDDEN;
 
@@ -35,15 +38,18 @@ public class UserAdminService {
     private final UserProfileRepository userProfileRepository;
     private final ConnectionsService connectionsService;
     private final UserAdminApplicationProps applicationProps;
+    private final DirectoryService directoryService;
 
     public UserAdminService(final UserAdminApplicationProps applicationProps,
                             final UserAdminRepository userAdminRepository,
                             final UserProfileRepository userProfileRepository,
-                            final ConnectionsService connectionsService) {
+                            final ConnectionsService connectionsService,
+                            final DirectoryService directoryService) {
         this.applicationProps = Objects.requireNonNull(applicationProps);
         this.userAdminRepository = Objects.requireNonNull(userAdminRepository);
         this.userProfileRepository = Objects.requireNonNull(userProfileRepository);
         this.connectionsService = Objects.requireNonNull(connectionsService);
+        this.directoryService = Objects.requireNonNull(directoryService);
     }
 
     private boolean isAdmin(@lombok.NonNull String sub) {
@@ -124,7 +130,19 @@ public class UserAdminService {
     @Transactional(readOnly = true)
     public List<UserProfile> getProfiles(String userId) {
         assertIsAdmin(userId);
-        return userProfileRepository.findAll().stream().map(this::toDtoUserProfile).toList();
+        List<UserProfileEntity> profiles = userProfileRepository.findAll().stream().toList();
+        Set<UUID> parameterUuids = profiles
+                .stream()
+                .map(UserProfileEntity::getLoadFlowParameter)
+                .filter(Objects::nonNull)
+                .map(ParameterEntity::getParameterId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        Set<UUID> missingParameters = directoryService.findUnexistingElements(parameterUuids);
+        return profiles
+            .stream()
+            .map(p -> UserProfileEntity.toDto(p, missingParameters))
+            .toList();
     }
 
     @Transactional(readOnly = true)

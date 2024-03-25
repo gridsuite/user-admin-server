@@ -4,3 +4,8 @@ server:
 powsybl-ws:
   database:
     host: localhost
+
+gridsuite:
+  services:
+    directory-server:
+      base-uri: http://localhost:5026
