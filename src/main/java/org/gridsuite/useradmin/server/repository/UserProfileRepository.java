@@ -12,6 +12,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -20,4 +21,6 @@ import java.util.UUID;
 @Repository
 public interface UserProfileRepository extends JpaRepository<UserProfileEntity, UUID> {
     long deleteAllByNameIn(@NonNull List<String> names);
+
+    Optional<UserProfileEntity> findByName(@NonNull String name);
 }

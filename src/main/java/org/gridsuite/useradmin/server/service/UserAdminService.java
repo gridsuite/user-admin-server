@@ -91,6 +91,15 @@ public class UserAdminService {
         return userAdminRepository.deleteAllBySubIn(subs);
     }
 
+    @Transactional()
+    public void updateUser(String sub, String userId, UserInfos userInfos) {
+        assertIsAdmin(userId);
+        userAdminRepository
+                .findBySub(sub)
+                .get()
+                .update(userInfos, userProfileRepository.findByName(userInfos.profileName()));
+    }
+
     @Transactional
     public boolean subExists(String sub) {
         final List<String> admins = applicationProps.getAdmins();

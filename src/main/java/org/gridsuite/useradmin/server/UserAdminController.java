@@ -85,6 +85,17 @@ public class UserAdminController {
         }
     }
 
+    @PutMapping(value = "/users/{sub}")
+    @Operation(summary = "update a user", description = "Access restricted to users of type: `admin`")
+    @ApiResponse(responseCode = "200", description = "The user exists")
+    @ApiResponse(responseCode = "404", description = "The user does not exist")
+    public ResponseEntity<UserProfile> getUser(@PathVariable("sub") String sub,
+                                               @RequestHeader("userId") String userId,
+                                               @RequestBody UserInfos userInfos) {
+        service.updateUser(sub, userId, userInfos);
+        return ResponseEntity.ok().build();
+    }
+
     @RequestMapping(value = "/users/{sub}", method = RequestMethod.HEAD)
     @Operation(summary = "Test if a user exists and record connection attempt")
     @ApiResponse(responseCode = "200", description = "sub exists")
@@ -126,7 +137,7 @@ public class UserAdminController {
 
     @PutMapping(value = "/profiles/{profileUuid}")
     @Operation(summary = "update a profile", description = "Access restricted to users of type: `admin`")
-    @ApiResponse(responseCode = "200", description = "The profile exist")
+    @ApiResponse(responseCode = "200", description = "The profile exists")
     @ApiResponse(responseCode = "404", description = "The profile does not exist")
     public ResponseEntity<UserProfile> getUser(@PathVariable("profileUuid") UUID profileUuid,
                                                @RequestHeader("userId") String userId,
