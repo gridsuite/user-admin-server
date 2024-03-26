@@ -11,6 +11,6 @@ import java.util.UUID;
 public record UserProfile(
     UUID id,
     String name,
-    ParameterInfos loadFlowParameter,
+    UUID loadFlowParameterId,
     Boolean validity
 ) { }

@@ -12,7 +12,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.gridsuite.useradmin.server.dto.ParameterInfos;
 import org.gridsuite.useradmin.server.dto.UserProfile;
 
 import java.util.Set;
@@ -40,34 +39,30 @@ public class UserProfileEntity {
     @Column(name = "name", nullable = false, unique = true)
     private String name;
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "loadflow_parameter_id", foreignKey = @ForeignKey(name = "loadflow_parameter_id_fk_constraint"))
-    private ParameterEntity loadFlowParameter;
+    @Column(name = "loadFlowParameterId")
+    private UUID loadFlowParameterId;
 
     public static UserProfile toDto(@Nullable final UserProfileEntity entity) {
         if (entity == null) {
             return null;
         }
-        ParameterInfos lf = entity.getLoadFlowParameter() == null ? null : ParameterEntity.toDto(entity.getLoadFlowParameter());
-        return new UserProfile(entity.getId(), entity.getName(), lf, null);
+        return new UserProfile(entity.getId(), entity.getName(), entity.getLoadFlowParameterId(), null);
     }
 
     public static UserProfile toDto(@Nullable final UserProfileEntity entity, Set<UUID> missingParameters) {
-        if (entity == null || entity.getLoadFlowParameter() == null) {
-            return toDto(entity);
+        if (entity == null) {
+            return null;
         }
-        ParameterInfos lf = ParameterEntity.toDto(entity.getLoadFlowParameter());
-        boolean validity = !missingParameters.contains(lf.parameterId());
-        return new UserProfile(entity.getId(), entity.getName(), lf, validity);
+        Boolean globalValidity = null;
+        if (entity.getLoadFlowParameterId() != null) {
+            globalValidity = !missingParameters.contains(entity.getLoadFlowParameterId());
+        }
+        return new UserProfile(entity.getId(), entity.getName(), entity.getLoadFlowParameterId(), globalValidity);
     }
 
     public void update(UserProfile userProfile) {
         this.setName(userProfile.name());
-        if (userProfile.loadFlowParameter() == null) {
-            this.setLoadFlowParameter(null);
-        } else {
-            loadFlowParameter = new ParameterEntity(userProfile.loadFlowParameter());
-        }
+        this.setLoadFlowParameterId(userProfile.loadFlowParameterId());
     }
 }
 

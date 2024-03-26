@@ -11,7 +11,6 @@ import org.gridsuite.useradmin.server.UserAdminException;
 import org.gridsuite.useradmin.server.dto.UserConnection;
 import org.gridsuite.useradmin.server.dto.UserInfos;
 import org.gridsuite.useradmin.server.dto.UserProfile;
-import org.gridsuite.useradmin.server.entity.ParameterEntity;
 import org.gridsuite.useradmin.server.entity.UserProfileEntity;
 import org.gridsuite.useradmin.server.repository.UserAdminRepository;
 import org.gridsuite.useradmin.server.entity.UserInfosEntity;
@@ -154,9 +153,7 @@ public class UserAdminService {
         List<UserProfileEntity> profiles = userProfileRepository.findAll().stream().toList();
         Set<UUID> parameterUuids = profiles
                 .stream()
-                .map(UserProfileEntity::getLoadFlowParameter)
-                .filter(Objects::nonNull)
-                .map(ParameterEntity::getParameterId)
+                .map(UserProfileEntity::getLoadFlowParameterId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
         Set<UUID> missingParameters = directoryService.findUnexistingElements(parameterUuids);
