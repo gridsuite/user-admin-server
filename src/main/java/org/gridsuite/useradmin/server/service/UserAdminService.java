@@ -38,17 +38,20 @@ public class UserAdminService {
     private final UserProfileRepository userProfileRepository;
     private final ConnectionsService connectionsService;
     private final UserAdminApplicationProps applicationProps;
+    private final NotificationService notificationService;
     private final DirectoryService directoryService;
 
     public UserAdminService(final UserAdminApplicationProps applicationProps,
                             final UserAdminRepository userAdminRepository,
                             final UserProfileRepository userProfileRepository,
                             final ConnectionsService connectionsService,
-                            final DirectoryService directoryService) {
+                            final DirectoryService directoryService
+                            final NotificationService notificationService) {
         this.applicationProps = Objects.requireNonNull(applicationProps);
         this.userAdminRepository = Objects.requireNonNull(userAdminRepository);
         this.userProfileRepository = Objects.requireNonNull(userProfileRepository);
         this.connectionsService = Objects.requireNonNull(connectionsService);
+        this.notificationService = Objects.requireNonNull(notificationService);
         this.directoryService = Objects.requireNonNull(directoryService);
     }
 
@@ -125,6 +128,24 @@ public class UserAdminService {
     @Transactional(readOnly = true)
     public boolean userIsAdmin(@NonNull String userId) {
         return isAdmin(userId);
+    }
+
+    public void sendMaintenanceMessage(String userId, Integer durationInSeconds, String message) {
+        if (!isAdmin(userId)) {
+            throw new UserAdminException(FORBIDDEN);
+        }
+        if (durationInSeconds == null) {
+            notificationService.emitMaintenanceMessage(message);
+        } else {
+            notificationService.emitMaintenanceMessage(message, durationInSeconds);
+        }
+    }
+
+    public void sendCancelMaintenanceMessage(String userId) {
+        if (!isAdmin(userId)) {
+            throw new UserAdminException(FORBIDDEN);
+        }
+        notificationService.emitCancelMaintenanceMessage();
     }
 
     @Transactional(readOnly = true)
