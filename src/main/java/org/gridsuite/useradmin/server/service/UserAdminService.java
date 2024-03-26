@@ -45,7 +45,7 @@ public class UserAdminService {
                             final UserAdminRepository userAdminRepository,
                             final UserProfileRepository userProfileRepository,
                             final ConnectionsService connectionsService,
-                            final DirectoryService directoryService
+                            final DirectoryService directoryService,
                             final NotificationService notificationService) {
         this.applicationProps = Objects.requireNonNull(applicationProps);
         this.userAdminRepository = Objects.requireNonNull(userAdminRepository);
