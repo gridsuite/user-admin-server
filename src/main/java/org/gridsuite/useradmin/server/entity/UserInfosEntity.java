@@ -40,7 +40,7 @@ public class UserInfosEntity {
     @Column(name = "sub", nullable = false, unique = true)
     private String sub;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "profile_id", foreignKey = @ForeignKey(name = "profile_id_fk_constraint"))
     private UserProfileEntity profile;
 
