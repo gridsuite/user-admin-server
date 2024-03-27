@@ -27,6 +27,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static org.gridsuite.useradmin.server.UserAdminException.Type.FORBIDDEN;
+import static org.gridsuite.useradmin.server.UserAdminException.Type.NOT_FOUND;
 
 /**
  * @author Etienne Homer <etienne.homer at rte-france.com>
@@ -102,10 +103,8 @@ public class UserAdminService {
     @Transactional()
     public void updateUser(String sub, String userId, UserInfos userInfos) {
         assertIsAdmin(userId);
-        userAdminRepository
-                .findBySub(sub)
-                .get()
-                .update(userInfos, userProfileRepository.findByName(userInfos.profileName()));
+        UserInfosEntity user = userAdminRepository.findBySub(sub).orElseThrow(() -> new UserAdminException(NOT_FOUND));
+        user.update(userInfos, userProfileRepository.findByName(userInfos.profileName()));
     }
 
     @Transactional
@@ -172,10 +171,8 @@ public class UserAdminService {
     @Transactional()
     public void updateProfile(UUID profileUuid, String userId, UserProfile userProfile) {
         assertIsAdmin(userId);
-        userProfileRepository
-            .findById(profileUuid)
-            .get()
-            .update(userProfile);
+        UserProfileEntity profile = userProfileRepository.findById(profileUuid).orElseThrow(() -> new UserAdminException(NOT_FOUND));
+        profile.update(userProfile);
     }
 
     @Transactional
