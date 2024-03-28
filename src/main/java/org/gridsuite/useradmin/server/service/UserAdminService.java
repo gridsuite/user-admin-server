@@ -150,16 +150,23 @@ public class UserAdminService {
     public List<UserProfile> getProfiles(String userId) {
         assertIsAdmin(userId);
         List<UserProfileEntity> profiles = userProfileRepository.findAll().stream().toList();
-        Set<UUID> parameterUuids = profiles
+
+        Set<UUID> allParametersUuidInAllProfiles = profiles
                 .stream()
                 .map(UserProfileEntity::getLoadFlowParameterId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
-        Set<UUID> missingParameters = directoryService.findUnexistingElements(parameterUuids);
+        Set<UUID> existingParametersUuids = directoryService.getExistingElements(allParametersUuidInAllProfiles);
+        // relative complement will be used to check the elements validity (the missing set should be very small)
+        Set<UUID> missingParametersUuids = allParametersUuidInAllProfiles
+                .stream()
+                .filter(id -> !existingParametersUuids.contains(id))
+                .collect(Collectors.toSet());
+
         return profiles
-            .stream()
-            .map(p -> UserProfileEntity.toDto(p, missingParameters))
-            .toList();
+                .stream()
+                .map(p -> UserProfileEntity.toDto(p, missingParametersUuids))
+                .toList();
     }
 
     @Transactional(readOnly = true)

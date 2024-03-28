@@ -7,7 +7,6 @@
 package org.gridsuite.useradmin.server.service;
 
 import jakarta.validation.constraints.NotEmpty;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
@@ -35,36 +34,25 @@ public class DirectoryService {
     private static final String ELEMENTS_SERVER_ROOT_PATH = DELIMITER + DIRECTORY_SERVER_API_VERSION + DELIMITER
             + "elements";
 
-    private final RestTemplate restTemplate;
+    private final RestTemplate restTemplate = new RestTemplate();
 
-    private final String directoryServerBaseUri;
+    private static String directoryServerBaseUri;
 
-    @Autowired
-    public DirectoryService(@Value("${gridsuite.services.directory-server.base-uri:http://directory-server/}") String directoryServerBaseUri,
-                            RestTemplate restTemplate) {
-        this.directoryServerBaseUri = directoryServerBaseUri;
-        this.restTemplate = restTemplate;
+    public DirectoryService(@Value("${gridsuite.services.directory-server.base-uri:http://directory-server/}") String directoryServerBaseUri) {
+        setDirectoryServerBaseUri(directoryServerBaseUri);
     }
 
-    public Set<UUID> findUnexistingElements(@NotEmpty Set<UUID> elementsUuids) {
+    public static void setDirectoryServerBaseUri(String serverBaseUri) {
+        DirectoryService.directoryServerBaseUri = serverBaseUri;
+    }
+
+    public Set<UUID> getExistingElements(@NotEmpty Set<UUID> elementsUuids) {
         var ids = elementsUuids.stream().map(UUID::toString).collect(Collectors.joining(","));
         // no strict mode, to retrieve all elementsUuids, even if some of them don't exist
         String path = UriComponentsBuilder.fromPath(ELEMENTS_SERVER_ROOT_PATH).toUriString() + "?strictMode=false&ids=" + ids;
-
         List<ElementAttributes> existingElementList = restTemplate.exchange(directoryServerBaseUri + path, HttpMethod.GET, null,
                 new ParameterizedTypeReference<List<ElementAttributes>>() {
                 }).getBody();
-        if (existingElementList == null) {
-            return elementsUuids;
-        }
-        Set<UUID> existingElements = existingElementList
-                .stream()
-                .map(ElementAttributes::getElementUuid)
-                .collect(Collectors.toSet());
-        return elementsUuids
-                .stream()
-                .filter(id -> !existingElements.contains(id))
-                .collect(Collectors.toSet());
+        return existingElementList == null ? Set.of() : existingElementList.stream().map(ElementAttributes::getElementUuid).collect(Collectors.toSet());
     }
 }
-
