@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotEmpty;
 import org.gridsuite.useradmin.server.dto.UserConnection;
 import org.gridsuite.useradmin.server.dto.UserInfos;
+import org.gridsuite.useradmin.server.dto.UserProfile;
 import org.gridsuite.useradmin.server.service.UserAdminService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -21,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author Etienne Homer <etienne.homer at rte-france.com>
@@ -85,6 +87,17 @@ public class UserAdminController {
         }
     }
 
+    @PutMapping(value = "/users/{sub}")
+    @Operation(summary = "update a user", description = "Access restricted to users of type: `admin`")
+    @ApiResponse(responseCode = "200", description = "The user exists")
+    @ApiResponse(responseCode = "404", description = "The user does not exist")
+    public ResponseEntity<UserProfile> updateUser(@PathVariable("sub") String sub,
+                                               @RequestHeader("userId") String userId,
+                                               @RequestBody UserInfos userInfos) {
+        service.updateUser(sub, userId, userInfos);
+        return ResponseEntity.ok().build();
+    }
+
     @RequestMapping(value = "/users/{sub}", method = RequestMethod.HEAD)
     @Operation(summary = "Test if a user exists and record connection attempt")
     @ApiResponse(responseCode = "200", description = "sub exists")
@@ -131,5 +144,51 @@ public class UserAdminController {
     public ResponseEntity<Void> sendCancelMaintenanceMessage(@RequestHeader("userId") String userId) {
         service.sendCancelMaintenanceMessage(userId);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping(value = "/profiles", produces = {MediaType.APPLICATION_JSON_VALUE})
+    @Operation(summary = "get all the user profiles")
+    @ApiResponse(responseCode = "200", description = "The profiles list")
+    public ResponseEntity<List<UserProfile>> getProfiles(@RequestHeader("userId") String userId) {
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getProfiles(userId));
+    }
+
+    @GetMapping(value = "/profiles/{profileUuid}")
+    @Operation(summary = "get the profile information", description = "Access restricted to users of type: `admin`")
+    @ApiResponse(responseCode = "200", description = "The profile exist")
+    @ApiResponse(responseCode = "404", description = "The profile does not exist")
+    public ResponseEntity<UserProfile> getProfile(@PathVariable("profileUuid") UUID profileUuid, @RequestHeader("userId") String userId) {
+        return ResponseEntity.of(service.getProfile(profileUuid, userId));
+    }
+
+    @PutMapping(value = "/profiles/{profileUuid}")
+    @Operation(summary = "update a profile", description = "Access restricted to users of type: `admin`")
+    @ApiResponse(responseCode = "200", description = "The profile exists")
+    @ApiResponse(responseCode = "404", description = "The profile does not exist")
+    public ResponseEntity<UserProfile> updateProfile(@PathVariable("profileUuid") UUID profileUuid,
+                                               @RequestHeader("userId") String userId,
+                                               @RequestBody UserProfile userProfile) {
+        service.updateProfile(profileUuid, userId, userProfile);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping(value = "/profiles/{profileName}")
+    @Operation(summary = "Create the profile", description = "Access restricted to users of type: `admin`")
+    @ApiResponse(responseCode = "201", description = "The profile has been created")
+    public ResponseEntity<Void> createProfile(@PathVariable("profileName") String profileName, @RequestHeader("userId") String userId) {
+        service.createProfile(profileName, userId);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @DeleteMapping(value = "/profiles", consumes = {MediaType.APPLICATION_JSON_VALUE})
+    @Operation(summary = "delete the profiles", description = "Access restricted to users of type: `admin`")
+    @ApiResponse(responseCode = "204", description = "Profiles deleted")
+    @ApiResponse(responseCode = "404", description = "One or more profile(s) not found")
+    public ResponseEntity<Void> deleteProfiles(@RequestHeader("userId") String userId, @RequestBody @NotEmpty List<String> names) {
+        if (service.deleteProfiles(names, userId) > 0L) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

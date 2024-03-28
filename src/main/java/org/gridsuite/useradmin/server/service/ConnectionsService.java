@@ -7,7 +7,7 @@
 package org.gridsuite.useradmin.server.service;
 
 import org.gridsuite.useradmin.server.dto.UserConnection;
-import org.gridsuite.useradmin.server.repository.ConnectionEntity;
+import org.gridsuite.useradmin.server.entity.ConnectionEntity;
 import org.gridsuite.useradmin.server.repository.ConnectionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -59,6 +59,6 @@ public class ConnectionsService {
                 connectionRepository.delete(connectionEntity);
             })
         );
-        return connectionsBySub.values().stream().map(list -> list.get(0)).map(ConnectionEntity::toDto).collect(Collectors.toList());
+        return connectionsBySub.values().stream().map(list -> list.get(0)).map(ConnectionEntity::toDto).toList();
     }
 }

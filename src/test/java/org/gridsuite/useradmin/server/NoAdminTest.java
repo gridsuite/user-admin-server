@@ -8,7 +8,7 @@ package org.gridsuite.useradmin.server;
 
 import org.gridsuite.useradmin.server.repository.ConnectionRepository;
 import org.gridsuite.useradmin.server.repository.UserAdminRepository;
-import org.gridsuite.useradmin.server.repository.UserInfosEntity;
+import org.gridsuite.useradmin.server.entity.UserInfosEntity;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
