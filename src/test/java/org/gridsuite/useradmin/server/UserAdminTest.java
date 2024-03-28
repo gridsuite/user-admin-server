@@ -234,6 +234,13 @@ class UserAdminTest {
         assertNotNull(userInfos);
         assertEquals(USER_SUB2, userInfos.sub());
         assertEquals(PROFILE_1, userInfos.profileName());
+
+        // bad update
+        mockMvc.perform(put("/" + UserAdminApi.API_VERSION + "/users/{sub}", "bad user")
+                        .content(objectWriter.writeValueAsString(userInfo))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("userId", ADMIN_USER))
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -301,7 +308,7 @@ class UserAdminTest {
     }
 
     @Test
-    public void testSendMaintenanceMessage() throws Exception {
+    void testSendMaintenanceMessage() throws Exception {
         //Send a maintenance message and expect everything to be ok
         String requestBody = objectMapper.writeValueAsString("The application will be on maintenance until the end of the maintenance");
         Integer duration = 300;
@@ -332,7 +339,7 @@ class UserAdminTest {
     }
 
     @Test
-    public void testCancelMaintenanceMessage() throws Exception {
+    void testCancelMaintenanceMessage() throws Exception {
         //Send a cancel maintenance message and expect everything to be ok
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/messages/cancel-maintenance")
                         .header("userId", ADMIN_USER))
