@@ -3,6 +3,7 @@ package org.gridsuite.useradmin.server;
 import org.assertj.core.api.WithAssertions;
 import org.gridsuite.useradmin.server.dto.UserConnection;
 import org.gridsuite.useradmin.server.dto.UserInfos;
+import org.gridsuite.useradmin.server.dto.UserProfile;
 import org.gridsuite.useradmin.server.entity.ConnectionEntity;
 import org.gridsuite.useradmin.server.entity.UserInfosEntity;
 import org.gridsuite.useradmin.server.entity.UserProfileEntity;
@@ -12,6 +13,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import java.time.*;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
 
@@ -48,6 +50,39 @@ class DtoConverterTest implements WithAssertions {
         @Test
         void testConversionToDtoOfUserInfosNull() {
             assertThat(UserInfosEntity.toDto(null, null)).isNull();
+        }
+    }
+
+    @Nested
+    class ConverterOfUserProfile {
+        @Test
+        void testConversionToDtoOfUserProfile() {
+            final UUID uuid = UUID.randomUUID();
+            final UUID parameterUuid = UUID.randomUUID();
+            // no parameters
+            assertThat(UserProfileEntity.toDto(new UserProfileEntity(uuid, "profil", null), Set.of(UUID.randomUUID())))
+                    .as("dto result")
+                    .isEqualTo(new UserProfile(uuid, "profil", null, null));
+            assertThat(UserProfileEntity.toDto(new UserProfileEntity(uuid, "profil", null)))
+                    .as("dto result")
+                    .isEqualTo(new UserProfile(uuid, "profil", null, null));
+            // with parameters, no validity check
+            assertThat(UserProfileEntity.toDto(new UserProfileEntity(uuid, "profil", parameterUuid)))
+                    .as("dto result")
+                    .isEqualTo(new UserProfile(uuid, "profil", parameterUuid, null));
+            // with parameters and validity ok
+            assertThat(UserProfileEntity.toDto(new UserProfileEntity(uuid, "profil", parameterUuid), Set.of(UUID.randomUUID())))
+                    .as("dto result")
+                    .isEqualTo(new UserProfile(uuid, "profil", parameterUuid, Boolean.TRUE));
+            // with parameters and validity ko
+            assertThat(UserProfileEntity.toDto(new UserProfileEntity(uuid, "profil", parameterUuid), Set.of(parameterUuid)))
+                    .as("dto result")
+                    .isEqualTo(new UserProfile(uuid, "profil", parameterUuid, Boolean.FALSE));
+        }
+
+        @Test
+        void testConversionToDtoOfUserProfileNull() {
+            assertThat(UserProfileEntity.toDto(null, null)).isNull();
         }
     }
 
