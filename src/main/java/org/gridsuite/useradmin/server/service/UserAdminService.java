@@ -10,16 +10,14 @@ import org.gridsuite.useradmin.server.UserAdminApplicationProps;
 import org.gridsuite.useradmin.server.UserAdminException;
 import org.gridsuite.useradmin.server.dto.UserConnection;
 import org.gridsuite.useradmin.server.dto.UserInfos;
+import org.gridsuite.useradmin.server.repository.AnnouncementEntity;
 import org.gridsuite.useradmin.server.repository.UserAdminRepository;
 import org.gridsuite.useradmin.server.repository.UserInfosEntity;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 import static org.gridsuite.useradmin.server.UserAdminException.Type.FORBIDDEN;
 
@@ -30,17 +28,17 @@ import static org.gridsuite.useradmin.server.UserAdminException.Type.FORBIDDEN;
 public class UserAdminService {
     private final UserAdminRepository userAdminRepository;
     private final ConnectionsService connectionsService;
+    private final AnnouncementService announcementService;
     private final UserAdminApplicationProps applicationProps;
-    private final NotificationService notificationService;
 
     public UserAdminService(final UserAdminApplicationProps applicationProps,
                             final UserAdminRepository userAdminRepository,
                             final ConnectionsService connectionsService,
-                            final NotificationService notificationService) {
+                            final AnnouncementService announcementService) {
         this.applicationProps = Objects.requireNonNull(applicationProps);
         this.userAdminRepository = Objects.requireNonNull(userAdminRepository);
         this.connectionsService = Objects.requireNonNull(connectionsService);
-        this.notificationService = Objects.requireNonNull(notificationService);
+        this.announcementService = Objects.requireNonNull(announcementService);
     }
 
     private boolean isAdmin(@lombok.NonNull String sub) {
@@ -109,21 +107,18 @@ public class UserAdminService {
         return isAdmin(userId);
     }
 
-    public void sendMaintenanceMessage(String userId, Integer durationInSeconds, String message) {
-        if (!isAdmin(userId)) {
-            throw new UserAdminException(FORBIDDEN);
-        }
-        if (durationInSeconds == null) {
-            notificationService.emitMaintenanceMessage(message);
-        } else {
-            notificationService.emitMaintenanceMessage(message, durationInSeconds);
-        }
+    public void sendAnnouncement(AnnouncementEntity announcement, String userId) {
+        assertIsAdmin(userId);
+        announcementService.sendAnnouncement(announcement);
     }
 
-    public void sendCancelMaintenanceMessage(String userId) {
-        if (!isAdmin(userId)) {
-            throw new UserAdminException(FORBIDDEN);
-        }
-        notificationService.emitCancelMaintenanceMessage();
+    public void cancelAnnouncement(UUID announcementId, String userId) {
+        assertIsAdmin(userId);
+        announcementService.cancelAnnouncement(announcementId);
+    }
+
+    public List<AnnouncementEntity> getAllAnnouncements(String userId) {
+        assertIsAdmin(userId);
+        return announcementService.getAllAnnouncements();
     }
 }
