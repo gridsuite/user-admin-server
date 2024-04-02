@@ -106,7 +106,7 @@ public class UserAdminService {
         assertIsAdmin(userId);
         UserInfosEntity user = userAdminRepository.findBySub(sub).orElseThrow(() -> new UserAdminException(NOT_FOUND));
         Optional<UserProfileEntity> profile = userProfileRepository.findByName(userInfos.profileName());
-        user.setSub(sub);
+        user.setSub(userInfos.sub());
         user.setProfile(profile.orElse(null));
     }
 
