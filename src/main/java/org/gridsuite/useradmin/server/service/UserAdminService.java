@@ -19,6 +19,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.Set;
 import java.util.List;
 import java.util.Objects;
@@ -95,7 +96,7 @@ public class UserAdminService {
     }
 
     @Transactional
-    public long delete(List<String> subs, String userId) {
+    public long delete(Collection<String> subs, String userId) {
         assertIsAdmin(userId);
         return userAdminRepository.deleteAllBySubIn(subs);
     }
