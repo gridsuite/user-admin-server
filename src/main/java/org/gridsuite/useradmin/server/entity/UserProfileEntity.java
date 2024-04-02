@@ -14,7 +14,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.gridsuite.useradmin.server.dto.UserProfile;
 
-import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -49,15 +48,11 @@ public class UserProfileEntity {
         return new UserProfile(entity.getId(), entity.getName(), entity.getLoadFlowParameterId(), null);
     }
 
-    public static UserProfile toDto(@Nullable final UserProfileEntity entity, Set<UUID> missingParameters) {
+    public static UserProfile toDto(@Nullable final UserProfileEntity entity, Boolean allParametersLinksValid) {
         if (entity == null) {
             return null;
         }
-        Boolean globalValidity = null;
-        if (entity.getLoadFlowParameterId() != null) {
-            globalValidity = !missingParameters.contains(entity.getLoadFlowParameterId());
-        }
-        return new UserProfile(entity.getId(), entity.getName(), entity.getLoadFlowParameterId(), globalValidity);
+        return new UserProfile(entity.getId(), entity.getName(), entity.getLoadFlowParameterId(), allParametersLinksValid);
     }
 
     public void update(UserProfile userProfile) {

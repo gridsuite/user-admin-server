@@ -140,7 +140,7 @@ public class UserProfileTest {
         assertEquals(1, userProfiles.size());
         assertEquals(PROFILE_1, userProfiles.get(0).name());
         assertNull(userProfiles.get(0).loadFlowParameterId());
-        assertNull(userProfiles.get(0).validity());
+        assertNull(userProfiles.get(0).allParametersLinksValid());
         wireMockUtils.verifyGetRequest(stubId, urlPath, handleQueryParams(List.of()), false);
 
         // Remove the profile
@@ -233,7 +233,7 @@ public class UserProfileTest {
         assertNotNull(userProfile);
         assertEquals(PROFILE_2, userProfile.name());
         assertEquals(lfParametersUuid, userProfile.loadFlowParameterId());
-        assertNull(userProfile.validity()); // validity not set in this case
+        assertNull(userProfile.allParametersLinksValid()); // validity not set in this case
 
         // profiles list (with validity flag)
         List<UserProfile> userProfiles = objectMapper.readValue(
@@ -247,7 +247,7 @@ public class UserProfileTest {
         wireMockUtils.verifyGetRequest(stubId, urlPath, handleQueryParams(List.of(lfParametersUuid)), false);
         assertEquals(1, userProfiles.size());
         assertEquals(lfParametersUuid, userProfiles.get(0).loadFlowParameterId());
-        assertEquals(validParameters, userProfiles.get(0).validity());
+        assertEquals(validParameters, userProfiles.get(0).allParametersLinksValid());
 
         // bad update
         mockMvc.perform(put("/" + UserAdminApi.API_VERSION + "/profiles/{profileUuid}", UUID.randomUUID())

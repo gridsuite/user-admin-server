@@ -13,7 +13,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import java.time.*;
-import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
 
@@ -60,7 +59,7 @@ class DtoConverterTest implements WithAssertions {
             final UUID uuid = UUID.randomUUID();
             final UUID parameterUuid = UUID.randomUUID();
             // no parameters
-            assertThat(UserProfileEntity.toDto(new UserProfileEntity(uuid, "profil", null), Set.of(UUID.randomUUID())))
+            assertThat(UserProfileEntity.toDto(new UserProfileEntity(uuid, "profil", null), null))
                     .as("dto result")
                     .isEqualTo(new UserProfile(uuid, "profil", null, null));
             assertThat(UserProfileEntity.toDto(new UserProfileEntity(uuid, "profil", null)))
@@ -71,11 +70,11 @@ class DtoConverterTest implements WithAssertions {
                     .as("dto result")
                     .isEqualTo(new UserProfile(uuid, "profil", parameterUuid, null));
             // with parameters and validity ok
-            assertThat(UserProfileEntity.toDto(new UserProfileEntity(uuid, "profil", parameterUuid), Set.of(UUID.randomUUID())))
+            assertThat(UserProfileEntity.toDto(new UserProfileEntity(uuid, "profil", parameterUuid), Boolean.TRUE))
                     .as("dto result")
                     .isEqualTo(new UserProfile(uuid, "profil", parameterUuid, Boolean.TRUE));
             // with parameters and validity ko
-            assertThat(UserProfileEntity.toDto(new UserProfileEntity(uuid, "profil", parameterUuid), Set.of(parameterUuid)))
+            assertThat(UserProfileEntity.toDto(new UserProfileEntity(uuid, "profil", parameterUuid), Boolean.FALSE))
                     .as("dto result")
                     .isEqualTo(new UserProfile(uuid, "profil", parameterUuid, Boolean.FALSE));
         }

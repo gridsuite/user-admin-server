@@ -106,7 +106,7 @@ public class UserAdminService {
         assertIsAdmin(userId);
         UserInfosEntity user = userAdminRepository.findBySub(sub).orElseThrow(() -> new UserAdminException(NOT_FOUND));
         Optional<UserProfileEntity> profile = userProfileRepository.findByName(userInfos.profileName());
-        user.setSub(userInfos.sub());
+        user.setSub(sub);
         user.setProfile(profile.orElse(null));
     }
 
@@ -168,7 +168,13 @@ public class UserAdminService {
 
         return profiles
                 .stream()
-                .map(p -> UserProfileEntity.toDto(p, missingParametersUuids))
+                .map(p -> {
+                    Boolean allParametersLinksValid = null;
+                    if (p.getLoadFlowParameterId() != null) {
+                        allParametersLinksValid = !missingParametersUuids.contains(p.getLoadFlowParameterId());
+                    }
+                    return UserProfileEntity.toDto(p, allParametersLinksValid);
+                })
                 .toList();
     }
 

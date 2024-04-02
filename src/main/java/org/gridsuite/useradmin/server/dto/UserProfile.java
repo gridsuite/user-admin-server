@@ -12,5 +12,5 @@ public record UserProfile(
     UUID id,
     String name,
     UUID loadFlowParameterId,
-    Boolean validity
+    Boolean allParametersLinksValid
 ) { }
