@@ -105,7 +105,9 @@ public class UserAdminService {
     public void updateUser(String sub, String userId, UserInfos userInfos) {
         assertIsAdmin(userId);
         UserInfosEntity user = userAdminRepository.findBySub(sub).orElseThrow(() -> new UserAdminException(NOT_FOUND));
-        user.update(userInfos, userProfileRepository.findByName(userInfos.profileName()));
+        Optional<UserProfileEntity> profile = userProfileRepository.findByName(userInfos.profileName());
+        user.setSub(userInfos.sub());
+        user.setProfile(profile.orElse(null));
     }
 
     @Transactional

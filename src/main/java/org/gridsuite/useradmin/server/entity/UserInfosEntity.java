@@ -14,7 +14,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.gridsuite.useradmin.server.dto.UserInfos;
 
-import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Predicate;
 
@@ -50,10 +49,5 @@ public class UserInfosEntity {
         }
         String profileName = entity.getProfile() == null ? null : entity.getProfile().getName();
         return new UserInfos(entity.getSub(), isAdminFn.test(entity.getSub()), profileName);
-    }
-
-    public void update(UserInfos userInfos, Optional<UserProfileEntity> userProfileEntity) {
-        this.setSub(userInfos.sub());
-        this.setProfile(userProfileEntity.orElse(null));
     }
 }
