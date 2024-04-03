@@ -67,6 +67,14 @@ public class UserAdminController {
         return ResponseEntity.of(service.getUser(sub, userId));
     }
 
+    @GetMapping(value = "/users/{sub}/profile")
+    @Operation(summary = "Get the user profile informations")
+    @ApiResponse(responseCode = "200", description = "The user exist")
+    @ApiResponse(responseCode = "404", description = "The user doesn't exist")
+    public ResponseEntity<UserProfile> getUserProfile(@PathVariable("sub") String sub) {
+        return ResponseEntity.of(service.getUserProfile(sub));
+    }
+
     @PostMapping(value = "/users/{sub}")
     @Operation(summary = "Create the user", description = "Access restricted to users of type: `admin`")
     @ApiResponse(responseCode = "201", description = "The user has been created")

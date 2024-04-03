@@ -127,6 +127,12 @@ public class UserAdminService {
     }
 
     @Transactional(readOnly = true)
+    public Optional<UserProfile> getUserProfile(String sub) {
+        UserInfosEntity user = userAdminRepository.findBySub(sub).orElseThrow(() -> new UserAdminException(NOT_FOUND));
+        return user.getProfile() == null ? Optional.empty() : userProfileRepository.findById(user.getProfile().getId()).map(this::toDtoUserProfile);
+    }
+
+    @Transactional(readOnly = true)
     public boolean userIsAdmin(@NonNull String userId) {
         return isAdmin(userId);
     }
