@@ -111,37 +111,37 @@ public class UserAdminController {
     }
 
     @PostMapping(value = "/announcements")
-    @Operation(summary = "Send a message to all the connected users")
+    @Operation(summary = "Send an announcement to all the connected users")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "message sent"),
+        @ApiResponse(responseCode = "200", description = "announcement sent"),
         @ApiResponse(responseCode = "403", description = "user is not an admin")
     })
-    public ResponseEntity<Void> sendMaintenanceMessage(@RequestHeader("userId") String userId,
-                                                       @RequestBody AnnouncementEntity announcement) {
+    public ResponseEntity<Void> sendAnnouncement(@RequestHeader("userId") String userId,
+                                                 @RequestBody AnnouncementEntity announcement) {
         service.sendAnnouncement(announcement, userId);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping(value = "/announcements/{announcementId}")
-    @Operation(summary = "Cancel and delete a message")
+    @Operation(summary = "Cancel and delete an announcement")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "message canceled"),
+        @ApiResponse(responseCode = "200", description = "announcement canceled"),
         @ApiResponse(responseCode = "403", description = "user is not an admin"),
-        @ApiResponse(responseCode = "404", description = "message not found")
+        @ApiResponse(responseCode = "404", description = "announcement not found")
     })
-    public ResponseEntity<Void> sendCancelMaintenanceMessage(@RequestHeader("userId") String userId,
-                                                             @PathVariable("announcementId") UUID announcementId) {
+    public ResponseEntity<Void> cancelAnnouncement(@RequestHeader("userId") String userId,
+                                                   @PathVariable("announcementId") UUID announcementId) {
         service.cancelAnnouncement(announcementId, userId);
         return ResponseEntity.ok().build();
     }
 
     @GetMapping(value = "/announcements")
-    @Operation(summary = "Get all the messages")
+    @Operation(summary = "Get all the announcements")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "messages retrieved"),
+        @ApiResponse(responseCode = "200", description = "announcements retrieved"),
         @ApiResponse(responseCode = "403", description = "user is not an admin")
     })
-    public ResponseEntity<List<AnnouncementEntity>> sendCancelMaintenanceMessage(@RequestHeader("userId") String userId) {
+    public ResponseEntity<List<AnnouncementEntity>> getAllAnnouncements(@RequestHeader("userId") String userId) {
         return ResponseEntity.ok(service.getAllAnnouncements(userId));
     }
 }
