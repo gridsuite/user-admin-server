@@ -42,7 +42,7 @@ public class NotificationService {
         updatePublisher.send("publishMessage-out-0", message);
     }
 
-    public void emitMaintenanceMessage(String message, int duration) {
+    public void emitMaintenanceMessage(String message, long duration) {
         sendMessage(MessageBuilder.withPayload(message)
                 .setHeader(HEADER_MESSAGE_TYPE, MESSAGE_TYPE_MAINTENANCE)
                 .setHeader(HEADER_DURATION, duration)
