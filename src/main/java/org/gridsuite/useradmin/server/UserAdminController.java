@@ -97,7 +97,7 @@ public class UserAdminController {
 
     @PutMapping(value = "/users/{sub}")
     @Operation(summary = "update a user", description = "Access restricted to users of type: `admin`")
-    @ApiResponse(responseCode = "200", description = "The user exists")
+    @ApiResponse(responseCode = "200", description = "The user is updated")
     @ApiResponse(responseCode = "404", description = "The user does not exist")
     public ResponseEntity<UserProfile> updateUser(@PathVariable("sub") String sub,
                                                @RequestHeader("userId") String userId,
@@ -180,11 +180,12 @@ public class UserAdminController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping(value = "/profiles/{profileName}")
+    @PostMapping(value = "/profiles")
     @Operation(summary = "Create the profile", description = "Access restricted to users of type: `admin`")
     @ApiResponse(responseCode = "201", description = "The profile has been created")
-    public ResponseEntity<Void> createProfile(@PathVariable("profileName") String profileName, @RequestHeader("userId") String userId) {
-        service.createProfile(profileName, userId);
+    public ResponseEntity<Void> createProfile(@RequestHeader("userId") String userId,
+                                              @RequestBody UserProfile userProfile) {
+        service.createProfile(userProfile.name(), userId);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
