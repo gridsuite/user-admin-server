@@ -54,10 +54,5 @@ public class UserProfileEntity {
         }
         return new UserProfile(entity.getId(), entity.getName(), entity.getLoadFlowParameterId(), allParametersLinksValid);
     }
-
-    public void update(UserProfile userProfile) {
-        this.setName(userProfile.name());
-        this.setLoadFlowParameterId(userProfile.loadFlowParameterId());
-    }
 }
 

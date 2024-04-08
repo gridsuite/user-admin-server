@@ -92,8 +92,8 @@ public class UserAdminController {
     @ApiResponse(responseCode = "200", description = "The user is updated")
     @ApiResponse(responseCode = "404", description = "The user does not exist")
     public ResponseEntity<UserProfile> updateUser(@PathVariable("sub") String sub,
-                                               @RequestHeader("userId") String userId,
-                                               @RequestBody UserInfos userInfos) {
+                                                  @RequestHeader("userId") String userId,
+                                                  @RequestBody UserInfos userInfos) {
         service.updateUser(sub, userId, userInfos);
         return ResponseEntity.ok().build();
     }
@@ -166,8 +166,8 @@ public class UserAdminController {
     @ApiResponse(responseCode = "200", description = "The profile exists")
     @ApiResponse(responseCode = "404", description = "The profile does not exist")
     public ResponseEntity<UserProfile> updateProfile(@PathVariable("profileUuid") UUID profileUuid,
-                                               @RequestHeader("userId") String userId,
-                                               @RequestBody UserProfile userProfile) {
+                                                     @RequestHeader("userId") String userId,
+                                                     @RequestBody UserProfile userProfile) {
         service.updateProfile(profileUuid, userId, userProfile);
         return ResponseEntity.ok().build();
     }

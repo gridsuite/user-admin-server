@@ -15,7 +15,7 @@ import lombok.SneakyThrows;
 import org.gridsuite.useradmin.server.dto.ElementAttributes;
 import org.gridsuite.useradmin.server.dto.UserProfile;
 import org.gridsuite.useradmin.server.entity.UserProfileEntity;
-import org.gridsuite.useradmin.server.repository.UserAdminRepository;
+import org.gridsuite.useradmin.server.repository.UserInfosRepository;
 import org.gridsuite.useradmin.server.repository.UserProfileRepository;
 import org.gridsuite.useradmin.server.service.DirectoryService;
 import org.gridsuite.useradmin.server.utils.WireMockUtils;
@@ -64,7 +64,7 @@ public class UserProfileTest {
     private ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
-    private UserAdminRepository userAdminRepository;
+    private UserInfosRepository userInfosRepository;
 
     @Autowired
     private UserProfileRepository userProfileRepository;
@@ -86,7 +86,7 @@ public class UserProfileTest {
 
     @After
     public void tearOff() {
-        userAdminRepository.deleteAll();
+        userInfosRepository.deleteAll();
         userProfileRepository.deleteAll();
 
         try {

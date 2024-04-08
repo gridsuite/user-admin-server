@@ -19,7 +19,7 @@ import java.util.UUID;
  * @author Etienne Homer <etienne.homer at rte-france.com>
  */
 @Repository
-public interface UserAdminRepository extends JpaRepository<UserInfosEntity, UUID> {
+public interface UserInfosRepository extends JpaRepository<UserInfosEntity, UUID> {
     boolean existsBySub(@NonNull String sub);
 
     Optional<UserInfosEntity> findBySub(@NonNull String sub);

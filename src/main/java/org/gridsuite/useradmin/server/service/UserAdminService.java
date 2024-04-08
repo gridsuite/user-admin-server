@@ -12,7 +12,7 @@ import org.gridsuite.useradmin.server.dto.UserConnection;
 import org.gridsuite.useradmin.server.dto.UserInfos;
 import org.gridsuite.useradmin.server.dto.UserProfile;
 import org.gridsuite.useradmin.server.entity.UserProfileEntity;
-import org.gridsuite.useradmin.server.repository.UserAdminRepository;
+import org.gridsuite.useradmin.server.repository.UserInfosRepository;
 import org.gridsuite.useradmin.server.entity.UserInfosEntity;
 import org.gridsuite.useradmin.server.repository.UserProfileRepository;
 import org.springframework.lang.NonNull;
@@ -35,7 +35,7 @@ import static org.gridsuite.useradmin.server.UserAdminException.Type.NOT_FOUND;
  */
 @Service
 public class UserAdminService {
-    private final UserAdminRepository userAdminRepository;
+    private final UserInfosRepository userInfosRepository;
     private final UserProfileRepository userProfileRepository;
     private final ConnectionsService connectionsService;
     private final UserAdminApplicationProps applicationProps;
@@ -43,13 +43,13 @@ public class UserAdminService {
     private final DirectoryService directoryService;
 
     public UserAdminService(final UserAdminApplicationProps applicationProps,
-                            final UserAdminRepository userAdminRepository,
+                            final UserInfosRepository userInfosRepository,
                             final UserProfileRepository userProfileRepository,
                             final ConnectionsService connectionsService,
                             final DirectoryService directoryService,
                             final NotificationService notificationService) {
         this.applicationProps = Objects.requireNonNull(applicationProps);
-        this.userAdminRepository = Objects.requireNonNull(userAdminRepository);
+        this.userInfosRepository = Objects.requireNonNull(userInfosRepository);
         this.userProfileRepository = Objects.requireNonNull(userProfileRepository);
         this.connectionsService = Objects.requireNonNull(connectionsService);
         this.notificationService = Objects.requireNonNull(notificationService);
@@ -74,7 +74,7 @@ public class UserAdminService {
     @Transactional(readOnly = true)
     public List<UserInfos> getUsers(String userId) {
         assertIsAdmin(userId);
-        return userAdminRepository.findAll().stream().map(this::toDtoUserInfo).toList();
+        return userInfosRepository.findAll().stream().map(this::toDtoUserInfo).toList();
     }
 
     @Transactional(readOnly = true)
@@ -86,25 +86,25 @@ public class UserAdminService {
     @Transactional
     public void createUser(String sub, String userId) {
         assertIsAdmin(userId);
-        userAdminRepository.save(new UserInfosEntity(sub));
+        userInfosRepository.save(new UserInfosEntity(sub));
     }
 
     @Transactional
     public long delete(String sub, String userId) {
         assertIsAdmin(userId);
-        return userAdminRepository.deleteBySub(sub);
+        return userInfosRepository.deleteBySub(sub);
     }
 
     @Transactional
     public long delete(Collection<String> subs, String userId) {
         assertIsAdmin(userId);
-        return userAdminRepository.deleteAllBySubIn(subs);
+        return userInfosRepository.deleteAllBySubIn(subs);
     }
 
     @Transactional()
     public void updateUser(String sub, String userId, UserInfos userInfos) {
         assertIsAdmin(userId);
-        UserInfosEntity user = userAdminRepository.findBySub(sub).orElseThrow(() -> new UserAdminException(NOT_FOUND));
+        UserInfosEntity user = userInfosRepository.findBySub(sub).orElseThrow(() -> new UserAdminException(NOT_FOUND));
         Optional<UserProfileEntity> profile = userProfileRepository.findByName(userInfos.profileName());
         user.setSub(userInfos.sub());
         user.setProfile(profile.orElse(null));
@@ -113,9 +113,9 @@ public class UserAdminService {
     @Transactional
     public boolean subExists(String sub) {
         final List<String> admins = applicationProps.getAdmins();
-        final boolean isAllowed = admins.isEmpty() && userAdminRepository.count() == 0L
+        final boolean isAllowed = admins.isEmpty() && userInfosRepository.count() == 0L
                                 || admins.contains(sub)
-                                || userAdminRepository.existsBySub(sub);
+                                || userInfosRepository.existsBySub(sub);
         connectionsService.recordConnectionAttempt(sub, isAllowed);
         return isAllowed;
     }
@@ -123,7 +123,7 @@ public class UserAdminService {
     @Transactional(readOnly = true)
     public Optional<UserInfos> getUser(String sub, String userId) {
         assertIsAdmin(userId);
-        return userAdminRepository.findBySub(sub).map(this::toDtoUserInfo);
+        return userInfosRepository.findBySub(sub).map(this::toDtoUserInfo);
     }
 
     @Transactional(readOnly = true)
@@ -153,7 +153,7 @@ public class UserAdminService {
     public List<UserProfile> getProfiles(String sub) {
         List<UserProfileEntity> profiles;
         if (sub != null) {
-            UserInfosEntity user = userAdminRepository.findBySub(sub).orElseThrow(() -> new UserAdminException(NOT_FOUND));
+            UserInfosEntity user = userInfosRepository.findBySub(sub).orElseThrow(() -> new UserAdminException(NOT_FOUND));
             profiles = user.getProfile() == null ? List.of() : userProfileRepository.findById(user.getProfile().getId()).stream().toList();
         } else {
             profiles = userProfileRepository.findAll().stream().toList();
@@ -196,7 +196,8 @@ public class UserAdminService {
     public void updateProfile(UUID profileUuid, String userId, UserProfile userProfile) {
         assertIsAdmin(userId);
         UserProfileEntity profile = userProfileRepository.findById(profileUuid).orElseThrow(() -> new UserAdminException(NOT_FOUND));
-        profile.update(userProfile);
+        profile.setName(userProfile.name());
+        profile.setLoadFlowParameterId(userProfile.loadFlowParameterId());
     }
 
     @Transactional
