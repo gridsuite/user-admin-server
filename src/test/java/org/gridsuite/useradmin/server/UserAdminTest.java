@@ -10,6 +10,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import org.gridsuite.useradmin.server.dto.UserInfos;
+import org.gridsuite.useradmin.server.dto.UserProfile;
 import org.gridsuite.useradmin.server.entity.ConnectionEntity;
 import org.gridsuite.useradmin.server.repository.ConnectionRepository;
 import org.gridsuite.useradmin.server.repository.UserAdminRepository;
@@ -208,7 +209,10 @@ class UserAdminTest {
         assertEquals(USER_SUB, userInfos.sub());
 
         // Create a profile
-        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/profiles/{profileName}", PROFILE_1)
+        UserProfile profileInfo = new UserProfile(null, PROFILE_1, null, false);
+        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/profiles")
+                        .content(objectWriter.writeValueAsString(profileInfo))
+                        .contentType(MediaType.APPLICATION_JSON)
                         .header("userId", ADMIN_USER)
                 )
                 .andExpect(status().isCreated())
@@ -234,6 +238,23 @@ class UserAdminTest {
         assertNotNull(userInfos);
         assertEquals(USER_SUB2, userInfos.sub());
         assertEquals(PROFILE_1, userInfos.profileName());
+
+        // Get profiles for existing single user
+        List<UserProfile> userProfiles = objectMapper.readValue(
+                mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/profiles?sub=" + USER_SUB2)
+                                .contentType(APPLICATION_JSON))
+                        .andExpect(status().isOk())
+                        .andReturn().getResponse().getContentAsString(),
+                new TypeReference<>() {
+                });
+        assertEquals(1, userProfiles.size());
+        assertEquals(PROFILE_1, userProfiles.get(0).name());
+
+        // Get profiles for bad user
+        mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/profiles?sub=BAD_USER")
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andReturn();
 
         // bad update
         mockMvc.perform(put("/" + UserAdminApi.API_VERSION + "/users/{sub}", "bad user")

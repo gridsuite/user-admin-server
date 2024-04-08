@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.matching.StringValuePattern;
+import lombok.SneakyThrows;
 import org.gridsuite.useradmin.server.dto.ElementAttributes;
 import org.gridsuite.useradmin.server.dto.UserProfile;
 import org.gridsuite.useradmin.server.entity.UserProfileEntity;
@@ -103,13 +104,6 @@ public class UserProfileTest {
 
     @Test
     public void testUserProfile() throws Exception {
-        // stub for parameters elements existence check (no ids to check here)
-        final String urlPath = "/v1/elements";
-        UUID stubId = wireMockServer.stubFor(WireMock.get(WireMock.urlMatching(urlPath + "\\?strictMode=false&ids="))
-                .willReturn(WireMock.ok()
-                        .withBody(objectMapper.writeValueAsString(List.of()))
-                        .withHeader("Content-Type", "application/json"))).getId();
-
         // no existing profile
         List<UserProfile> userProfiles = objectMapper.readValue(
                 mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/profiles")
@@ -120,14 +114,8 @@ public class UserProfileTest {
                 new TypeReference<>() {
                 });
         assertEquals(0, userProfiles.size());
-        wireMockUtils.verifyGetRequest(stubId, urlPath, handleQueryParams(List.of()), false);
 
-        // Create a profile
-        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/profiles/{profileName}", PROFILE_1)
-                        .header("userId", ADMIN_USER)
-                )
-                .andExpect(status().isCreated())
-                .andReturn();
+        createProfile(PROFILE_1);
 
         userProfiles = objectMapper.readValue(
                 mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/profiles")
@@ -141,7 +129,6 @@ public class UserProfileTest {
         assertEquals(PROFILE_1, userProfiles.get(0).name());
         assertNull(userProfiles.get(0).loadFlowParameterId());
         assertNull(userProfiles.get(0).allParametersLinksValid());
-        wireMockUtils.verifyGetRequest(stubId, urlPath, handleQueryParams(List.of()), false);
 
         // Remove the profile
         mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/profiles")
@@ -161,7 +148,6 @@ public class UserProfileTest {
                 new TypeReference<>() {
                 });
         assertEquals(0, userProfiles.size());
-        wireMockUtils.verifyGetRequest(stubId, urlPath, handleQueryParams(List.of()), false);
 
         // not allowed
         mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/profiles")
@@ -202,12 +188,8 @@ public class UserProfileTest {
                         .withBody(objectMapper.writeValueAsString(validParameters ? existingElements : List.of()))
                         .withHeader("Content-Type", "application/json"))).getId();
 
-        // Create a profile
-        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/profiles/{profileName}", PROFILE_1)
-                        .header("userId", ADMIN_USER)
-                )
-                .andExpect(status().isCreated())
-                .andReturn();
+        createProfile(PROFILE_1);
+
         Optional<UserProfileEntity> profile1 = userProfileRepository.findByName(PROFILE_1);
         assertTrue(profile1.isPresent());
         assertNull(profile1.get().getLoadFlowParameterId()); // no LF params by dft
@@ -259,5 +241,17 @@ public class UserProfileTest {
 
     private Map<String, StringValuePattern> handleQueryParams(List<UUID> paramIds) {
         return Map.of("ids", WireMock.matching(paramIds.stream().map(uuid -> ".+").collect(Collectors.joining(","))));
+    }
+
+    @SneakyThrows
+    private void createProfile(String profileName) {
+        UserProfile profileInfo = new UserProfile(null, profileName, null, false);
+        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/profiles")
+                        .content(objectWriter.writeValueAsString(profileInfo))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("userId", ADMIN_USER)
+                )
+                .andExpect(status().isCreated())
+                .andReturn();
     }
 }
