@@ -127,12 +127,6 @@ public class UserAdminService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<UserProfile> getUserProfile(String sub) {
-        UserInfosEntity user = userAdminRepository.findBySub(sub).orElseThrow(() -> new UserAdminException(NOT_FOUND));
-        return user.getProfile() == null ? Optional.empty() : userProfileRepository.findById(user.getProfile().getId()).map(this::toDtoUserProfile);
-    }
-
-    @Transactional(readOnly = true)
     public boolean userIsAdmin(@NonNull String userId) {
         return isAdmin(userId);
     }
@@ -156,9 +150,17 @@ public class UserAdminService {
     }
 
     @Transactional(readOnly = true)
-    public List<UserProfile> getProfiles(String userId) {
-        assertIsAdmin(userId);
-        List<UserProfileEntity> profiles = userProfileRepository.findAll().stream().toList();
+    public List<UserProfile> getProfiles(String sub) {
+        List<UserProfileEntity> profiles;
+        if (sub != null) {
+            UserInfosEntity user = userAdminRepository.findBySub(sub).orElseThrow(() -> new UserAdminException(NOT_FOUND));
+            profiles = user.getProfile() == null ? List.of() : userProfileRepository.findById(user.getProfile().getId()).stream().toList();
+        } else {
+            profiles = userProfileRepository.findAll().stream().toList();
+        }
+        if (profiles.isEmpty()) {
+            return List.of();
+        }
 
         Set<UUID> allParametersUuidInAllProfiles = profiles
                 .stream()

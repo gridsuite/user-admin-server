@@ -6,11 +6,11 @@
  */
 package org.gridsuite.useradmin.server.service;
 
-import jakarta.validation.constraints.NotEmpty;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.gridsuite.useradmin.server.dto.ElementAttributes;
@@ -46,7 +46,10 @@ public class DirectoryService {
         DirectoryService.directoryServerBaseUri = serverBaseUri;
     }
 
-    public Set<UUID> getExistingElements(@NotEmpty Set<UUID> elementsUuids) {
+    public Set<UUID> getExistingElements(Set<UUID> elementsUuids) {
+        if (CollectionUtils.isEmpty(elementsUuids)) {
+            return Set.of();
+        }
         var ids = elementsUuids.stream().map(UUID::toString).collect(Collectors.joining(","));
         // no strict mode, to retrieve all elementsUuids, even if some of them don't exist
         String path = UriComponentsBuilder.fromPath(ELEMENTS_SERVER_ROOT_PATH).toUriString() + "?strictMode=false&ids=" + ids;

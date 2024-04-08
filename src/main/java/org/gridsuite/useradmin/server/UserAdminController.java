@@ -67,14 +67,6 @@ public class UserAdminController {
         return ResponseEntity.of(service.getUser(sub, userId));
     }
 
-    @GetMapping(value = "/users/{sub}/profile")
-    @Operation(summary = "Get the user profile informations")
-    @ApiResponse(responseCode = "200", description = "The user exist")
-    @ApiResponse(responseCode = "404", description = "The user doesn't exist")
-    public ResponseEntity<UserProfile> getUserProfile(@PathVariable("sub") String sub) {
-        return ResponseEntity.of(service.getUserProfile(sub));
-    }
-
     @PostMapping(value = "/users/{sub}")
     @Operation(summary = "Create the user", description = "Access restricted to users of type: `admin`")
     @ApiResponse(responseCode = "201", description = "The user has been created")
@@ -155,10 +147,10 @@ public class UserAdminController {
     }
 
     @GetMapping(value = "/profiles", produces = {MediaType.APPLICATION_JSON_VALUE})
-    @Operation(summary = "get all the user profiles")
+    @Operation(summary = "get all the user profiles, or optionally for a single user")
     @ApiResponse(responseCode = "200", description = "The profiles list")
-    public ResponseEntity<List<UserProfile>> getProfiles(@RequestHeader("userId") String userId) {
-        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getProfiles(userId));
+    public ResponseEntity<List<UserProfile>> getProfiles(@Parameter(description = "Only for a single user") @RequestParam(name = "sub", required = false) String sub) {
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getProfiles(sub));
     }
 
     @GetMapping(value = "/profiles/{profileUuid}")
