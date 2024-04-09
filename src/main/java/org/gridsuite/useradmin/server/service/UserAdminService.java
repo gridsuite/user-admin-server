@@ -10,7 +10,6 @@ import org.gridsuite.useradmin.server.UserAdminApplicationProps;
 import org.gridsuite.useradmin.server.UserAdminException;
 import org.gridsuite.useradmin.server.dto.UserConnection;
 import org.gridsuite.useradmin.server.dto.UserInfos;
-import org.gridsuite.useradmin.server.dto.UserProfile;
 import org.gridsuite.useradmin.server.entity.UserProfileEntity;
 import org.gridsuite.useradmin.server.repository.UserInfosRepository;
 import org.gridsuite.useradmin.server.entity.UserInfosEntity;
@@ -20,12 +19,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
-import java.util.Set;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static org.gridsuite.useradmin.server.UserAdminException.Type.FORBIDDEN;
 import static org.gridsuite.useradmin.server.UserAdminException.Type.NOT_FOUND;
@@ -40,20 +36,17 @@ public class UserAdminService {
     private final ConnectionsService connectionsService;
     private final UserAdminApplicationProps applicationProps;
     private final NotificationService notificationService;
-    private final DirectoryService directoryService;
 
     public UserAdminService(final UserAdminApplicationProps applicationProps,
                             final UserInfosRepository userInfosRepository,
                             final UserProfileRepository userProfileRepository,
                             final ConnectionsService connectionsService,
-                            final DirectoryService directoryService,
                             final NotificationService notificationService) {
         this.applicationProps = Objects.requireNonNull(applicationProps);
         this.userInfosRepository = Objects.requireNonNull(userInfosRepository);
         this.userProfileRepository = Objects.requireNonNull(userProfileRepository);
         this.connectionsService = Objects.requireNonNull(connectionsService);
         this.notificationService = Objects.requireNonNull(notificationService);
-        this.directoryService = Objects.requireNonNull(directoryService);
     }
 
     private boolean isAdmin(@lombok.NonNull String sub) {
@@ -61,7 +54,7 @@ public class UserAdminService {
         return admins.contains(sub);
     }
 
-    private void assertIsAdmin(@lombok.NonNull String sub) throws UserAdminException {
+    public void assertIsAdmin(@lombok.NonNull String sub) throws UserAdminException {
         if (!this.isAdmin(sub)) {
             throw new UserAdminException(FORBIDDEN);
         }
@@ -147,72 +140,5 @@ public class UserAdminService {
             throw new UserAdminException(FORBIDDEN);
         }
         notificationService.emitCancelMaintenanceMessage();
-    }
-
-    @Transactional(readOnly = true)
-    public List<UserProfile> getProfiles(String sub) {
-        List<UserProfileEntity> profiles;
-        if (sub != null) {
-            UserInfosEntity user = userInfosRepository.findBySub(sub).orElseThrow(() -> new UserAdminException(NOT_FOUND));
-            profiles = user.getProfile() == null ? List.of() : userProfileRepository.findById(user.getProfile().getId()).stream().toList();
-        } else {
-            profiles = userProfileRepository.findAll().stream().toList();
-        }
-        if (profiles.isEmpty()) {
-            return List.of();
-        }
-
-        Set<UUID> allParametersUuidInAllProfiles = profiles
-                .stream()
-                .map(UserProfileEntity::getLoadFlowParameterId)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
-        Set<UUID> existingParametersUuids = directoryService.getExistingElements(allParametersUuidInAllProfiles);
-        // relative complement will be used to check the elements validity (the missing set should be very small)
-        Set<UUID> missingParametersUuids = allParametersUuidInAllProfiles
-                .stream()
-                .filter(id -> !existingParametersUuids.contains(id))
-                .collect(Collectors.toSet());
-
-        return profiles
-                .stream()
-                .map(p -> {
-                    Boolean allParametersLinksValid = null;
-                    if (p.getLoadFlowParameterId() != null) {
-                        allParametersLinksValid = !missingParametersUuids.contains(p.getLoadFlowParameterId());
-                    }
-                    return UserProfileEntity.toDto(p, allParametersLinksValid);
-                })
-                .toList();
-    }
-
-    @Transactional(readOnly = true)
-    public Optional<UserProfile> getProfile(UUID profileUuid, String userId) {
-        assertIsAdmin(userId);
-        return userProfileRepository.findById(profileUuid).map(this::toDtoUserProfile);
-    }
-
-    @Transactional()
-    public void updateProfile(UUID profileUuid, String userId, UserProfile userProfile) {
-        assertIsAdmin(userId);
-        UserProfileEntity profile = userProfileRepository.findById(profileUuid).orElseThrow(() -> new UserAdminException(NOT_FOUND));
-        profile.setName(userProfile.name());
-        profile.setLoadFlowParameterId(userProfile.loadFlowParameterId());
-    }
-
-    @Transactional
-    public void createProfile(String profileName, String userId) {
-        assertIsAdmin(userId);
-        userProfileRepository.save(new UserProfileEntity(profileName));
-    }
-
-    @Transactional
-    public long deleteProfiles(List<String> names, String userId) {
-        assertIsAdmin(userId);
-        return userProfileRepository.deleteAllByNameIn(names);
-    }
-
-    private UserProfile toDtoUserProfile(final UserProfileEntity entity) {
-        return UserProfileEntity.toDto(entity);
     }
 }
