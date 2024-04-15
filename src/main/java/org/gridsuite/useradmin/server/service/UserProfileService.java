@@ -20,6 +20,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static org.gridsuite.useradmin.server.UserAdminException.Type.NOT_FOUND;
@@ -59,7 +60,9 @@ public class UserProfileService {
 
         Set<UUID> allParametersUuidInAllProfiles = profiles
                 .stream()
-                .map(UserProfileEntity::getLoadFlowParameterId)
+                .mapMulti((UserProfileEntity e, Consumer<UUID> consumer) ->
+                    consumer.accept(e.getLoadFlowParameterId())
+                )
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
         Set<UUID> existingParametersUuids = directoryService.getExistingElements(allParametersUuidInAllProfiles);
@@ -76,7 +79,7 @@ public class UserProfileService {
                     if (p.getLoadFlowParameterId() != null) {
                         allParametersLinksValid = !missingParametersUuids.contains(p.getLoadFlowParameterId());
                     }
-                    return UserProfileEntity.toDto(p, allParametersLinksValid);
+                    return toDto(p, allParametersLinksValid);
                 })
                 .toList();
     }
@@ -84,7 +87,7 @@ public class UserProfileService {
     @Transactional(readOnly = true)
     public Optional<UserProfile> getProfile(UUID profileUuid, String userId) {
         userAdminService.assertIsAdmin(userId);
-        return userProfileRepository.findById(profileUuid).map(this::toDtoUserProfile);
+        return userProfileRepository.findById(profileUuid).map(this::toDto);
     }
 
     @Transactional()
@@ -107,7 +110,14 @@ public class UserProfileService {
         return userProfileRepository.deleteAllByNameIn(names);
     }
 
-    private UserProfile toDtoUserProfile(final UserProfileEntity entity) {
-        return UserProfileEntity.toDto(entity);
+    private UserProfile toDto(final UserProfileEntity entity) {
+        return toDto(entity, null);
+    }
+
+    private UserProfile toDto(final UserProfileEntity entity, Boolean allParametersLinksValid) {
+        if (entity == null) {
+            return null;
+        }
+        return new UserProfile(entity.getId(), entity.getName(), entity.getLoadFlowParameterId(), allParametersLinksValid);
     }
 }

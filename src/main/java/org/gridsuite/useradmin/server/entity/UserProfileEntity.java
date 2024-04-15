@@ -7,12 +7,10 @@
 package org.gridsuite.useradmin.server.entity;
 
 import jakarta.persistence.*;
-import jakarta.annotation.Nullable;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.gridsuite.useradmin.server.dto.UserProfile;
 
 import java.util.UUID;
 
@@ -40,19 +38,5 @@ public class UserProfileEntity {
 
     @Column(name = "loadFlowParameterId")
     private UUID loadFlowParameterId;
-
-    public static UserProfile toDto(@Nullable final UserProfileEntity entity) {
-        if (entity == null) {
-            return null;
-        }
-        return new UserProfile(entity.getId(), entity.getName(), entity.getLoadFlowParameterId(), null);
-    }
-
-    public static UserProfile toDto(@Nullable final UserProfileEntity entity, Boolean allParametersLinksValid) {
-        if (entity == null) {
-            return null;
-        }
-        return new UserProfile(entity.getId(), entity.getName(), entity.getLoadFlowParameterId(), allParametersLinksValid);
-    }
 }
 
