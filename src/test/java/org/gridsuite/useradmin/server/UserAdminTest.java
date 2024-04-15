@@ -9,6 +9,7 @@ package org.gridsuite.useradmin.server;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import lombok.SneakyThrows;
 import org.gridsuite.useradmin.server.dto.UserInfos;
 import org.gridsuite.useradmin.server.dto.UserProfile;
 import org.gridsuite.useradmin.server.entity.ConnectionEntity;
@@ -21,6 +22,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.stream.binder.test.OutputDestination;
 import org.springframework.cloud.stream.binder.test.TestChannelBinderConfiguration;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
@@ -187,81 +190,37 @@ class UserAdminTest {
     }
 
     @Test
-    void testUpdateUser() throws Exception {
-        ObjectWriter objectWriter = objectMapper.writer().withDefaultPrettyPrinter();
-        // add a user
-        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB)
-                        .header("userId", ADMIN_USER)
-                )
-                .andExpect(status().isCreated())
-                .andReturn();
-        UserInfos userInfos = objectMapper.readValue(
-                mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB)
-                                .header("userId", ADMIN_USER)
-                                .contentType(APPLICATION_JSON))
-                        .andExpect(status().isOk())
-                        .andReturn().getResponse().getContentAsString(),
-                new TypeReference<>() {
-                });
-        // the new user has no profile by default
-        assertNotNull(userInfos);
-        assertNull(userInfos.profileName());
-        assertEquals(USER_SUB, userInfos.sub());
-
-        // Create a profile
-        UserProfile profileInfo = new UserProfile(null, PROFILE_1, null, false);
-        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/profiles")
-                        .content(objectWriter.writeValueAsString(profileInfo))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("userId", ADMIN_USER)
-                )
-                .andExpect(status().isCreated())
-                .andReturn();
+    @SneakyThrows
+    void testUpdateUser() {
+        createUser(USER_SUB);
+        createProfile(PROFILE_1);
 
         // udpate the user: change its name and link it to the profile
         UserInfos userInfo = new UserInfos(USER_SUB2, false, PROFILE_1);
-        mockMvc.perform(put("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB)
-                        .content(objectWriter.writeValueAsString(userInfo))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("userId", ADMIN_USER))
-                .andExpect(status().isOk());
+        updateUser(USER_SUB, userInfo, HttpStatus.OK, ADMIN_USER);
 
-        userInfos = objectMapper.readValue(
-                mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB2)
-                                .header("userId", ADMIN_USER)
-                                .contentType(APPLICATION_JSON))
-                        .andExpect(status().isOk())
-                        .andReturn().getResponse().getContentAsString(),
-                new TypeReference<>() {
-                });
-        // the new user has the new name and profile
-        assertNotNull(userInfos);
-        assertEquals(USER_SUB2, userInfos.sub());
-        assertEquals(PROFILE_1, userInfos.profileName());
+        // Get and check user profile
+        UserProfile userProfile = getUserProfile(USER_SUB2, HttpStatus.OK);
+        assertNotNull(userProfile);
+        assertEquals(PROFILE_1, userProfile.name());
+    }
 
-        // Get profiles for existing single user
-        List<UserProfile> userProfiles = objectMapper.readValue(
-                mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/profiles?sub=" + USER_SUB2)
-                                .contentType(APPLICATION_JSON))
-                        .andExpect(status().isOk())
-                        .andReturn().getResponse().getContentAsString(),
-                new TypeReference<>() {
-                });
-        assertEquals(1, userProfiles.size());
-        assertEquals(PROFILE_1, userProfiles.get(0).name());
+    @Test
+    @SneakyThrows
+    void testUpdateUserNotFound() {
+        updateUser("nofFound", new UserInfos("nofFound", false, "prof"), HttpStatus.NOT_FOUND, ADMIN_USER);
+    }
 
-        // Get profiles for bad user
-        mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/profiles?sub=BAD_USER")
-                        .contentType(APPLICATION_JSON))
-                .andExpect(status().isNotFound())
-                .andReturn();
+    @Test
+    @SneakyThrows
+    void testUpdateUserForbidden() {
+        updateUser("dummy", new UserInfos("dummy", false, "prof"), HttpStatus.FORBIDDEN, NOT_ADMIN);
+    }
 
-        // bad update
-        mockMvc.perform(put("/" + UserAdminApi.API_VERSION + "/users/{sub}", "bad user")
-                        .content(objectWriter.writeValueAsString(userInfo))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("userId", ADMIN_USER))
-                .andExpect(status().isNotFound());
+    @Test
+    @SneakyThrows
+    void testGetUserProfileNotFound() {
+        getUserProfile("BadUser", HttpStatus.NOT_FOUND);
     }
 
     @Test
@@ -386,5 +345,80 @@ class UserAdminTest {
         assertEquals("", new String(message.getPayload()));
         MessageHeaders headers = message.getHeaders();
         assertEquals(MESSAGE_TYPE_CANCEL_MAINTENANCE, headers.get(HEADER_MESSAGE_TYPE));
+    }
+
+    @SneakyThrows
+    private void createUser(String userName) {
+        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/users/{sub}", userName)
+                        .header("userId", ADMIN_USER)
+                )
+                .andExpect(status().isCreated())
+                .andReturn();
+        UserInfos userInfos = objectMapper.readValue(
+                mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users/{sub}", userName)
+                                .header("userId", ADMIN_USER)
+                                .contentType(APPLICATION_JSON))
+                        .andExpect(status().isOk())
+                        .andReturn().getResponse().getContentAsString(),
+                new TypeReference<>() {
+                });
+        // the new user has no profile by default
+        assertNotNull(userInfos);
+        assertNull(userInfos.profileName());
+        assertEquals(userName, userInfos.sub());
+    }
+
+    @SneakyThrows
+    private void createProfile(String profileName) {
+        ObjectWriter objectWriter = objectMapper.writer().withDefaultPrettyPrinter();
+        UserProfile profileInfo = new UserProfile(null, profileName, null, false);
+        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/profiles")
+                        .content(objectWriter.writeValueAsString(profileInfo))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("userId", ADMIN_USER)
+                )
+                .andExpect(status().isCreated())
+                .andReturn();
+    }
+
+    @SneakyThrows
+    private void updateUser(String updatedUserName, UserInfos userInfos, HttpStatusCode status, String userName) {
+        ObjectWriter objectWriter = objectMapper.writer().withDefaultPrettyPrinter();
+        mockMvc.perform(put("/" + UserAdminApi.API_VERSION + "/users/{sub}", updatedUserName)
+                        .content(objectWriter.writeValueAsString(userInfos))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("userId", userName))
+                .andExpect(status().is(status.value()));
+
+        if (status == HttpStatus.OK) {
+            UserInfos updatedUserInfos = objectMapper.readValue(
+                    mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users/{sub}", userInfos.sub())
+                                    .header("userId", userName)
+                                    .contentType(APPLICATION_JSON))
+                            .andExpect(status().isOk())
+                            .andReturn().getResponse().getContentAsString(),
+                    new TypeReference<>() {
+                    });
+            // the new user has the new name and profile
+            assertNotNull(updatedUserInfos);
+            assertEquals(userInfos.sub(), updatedUserInfos.sub());
+            assertEquals(userInfos.profileName(), updatedUserInfos.profileName());
+        }
+    }
+
+    @SneakyThrows
+    private UserProfile getUserProfile(String userName, HttpStatusCode status) {
+        String response = mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/profiles?sub=" + userName)
+                                .contentType(APPLICATION_JSON))
+                        .andExpect(status().is(status.value()))
+                        .andReturn().getResponse().getContentAsString();
+        if (status == HttpStatus.OK) {
+            List<UserProfile> profiles = objectMapper.readValue(response,
+                    new TypeReference<>() {
+                    });
+            assertEquals(1, profiles.size());
+            return profiles.get(0);
+        }
+        return null;
     }
 }

@@ -27,6 +27,8 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -103,140 +105,97 @@ public class UserProfileTest {
     private static final String PROFILE_2 = "profile_2";
 
     @Test
-    public void testUserProfile() throws Exception {
-        // no existing profile
-        List<UserProfile> userProfiles = objectMapper.readValue(
-                mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/profiles")
-                                .header("userId", ADMIN_USER)
-                                .contentType(APPLICATION_JSON))
-                        .andExpect(status().isOk())
-                        .andReturn().getResponse().getContentAsString(),
-                new TypeReference<>() {
-                });
-        assertEquals(0, userProfiles.size());
+    public void testEmptyProfileList() {
+        // no existing profile in empty db
+        assertEquals(0, getProfileList().size());
+    }
 
-        createProfile(PROFILE_1);
+    @Test
+    @SneakyThrows
+    public void testCreateProfile() {
+        createProfile(PROFILE_1, ADMIN_USER, HttpStatus.CREATED);
 
-        userProfiles = objectMapper.readValue(
-                mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/profiles")
-                                .header("userId", ADMIN_USER)
-                                .contentType(APPLICATION_JSON))
-                        .andExpect(status().isOk())
-                        .andReturn().getResponse().getContentAsString(),
-                new TypeReference<>() {
-                });
+        List<UserProfile> userProfiles = getProfileList();
         assertEquals(1, userProfiles.size());
         assertEquals(PROFILE_1, userProfiles.get(0).name());
         assertNull(userProfiles.get(0).loadFlowParameterId());
         assertNull(userProfiles.get(0).allParametersLinksValid());
-
-        // Remove the profile
-        mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/profiles")
-                        .content(objectWriter.writeValueAsString(List.of(PROFILE_1)))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("userId", ADMIN_USER)
-                )
-                .andExpect(status().isNoContent())
-                .andReturn();
-
-        userProfiles = objectMapper.readValue(
-                mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/profiles")
-                                .header("userId", ADMIN_USER)
-                                .contentType(APPLICATION_JSON))
-                        .andExpect(status().isOk())
-                        .andReturn().getResponse().getContentAsString(),
-                new TypeReference<>() {
-                });
-        assertEquals(0, userProfiles.size());
-
-        // not allowed
-        mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/profiles")
-                        .content(objectWriter.writeValueAsString(List.of(PROFILE_1)))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("userId", NOT_ADMIN)
-                )
-                .andExpect(status().isForbidden())
-                .andReturn();
-
-        // profile already deleted / not found
-        mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/profiles")
-                        .content(objectWriter.writeValueAsString(List.of(PROFILE_1)))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("userId", ADMIN_USER)
-                )
-                .andExpect(status().isNotFound())
-                .andReturn();
     }
 
     @Test
-    public void testProfileUpdateValidityOk() throws Exception {
+    @SneakyThrows
+    public void testCreateProfileForbidden() {
+        createProfile(PROFILE_1, NOT_ADMIN, HttpStatus.FORBIDDEN);
+    }
+
+    @Test
+    @SneakyThrows
+    public void testDeleteExistingProfile() {
+        createProfile(PROFILE_1, ADMIN_USER, HttpStatus.CREATED);
+        assertEquals(1, getProfileList().size());
+        removeProfile(PROFILE_1, ADMIN_USER, HttpStatus.NO_CONTENT);
+        assertEquals(0, getProfileList().size());
+    }
+
+    @Test
+    @SneakyThrows
+    public void testDeleteProfileForbidden() {
+        removeProfile(PROFILE_1, NOT_ADMIN, HttpStatus.FORBIDDEN);
+    }
+
+    @Test
+    @SneakyThrows
+    public void testDeleteProfileNotFound() {
+        removeProfile("noExist", ADMIN_USER, HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    @SneakyThrows
+    public void testProfileUpdateNotFound() {
+        updateProfile(new UserProfile(UUID.randomUUID(), PROFILE_2, null, null), ADMIN_USER, HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    @SneakyThrows
+    public void testProfileUpdateForbidden() {
+        updateProfile(new UserProfile(UUID.randomUUID(), PROFILE_2, null, null), NOT_ADMIN, HttpStatus.FORBIDDEN);
+    }
+
+    @Test
+    @SneakyThrows
+    public void testProfileUpdateValidityOk() {
         updateProfile(true);
     }
 
     @Test
-    public void testProfileUpdateValidityKo() throws Exception {
+    @SneakyThrows
+    public void testProfileUpdateValidityKo() {
         updateProfile(false);
     }
 
-    private void updateProfile(boolean validParameters) throws Exception {
+    @SneakyThrows
+    private void updateProfile(boolean validParameters) {
         UUID lfParametersUuid = UUID.randomUUID();
         // stub for parameters elements existence check
         final String urlPath = "/v1/elements";
-        List<ElementAttributes> existingElements = List.of(new ElementAttributes(lfParametersUuid, "name", "type"));
+        List<ElementAttributes> existingElements = validParameters ? List.of(new ElementAttributes(lfParametersUuid, "name", "type")) : List.of();
         UUID stubId = wireMockServer.stubFor(WireMock.get(WireMock.urlMatching(urlPath + "\\?strictMode=false&ids=" + lfParametersUuid))
                 .willReturn(WireMock.ok()
-                        .withBody(objectMapper.writeValueAsString(validParameters ? existingElements : List.of()))
+                        .withBody(objectMapper.writeValueAsString(existingElements))
                         .withHeader("Content-Type", "application/json"))).getId();
 
-        createProfile(PROFILE_1);
-
-        Optional<UserProfileEntity> profile1 = userProfileRepository.findByName(PROFILE_1);
-        assertTrue(profile1.isPresent());
-        assertNull(profile1.get().getLoadFlowParameterId()); // no LF params by dft
-
-        UUID profileUuid = profile1.get().getId();
+        UUID profileUuid = createProfile(PROFILE_1, ADMIN_USER, HttpStatus.CREATED);
 
         // udpate the profile: change name and set its LF parameters
         UserProfile userProfile = new UserProfile(profileUuid, PROFILE_2, lfParametersUuid, null);
-        mockMvc.perform(put("/" + UserAdminApi.API_VERSION + "/profiles/{profileUuid}", profileUuid)
-                        .content(objectWriter.writeValueAsString(userProfile))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("userId", ADMIN_USER))
-                .andExpect(status().isOk());
-
-        userProfile = objectMapper.readValue(
-                mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/profiles/{profileUuid}", profileUuid)
-                                .header("userId", ADMIN_USER)
-                                .contentType(APPLICATION_JSON))
-                        .andExpect(status().isOk())
-                        .andReturn().getResponse().getContentAsString(),
-                new TypeReference<>() {
-                });
-        assertNotNull(userProfile);
-        assertEquals(PROFILE_2, userProfile.name());
-        assertEquals(lfParametersUuid, userProfile.loadFlowParameterId());
-        assertNull(userProfile.allParametersLinksValid()); // validity not set in this case
+        updateProfile(userProfile, ADMIN_USER, HttpStatus.OK);
 
         // profiles list (with validity flag)
-        List<UserProfile> userProfiles = objectMapper.readValue(
-                mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/profiles")
-                                .header("userId", ADMIN_USER)
-                                .contentType(APPLICATION_JSON))
-                        .andExpect(status().isOk())
-                        .andReturn().getResponse().getContentAsString(),
-                new TypeReference<>() {
-                });
+        List<UserProfile> userProfiles = getProfileList();
         wireMockUtils.verifyGetRequest(stubId, urlPath, handleQueryParams(List.of(lfParametersUuid)), false);
         assertEquals(1, userProfiles.size());
         assertEquals(lfParametersUuid, userProfiles.get(0).loadFlowParameterId());
         assertEquals(validParameters, userProfiles.get(0).allParametersLinksValid());
-
-        // bad update
-        mockMvc.perform(put("/" + UserAdminApi.API_VERSION + "/profiles/{profileUuid}", UUID.randomUUID())
-                        .content(objectWriter.writeValueAsString(userProfile))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("userId", ADMIN_USER))
-                .andExpect(status().isNotFound());
     }
 
     private Map<String, StringValuePattern> handleQueryParams(List<UUID> paramIds) {
@@ -244,14 +203,70 @@ public class UserProfileTest {
     }
 
     @SneakyThrows
-    private void createProfile(String profileName) {
+    private UUID createProfile(String profileName, String userName, HttpStatusCode status) {
         UserProfile profileInfo = new UserProfile(null, profileName, null, false);
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/profiles")
                         .content(objectWriter.writeValueAsString(profileInfo))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header("userId", ADMIN_USER)
+                        .header("userId", userName)
                 )
-                .andExpect(status().isCreated())
+                .andExpect(status().is(status.value()))
                 .andReturn();
+        if (status == HttpStatus.CREATED) {
+            // check repository
+            Optional<UserProfileEntity> profile1 = userProfileRepository.findByName(profileName);
+            assertTrue(profile1.isPresent());
+            assertNull(profile1.get().getLoadFlowParameterId()); // no LF params by dft
+            return profile1.get().getId();
+        }
+        return null;
+    }
+
+    @SneakyThrows
+    private List<UserProfile> getProfileList() {
+        return objectMapper.readValue(
+                mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/profiles")
+                                .header("userId", ADMIN_USER)
+                                .contentType(APPLICATION_JSON))
+                        .andExpect(status().isOk())
+                        .andReturn().getResponse().getContentAsString(),
+                new TypeReference<>() {
+                });
+    }
+
+    @SneakyThrows
+    private void removeProfile(String profileName, String userName, HttpStatusCode status) {
+        mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/profiles")
+                        .content(objectWriter.writeValueAsString(List.of(profileName)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("userId", userName)
+                )
+                .andExpect(status().is(status.value()))
+                .andReturn();
+    }
+
+    @SneakyThrows
+    private void updateProfile(UserProfile newData, String userName, HttpStatusCode status) {
+        mockMvc.perform(put("/" + UserAdminApi.API_VERSION + "/profiles/{profileUuid}", newData.id())
+                        .content(objectWriter.writeValueAsString(newData))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("userId", userName))
+                .andExpect(status().is(status.value()));
+
+        if (status == HttpStatus.OK) {
+            // check access to updated profile
+            UserProfile updatedProfile = objectMapper.readValue(
+                    mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/profiles/{profileUuid}", newData.id())
+                                    .header("userId", userName)
+                                    .contentType(APPLICATION_JSON))
+                            .andExpect(status().isOk())
+                            .andReturn().getResponse().getContentAsString(),
+                    new TypeReference<>() {
+                    });
+            assertNotNull(updatedProfile);
+            assertEquals(newData.name(), updatedProfile.name());
+            assertEquals(newData.loadFlowParameterId(), updatedProfile.loadFlowParameterId());
+            assertNull(updatedProfile.allParametersLinksValid()); // validity not set in this case
+        }
     }
 }
