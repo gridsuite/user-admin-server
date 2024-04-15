@@ -41,7 +41,7 @@ public class UserProfileController {
     @Operation(summary = "get all the user profiles, or optionally for a single user")
     @ApiResponse(responseCode = "200", description = "The profiles list")
     public ResponseEntity<List<UserProfile>> getProfiles(@Parameter(description = "Only for a single user") @RequestParam(name = "sub", required = false) String sub) {
-        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getProfiles(sub));
+        return ResponseEntity.ok().body(service.getProfiles(sub));
     }
 
     @GetMapping(value = "/{profileUuid}")
