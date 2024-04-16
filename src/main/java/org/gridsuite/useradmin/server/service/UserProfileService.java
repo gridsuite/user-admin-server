@@ -6,6 +6,7 @@
  */
 package org.gridsuite.useradmin.server.service;
 
+import com.google.common.collect.Sets;
 import org.gridsuite.useradmin.server.UserAdminException;
 import org.gridsuite.useradmin.server.dto.UserProfile;
 import org.gridsuite.useradmin.server.entity.UserInfosEntity;
@@ -67,10 +68,7 @@ public class UserProfileService {
                 .collect(Collectors.toSet());
         Set<UUID> existingParametersUuids = directoryService.getExistingElements(allParametersUuidInAllProfiles);
         // relative complement will be used to check the elements validity (the missing set should be very small)
-        Set<UUID> missingParametersUuids = allParametersUuidInAllProfiles
-                .stream()
-                .filter(id -> !existingParametersUuids.contains(id))
-                .collect(Collectors.toSet());
+        Set<UUID> missingParametersUuids = Sets.difference(allParametersUuidInAllProfiles, existingParametersUuids);
 
         return profiles
                 .stream()
