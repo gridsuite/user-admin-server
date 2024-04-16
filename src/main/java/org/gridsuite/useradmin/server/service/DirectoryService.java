@@ -50,9 +50,10 @@ public class DirectoryService {
         if (CollectionUtils.isEmpty(elementsUuids)) {
             return Set.of();
         }
-        var ids = elementsUuids.stream().map(UUID::toString).collect(Collectors.joining(","));
-        // no strict mode, to retrieve all elementsUuids, even if some of them don't exist
-        String path = UriComponentsBuilder.fromPath(ELEMENTS_SERVER_ROOT_PATH).toUriString() + "?strictMode=false&ids=" + ids;
+        String path = UriComponentsBuilder.fromPath(ELEMENTS_SERVER_ROOT_PATH)
+                .queryParam("strictMode", false) // no strict mode, to retrieve all elementsUuids, even if some of them don't exist
+                .queryParam("ids", elementsUuids)
+                .toUriString();
         List<ElementAttributes> existingElementList = restTemplate.exchange(directoryServerBaseUri + path, HttpMethod.GET, null,
                 new ParameterizedTypeReference<List<ElementAttributes>>() {
                 }).getBody();
