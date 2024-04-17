@@ -47,7 +47,7 @@ public class UserProfileService {
     }
 
     @Transactional(readOnly = true)
-    public List<UserProfile> getProfiles(String sub) {
+    public List<UserProfile> getProfiles(String sub, boolean checkLinksValidity) {
         List<UserProfileEntity> profiles;
         if (sub != null) {
             UserInfosEntity user = userInfosRepository.findBySub(sub).orElseThrow(() -> new UserAdminException(NOT_FOUND));
@@ -57,6 +57,13 @@ public class UserProfileService {
         }
         if (profiles.isEmpty()) {
             return List.of();
+        }
+
+        if (!checkLinksValidity) {
+            return profiles
+                .stream()
+                .map(this::toDto)
+                .toList();
         }
 
         Set<UUID> allParametersUuidInAllProfiles = profiles
