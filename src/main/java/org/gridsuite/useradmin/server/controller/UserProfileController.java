@@ -14,6 +14,7 @@ import jakarta.validation.constraints.NotEmpty;
 import org.gridsuite.useradmin.server.UserAdminApi;
 import org.gridsuite.useradmin.server.dto.UserProfile;
 import org.gridsuite.useradmin.server.service.UserProfileService;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -77,11 +78,16 @@ public class UserProfileController {
     @Operation(summary = "delete the profiles", description = "Access restricted to users of type: `admin`")
     @ApiResponse(responseCode = "204", description = "Profiles deleted")
     @ApiResponse(responseCode = "404", description = "One or more profile(s) not found")
+    @ApiResponse(responseCode = "422", description = "Integrity issue when a profile is still referenced by users")
     public ResponseEntity<Void> deleteProfiles(@RequestHeader("userId") String userId, @RequestBody @NotEmpty List<String> names) {
-        if (service.deleteProfiles(names, userId) > 0L) {
-            return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.notFound().build();
+        try {
+            if (service.deleteProfiles(names, userId) > 0L) {
+                return ResponseEntity.noContent().build();
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.unprocessableEntity().build();
         }
     }
 }
