@@ -4,7 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package org.gridsuite.useradmin.server;
+package org.gridsuite.useradmin.server.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -12,8 +12,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotEmpty;
+import org.gridsuite.useradmin.server.UserAdminApi;
 import org.gridsuite.useradmin.server.dto.UserConnection;
 import org.gridsuite.useradmin.server.dto.UserInfos;
+import org.gridsuite.useradmin.server.dto.UserProfile;
 import org.gridsuite.useradmin.server.service.UserAdminService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -83,6 +85,17 @@ public class UserAdminController {
         } else {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @PutMapping(value = "/users/{sub}")
+    @Operation(summary = "update a user", description = "Access restricted to users of type: `admin`")
+    @ApiResponse(responseCode = "200", description = "The user is updated")
+    @ApiResponse(responseCode = "404", description = "The user does not exist")
+    public ResponseEntity<UserProfile> updateUser(@PathVariable("sub") String sub,
+                                                  @RequestHeader("userId") String userId,
+                                                  @RequestBody UserInfos userInfos) {
+        service.updateUser(sub, userId, userInfos);
+        return ResponseEntity.ok().build();
     }
 
     @RequestMapping(value = "/users/{sub}", method = RequestMethod.HEAD)

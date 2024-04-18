@@ -8,11 +8,13 @@ package org.gridsuite.useradmin.server;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.gridsuite.useradmin.server.repository.ConnectionEntity;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import lombok.SneakyThrows;
+import org.gridsuite.useradmin.server.dto.UserInfos;
+import org.gridsuite.useradmin.server.dto.UserProfile;
+import org.gridsuite.useradmin.server.entity.ConnectionEntity;
 import org.gridsuite.useradmin.server.repository.ConnectionRepository;
-import org.gridsuite.useradmin.server.repository.UserAdminRepository;
-import org.gridsuite.useradmin.server.repository.UserInfosEntity;
-import org.gridsuite.useradmin.server.service.NotificationService;
+import org.gridsuite.useradmin.server.repository.UserInfosRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.stream.binder.test.OutputDestination;
 import org.springframework.cloud.stream.binder.test.TestChannelBinderConfiguration;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
@@ -50,13 +54,10 @@ class UserAdminTest {
     private ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
-    private UserAdminRepository userAdminRepository;
+    private UserInfosRepository userInfosRepository;
 
     @Autowired
     private ConnectionRepository connectionRepository;
-
-    @Autowired
-    private NotificationService notificationService;
 
     @Autowired
     private OutputDestination output;
@@ -67,7 +68,7 @@ class UserAdminTest {
 
     @AfterEach
     public void cleanDB() {
-        userAdminRepository.deleteAll();
+        userInfosRepository.deleteAll();
         connectionRepository.deleteAll();
     }
 
@@ -76,6 +77,7 @@ class UserAdminTest {
     private static final String USER_UNKNOWN = "UNKNOWN";
     private static final String ADMIN_USER = "admin1";
     private static final String NOT_ADMIN = "notAdmin";
+    private static final String PROFILE_1 = "profile_1";
 
     @Test
     void testUserAdmin() throws Exception {
@@ -87,7 +89,7 @@ class UserAdminTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        List<UserInfosEntity> userEntities = objectMapper.readValue(
+        List<UserInfos> userInfos = objectMapper.readValue(
                 mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users")
                                 .header("userId", ADMIN_USER)
                                 .contentType(APPLICATION_JSON))
@@ -96,7 +98,7 @@ class UserAdminTest {
                 new TypeReference<>() {
                 });
 
-        assertEquals(0, userEntities.size());
+        assertEquals(0, userInfos.size());
 
         mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/{sub}", ADMIN_USER))
                 .andExpect(status().isOk())
@@ -108,7 +110,7 @@ class UserAdminTest {
                 .andExpect(status().isCreated())
                 .andReturn();
 
-        userEntities = objectMapper.readValue(
+        userInfos = objectMapper.readValue(
                 mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users")
                                 .header("userId", ADMIN_USER)
                                 .contentType(APPLICATION_JSON))
@@ -117,7 +119,7 @@ class UserAdminTest {
                 new TypeReference<>() {
                 });
 
-        assertEquals(1, userEntities.size());
+        assertEquals(1, userInfos.size());
 
         mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB))
                 .andExpect(status().isOk())
@@ -144,7 +146,7 @@ class UserAdminTest {
                 .andExpect(status().isNoContent())
                 .andReturn();
 
-        userEntities = objectMapper.readValue(
+        userInfos = objectMapper.readValue(
                 mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users")
                                 .header("userId", ADMIN_USER)
                                 .contentType(APPLICATION_JSON))
@@ -152,7 +154,7 @@ class UserAdminTest {
                         .andReturn().getResponse().getContentAsString(),
                 new TypeReference<>() {
                 });
-        assertEquals(0, userEntities.size());
+        assertEquals(0, userInfos.size());
 
         mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB)
                         .header("userId", NOT_ADMIN)
@@ -188,6 +190,40 @@ class UserAdminTest {
     }
 
     @Test
+    @SneakyThrows
+    void testUpdateUser() {
+        createUser(USER_SUB);
+        createProfile(PROFILE_1);
+
+        // udpate the user: change its name and link it to the profile
+        UserInfos userInfo = new UserInfos(USER_SUB2, false, PROFILE_1);
+        updateUser(USER_SUB, userInfo, HttpStatus.OK, ADMIN_USER);
+
+        // Get and check user profile
+        UserProfile userProfile = getUserProfile(USER_SUB2, HttpStatus.OK);
+        assertNotNull(userProfile);
+        assertEquals(PROFILE_1, userProfile.name());
+    }
+
+    @Test
+    @SneakyThrows
+    void testUpdateUserNotFound() {
+        updateUser("nofFound", new UserInfos("nofFound", false, "prof"), HttpStatus.NOT_FOUND, ADMIN_USER);
+    }
+
+    @Test
+    @SneakyThrows
+    void testUpdateUserForbidden() {
+        updateUser("dummy", new UserInfos("dummy", false, "prof"), HttpStatus.FORBIDDEN, NOT_ADMIN);
+    }
+
+    @Test
+    @SneakyThrows
+    void testGetUserProfileNotFound() {
+        getUserProfile("BadUser", HttpStatus.NOT_FOUND);
+    }
+
+    @Test
     void testGetConnections() throws Exception {
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB)
                         .header("userId", ADMIN_USER)
@@ -201,7 +237,7 @@ class UserAdminTest {
                 .andExpect(status().isCreated())
                 .andReturn();
 
-        List<UserInfosEntity> userEntities = objectMapper.readValue(
+        List<UserInfos> userInfos = objectMapper.readValue(
                 mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users")
                                 .header("userId", ADMIN_USER)
                                 .contentType(APPLICATION_JSON))
@@ -210,7 +246,7 @@ class UserAdminTest {
                 new TypeReference<>() {
                 });
 
-        assertEquals(2, userEntities.size());
+        assertEquals(2, userInfos.size());
 
         mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB))
                 .andExpect(status().isOk())
@@ -252,7 +288,7 @@ class UserAdminTest {
     }
 
     @Test
-    public void testSendMaintenanceMessage() throws Exception {
+    void testSendMaintenanceMessage() throws Exception {
         //Send a maintenance message and expect everything to be ok
         String requestBody = objectMapper.writeValueAsString("The application will be on maintenance until the end of the maintenance");
         Integer duration = 300;
@@ -283,7 +319,7 @@ class UserAdminTest {
     }
 
     @Test
-    public void testCancelMaintenanceMessage() throws Exception {
+    void testCancelMaintenanceMessage() throws Exception {
         //Send a cancel maintenance message and expect everything to be ok
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/messages/cancel-maintenance")
                         .header("userId", ADMIN_USER))
@@ -309,5 +345,80 @@ class UserAdminTest {
         assertEquals("", new String(message.getPayload()));
         MessageHeaders headers = message.getHeaders();
         assertEquals(MESSAGE_TYPE_CANCEL_MAINTENANCE, headers.get(HEADER_MESSAGE_TYPE));
+    }
+
+    @SneakyThrows
+    private void createUser(String userName) {
+        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/users/{sub}", userName)
+                        .header("userId", ADMIN_USER)
+                )
+                .andExpect(status().isCreated())
+                .andReturn();
+        UserInfos userInfos = objectMapper.readValue(
+                mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users/{sub}", userName)
+                                .header("userId", ADMIN_USER)
+                                .contentType(APPLICATION_JSON))
+                        .andExpect(status().isOk())
+                        .andReturn().getResponse().getContentAsString(),
+                new TypeReference<>() {
+                });
+        // the new user has no profile by default
+        assertNotNull(userInfos);
+        assertNull(userInfos.profileName());
+        assertEquals(userName, userInfos.sub());
+    }
+
+    @SneakyThrows
+    private void createProfile(String profileName) {
+        ObjectWriter objectWriter = objectMapper.writer().withDefaultPrettyPrinter();
+        UserProfile profileInfo = new UserProfile(null, profileName, null, false);
+        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/profiles")
+                        .content(objectWriter.writeValueAsString(profileInfo))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("userId", ADMIN_USER)
+                )
+                .andExpect(status().isCreated())
+                .andReturn();
+    }
+
+    @SneakyThrows
+    private void updateUser(String updatedUserName, UserInfos userInfos, HttpStatusCode status, String userName) {
+        ObjectWriter objectWriter = objectMapper.writer().withDefaultPrettyPrinter();
+        mockMvc.perform(put("/" + UserAdminApi.API_VERSION + "/users/{sub}", updatedUserName)
+                        .content(objectWriter.writeValueAsString(userInfos))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("userId", userName))
+                .andExpect(status().is(status.value()));
+
+        if (status == HttpStatus.OK) {
+            UserInfos updatedUserInfos = objectMapper.readValue(
+                    mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users/{sub}", userInfos.sub())
+                                    .header("userId", userName)
+                                    .contentType(APPLICATION_JSON))
+                            .andExpect(status().isOk())
+                            .andReturn().getResponse().getContentAsString(),
+                    new TypeReference<>() {
+                    });
+            // the new user has the new name and profile
+            assertNotNull(updatedUserInfos);
+            assertEquals(userInfos.sub(), updatedUserInfos.sub());
+            assertEquals(userInfos.profileName(), updatedUserInfos.profileName());
+        }
+    }
+
+    @SneakyThrows
+    private UserProfile getUserProfile(String userName, HttpStatusCode status) {
+        String response = mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/profiles?sub=" + userName)
+                                .contentType(APPLICATION_JSON))
+                        .andExpect(status().is(status.value()))
+                        .andReturn().getResponse().getContentAsString();
+        if (status == HttpStatus.OK) {
+            List<UserProfile> profiles = objectMapper.readValue(response,
+                    new TypeReference<>() {
+                    });
+            assertEquals(1, profiles.size());
+            return profiles.get(0);
+        }
+        return null;
     }
 }

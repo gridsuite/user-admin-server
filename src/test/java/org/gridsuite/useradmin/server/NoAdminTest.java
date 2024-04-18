@@ -7,8 +7,8 @@
 package org.gridsuite.useradmin.server;
 
 import org.gridsuite.useradmin.server.repository.ConnectionRepository;
-import org.gridsuite.useradmin.server.repository.UserAdminRepository;
-import org.gridsuite.useradmin.server.repository.UserInfosEntity;
+import org.gridsuite.useradmin.server.repository.UserInfosRepository;
+import org.gridsuite.useradmin.server.entity.UserInfosEntity;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,14 +33,14 @@ class NoAdminTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private UserAdminRepository userAdminRepository;
+    private UserInfosRepository userInfosRepository;
 
     @Autowired
     private ConnectionRepository connectionRepository;
 
     @AfterEach
     public void cleanDB() {
-        userAdminRepository.deleteAll();
+        userInfosRepository.deleteAll();
         connectionRepository.deleteAll();
     }
 
@@ -50,7 +50,7 @@ class NoAdminTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        userAdminRepository.save(new UserInfosEntity("newUser"));
+        userInfosRepository.save(new UserInfosEntity("newUser"));
 
         mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_NOT_REGISTERED))
                 .andExpect(status().isNoContent())
