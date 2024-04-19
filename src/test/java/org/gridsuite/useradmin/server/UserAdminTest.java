@@ -408,16 +408,13 @@ class UserAdminTest {
 
     @SneakyThrows
     private UserProfile getUserProfile(String userName, HttpStatusCode status) {
-        String response = mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/profiles?sub=" + userName)
+        String response = mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users/" + userName + "/profile")
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().is(status.value()))
                         .andReturn().getResponse().getContentAsString();
         if (status == HttpStatus.OK) {
-            List<UserProfile> profiles = objectMapper.readValue(response,
-                    new TypeReference<>() {
-                    });
-            assertEquals(1, profiles.size());
-            return profiles.get(0);
+            return objectMapper.readValue(response, new TypeReference<>() {
+            });
         }
         return null;
     }

@@ -6,10 +6,10 @@
  */
 package org.gridsuite.useradmin.server.service;
 
-import org.gridsuite.useradmin.server.UserAdminApplicationProps;
 import org.gridsuite.useradmin.server.UserAdminException;
 import org.gridsuite.useradmin.server.dto.UserConnection;
 import org.gridsuite.useradmin.server.dto.UserInfos;
+import org.gridsuite.useradmin.server.dto.UserProfile;
 import org.gridsuite.useradmin.server.entity.UserProfileEntity;
 import org.gridsuite.useradmin.server.repository.UserInfosRepository;
 import org.gridsuite.useradmin.server.entity.UserInfosEntity;
@@ -34,69 +34,61 @@ public class UserAdminService {
     private final UserInfosRepository userInfosRepository;
     private final UserProfileRepository userProfileRepository;
     private final ConnectionsService connectionsService;
-    private final UserAdminApplicationProps applicationProps;
     private final NotificationService notificationService;
+    private final AdminRightService adminRightService;
+    private final UserProfileService userProfileService;
 
-    public UserAdminService(final UserAdminApplicationProps applicationProps,
-                            final UserInfosRepository userInfosRepository,
+    public UserAdminService(final UserInfosRepository userInfosRepository,
                             final UserProfileRepository userProfileRepository,
                             final ConnectionsService connectionsService,
-                            final NotificationService notificationService) {
-        this.applicationProps = Objects.requireNonNull(applicationProps);
+                            final AdminRightService adminRightService,
+                            final NotificationService notificationService,
+                            final UserProfileService userProfileService) {
         this.userInfosRepository = Objects.requireNonNull(userInfosRepository);
         this.userProfileRepository = Objects.requireNonNull(userProfileRepository);
         this.connectionsService = Objects.requireNonNull(connectionsService);
+        this.adminRightService = Objects.requireNonNull(adminRightService);
         this.notificationService = Objects.requireNonNull(notificationService);
-    }
-
-    private boolean isAdmin(@lombok.NonNull String sub) {
-        final List<String> admins = applicationProps.getAdmins();
-        return admins.contains(sub);
-    }
-
-    public void assertIsAdmin(@lombok.NonNull String sub) throws UserAdminException {
-        if (!this.isAdmin(sub)) {
-            throw new UserAdminException(FORBIDDEN);
-        }
+        this.userProfileService = Objects.requireNonNull(userProfileService);
     }
 
     private UserInfos toDtoUserInfo(final UserInfosEntity entity) {
-        return UserInfosEntity.toDto(entity, this::isAdmin);
+        return UserInfosEntity.toDto(entity, adminRightService::isAdmin);
     }
 
     @Transactional(readOnly = true)
     public List<UserInfos> getUsers(String userId) {
-        assertIsAdmin(userId);
+        adminRightService.assertIsAdmin(userId);
         return userInfosRepository.findAll().stream().map(this::toDtoUserInfo).toList();
     }
 
     @Transactional(readOnly = true)
     public List<UserConnection> getConnections(String userId) {
-        assertIsAdmin(userId);
+        adminRightService.assertIsAdmin(userId);
         return connectionsService.removeDuplicates();
     }
 
     @Transactional
     public void createUser(String sub, String userId) {
-        assertIsAdmin(userId);
+        adminRightService.assertIsAdmin(userId);
         userInfosRepository.save(new UserInfosEntity(sub));
     }
 
     @Transactional
     public long delete(String sub, String userId) {
-        assertIsAdmin(userId);
+        adminRightService.assertIsAdmin(userId);
         return userInfosRepository.deleteBySub(sub);
     }
 
     @Transactional
     public long delete(Collection<String> subs, String userId) {
-        assertIsAdmin(userId);
+        adminRightService.assertIsAdmin(userId);
         return userInfosRepository.deleteAllBySubIn(subs);
     }
 
     @Transactional()
     public void updateUser(String sub, String userId, UserInfos userInfos) {
-        assertIsAdmin(userId);
+        adminRightService.assertIsAdmin(userId);
         UserInfosEntity user = userInfosRepository.findBySub(sub).orElseThrow(() -> new UserAdminException(NOT_FOUND));
         Optional<UserProfileEntity> profile = userProfileRepository.findByName(userInfos.profileName());
         user.setSub(userInfos.sub());
@@ -105,7 +97,7 @@ public class UserAdminService {
 
     @Transactional
     public boolean subExists(String sub) {
-        final List<String> admins = applicationProps.getAdmins();
+        final List<String> admins = adminRightService.getAdmins();
         final boolean isAllowed = admins.isEmpty() && userInfosRepository.count() == 0L
                                 || admins.contains(sub)
                                 || userInfosRepository.existsBySub(sub);
@@ -115,17 +107,24 @@ public class UserAdminService {
 
     @Transactional(readOnly = true)
     public Optional<UserInfos> getUser(String sub, String userId) {
-        assertIsAdmin(userId);
+        adminRightService.assertIsAdmin(userId);
         return userInfosRepository.findBySub(sub).map(this::toDtoUserInfo);
     }
 
     @Transactional(readOnly = true)
+    public Optional<UserProfile> getUserProfile(String sub) {
+        // this method is not restricted to Admin because it is called by any user to retrieve its own profile
+        UserInfosEntity user = userInfosRepository.findBySub(sub).orElseThrow(() -> new UserAdminException(NOT_FOUND));
+        return user.getProfile() == null ? Optional.empty() : userProfileService.getProfile(user.getProfile().getId());
+    }
+
+    @Transactional(readOnly = true)
     public boolean userIsAdmin(@NonNull String userId) {
-        return isAdmin(userId);
+        return adminRightService.isAdmin(userId);
     }
 
     public void sendMaintenanceMessage(String userId, Integer durationInSeconds, String message) {
-        if (!isAdmin(userId)) {
+        if (!adminRightService.isAdmin(userId)) {
             throw new UserAdminException(FORBIDDEN);
         }
         if (durationInSeconds == null) {
@@ -136,7 +135,7 @@ public class UserAdminService {
     }
 
     public void sendCancelMaintenanceMessage(String userId) {
-        if (!isAdmin(userId)) {
+        if (!adminRightService.isAdmin(userId)) {
             throw new UserAdminException(FORBIDDEN);
         }
         notificationService.emitCancelMaintenanceMessage();
