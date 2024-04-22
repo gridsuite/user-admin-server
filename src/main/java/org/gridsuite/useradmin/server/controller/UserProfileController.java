@@ -39,11 +39,11 @@ public class UserProfileController {
     }
 
     @GetMapping(value = "", produces = {MediaType.APPLICATION_JSON_VALUE})
-    @Operation(summary = "get all the user profiles, or optionally for a single user")
+    @Operation(summary = "get all the user profiles")
     @ApiResponse(responseCode = "200", description = "The profiles list")
-    public ResponseEntity<List<UserProfile>> getProfiles(@Parameter(description = "Only for a single user") @RequestParam(name = "sub", required = false) String sub,
+    public ResponseEntity<List<UserProfile>> getProfiles(@RequestHeader("userId") String userId,
                                                          @Parameter(description = "To check if parameters links are still valid") @RequestParam(name = "checkLinksValidity", required = false, defaultValue = "true") boolean checkLinksValidity) {
-        return ResponseEntity.ok().body(service.getProfiles(sub, checkLinksValidity));
+        return ResponseEntity.ok().body(service.getProfiles(userId, checkLinksValidity));
     }
 
     @GetMapping(value = "/{profileUuid}")

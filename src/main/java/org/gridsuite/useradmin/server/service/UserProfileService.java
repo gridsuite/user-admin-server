@@ -9,9 +9,7 @@ package org.gridsuite.useradmin.server.service;
 import com.google.common.collect.Sets;
 import org.gridsuite.useradmin.server.UserAdminException;
 import org.gridsuite.useradmin.server.dto.UserProfile;
-import org.gridsuite.useradmin.server.entity.UserInfosEntity;
 import org.gridsuite.useradmin.server.entity.UserProfileEntity;
-import org.gridsuite.useradmin.server.repository.UserInfosRepository;
 import org.gridsuite.useradmin.server.repository.UserProfileRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,30 +29,22 @@ import static org.gridsuite.useradmin.server.UserAdminException.Type.NOT_FOUND;
  */
 @Service
 public class UserProfileService {
-    private final UserInfosRepository userInfosRepository;
     private final UserProfileRepository userProfileRepository;
     private final DirectoryService directoryService;
-    private final UserAdminService userAdminService;
+    private final AdminRightService adminRightService;
 
-    public UserProfileService(final UserInfosRepository userInfosRepository,
-                              final UserProfileRepository userProfileRepository,
-                              final UserAdminService userAdminService,
+    public UserProfileService(final UserProfileRepository userProfileRepository,
+                              final AdminRightService adminRightService,
                               final DirectoryService directoryService) {
-        this.userInfosRepository = Objects.requireNonNull(userInfosRepository);
         this.userProfileRepository = Objects.requireNonNull(userProfileRepository);
-        this.userAdminService = Objects.requireNonNull(userAdminService);
+        this.adminRightService = Objects.requireNonNull(adminRightService);
         this.directoryService = Objects.requireNonNull(directoryService);
     }
 
     @Transactional(readOnly = true)
-    public List<UserProfile> getProfiles(String sub, boolean checkLinksValidity) {
-        List<UserProfileEntity> profiles;
-        if (sub != null) {
-            UserInfosEntity user = userInfosRepository.findBySub(sub).orElseThrow(() -> new UserAdminException(NOT_FOUND));
-            profiles = user.getProfile() == null ? List.of() : userProfileRepository.findById(user.getProfile().getId()).stream().toList();
-        } else {
-            profiles = userProfileRepository.findAll().stream().toList();
-        }
+    public List<UserProfile> getProfiles(String userId, boolean checkLinksValidity) {
+        adminRightService.assertIsAdmin(userId);
+        List<UserProfileEntity> profiles = userProfileRepository.findAll().stream().toList();
         if (profiles.isEmpty()) {
             return List.of();
         }
@@ -91,13 +81,13 @@ public class UserProfileService {
 
     @Transactional(readOnly = true)
     public Optional<UserProfile> getProfile(UUID profileUuid, String userId) {
-        userAdminService.assertIsAdmin(userId);
-        return userProfileRepository.findById(profileUuid).map(this::toDto);
+        adminRightService.assertIsAdmin(userId);
+        return getProfile(profileUuid);
     }
 
     @Transactional()
     public void updateProfile(UUID profileUuid, String userId, UserProfile userProfile) {
-        userAdminService.assertIsAdmin(userId);
+        adminRightService.assertIsAdmin(userId);
         UserProfileEntity profile = userProfileRepository.findById(profileUuid).orElseThrow(() -> new UserAdminException(NOT_FOUND));
         profile.setName(userProfile.name());
         profile.setLoadFlowParameterId(userProfile.loadFlowParameterId());
@@ -105,14 +95,18 @@ public class UserProfileService {
 
     @Transactional
     public void createProfile(String profileName, String userId) {
-        userAdminService.assertIsAdmin(userId);
+        adminRightService.assertIsAdmin(userId);
         userProfileRepository.save(new UserProfileEntity(profileName));
     }
 
     @Transactional
     public long deleteProfiles(List<String> names, String userId) {
-        userAdminService.assertIsAdmin(userId);
+        adminRightService.assertIsAdmin(userId);
         return userProfileRepository.deleteAllByNameIn(names);
+    }
+
+    Optional<UserProfile> getProfile(UUID profileUuid) {
+        return userProfileRepository.findById(profileUuid).map(this::toDto);
     }
 
     private UserProfile toDto(final UserProfileEntity entity) {

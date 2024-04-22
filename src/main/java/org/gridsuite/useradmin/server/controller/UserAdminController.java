@@ -115,6 +115,14 @@ public class UserAdminController {
                 : ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
+    @GetMapping(value = "/users/{sub}/profile")
+    @Operation(summary = "Get the user's profile")
+    @ApiResponse(responseCode = "200", description = "The user profile")
+    @ApiResponse(responseCode = "404", description = "The user doesn't exist")
+    public ResponseEntity<UserProfile> getUserProfile(@PathVariable("sub") String sub) {
+        return ResponseEntity.of(service.getUserProfile(sub));
+    }
+
     @GetMapping(value = "/connections", produces = {MediaType.APPLICATION_JSON_VALUE})
     @Operation(summary = "get the connections", description = "Access restricted to users of type: `admin`")
     @ApiResponse(responseCode = "200", description = "The connections list")
