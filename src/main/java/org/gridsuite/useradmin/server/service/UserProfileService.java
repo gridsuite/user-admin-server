@@ -22,6 +22,7 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import static org.gridsuite.useradmin.server.UserAdminException.Type.BAD_REQUEST;
 import static org.gridsuite.useradmin.server.UserAdminException.Type.NOT_FOUND;
 
 /**
@@ -91,12 +92,17 @@ public class UserProfileService {
         UserProfileEntity profile = userProfileRepository.findById(profileUuid).orElseThrow(() -> new UserAdminException(NOT_FOUND));
         profile.setName(userProfile.name());
         profile.setLoadFlowParameterId(userProfile.loadFlowParameterId());
+        profile.setMaxAllowedCases(userProfile.maxAllowedCases());
     }
 
     @Transactional
-    public void createProfile(String profileName, String userId) {
+    public void createProfile(UserProfile userProfile, String userId) {
         adminRightService.assertIsAdmin(userId);
-        userProfileRepository.save(new UserProfileEntity(profileName));
+        UserProfileEntity userProfileEntity = toEntity(userProfile);
+        if (userProfileEntity == null) {
+            throw new UserAdminException(BAD_REQUEST, "Invalid user profile");
+        }
+        userProfileRepository.save(userProfileEntity);
     }
 
     @Transactional
@@ -117,6 +123,13 @@ public class UserProfileService {
         if (entity == null) {
             return null;
         }
-        return new UserProfile(entity.getId(), entity.getName(), entity.getLoadFlowParameterId(), allParametersLinksValid);
+        return new UserProfile(entity.getId(), entity.getName(), entity.getLoadFlowParameterId(), allParametersLinksValid, entity.getMaxAllowedCases());
+    }
+
+    private UserProfileEntity toEntity(final UserProfile userProfile) {
+        if (userProfile == null) {
+            return null;
+        }
+        return new UserProfileEntity(UUID.randomUUID(), userProfile.name(), userProfile.loadFlowParameterId(), userProfile.maxAllowedCases());
     }
 }

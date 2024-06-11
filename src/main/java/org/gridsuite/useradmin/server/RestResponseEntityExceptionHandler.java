@@ -11,8 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import static org.gridsuite.useradmin.server.UserAdminException.Type.FORBIDDEN;
-import static org.gridsuite.useradmin.server.UserAdminException.Type.NOT_FOUND;
+import static org.gridsuite.useradmin.server.UserAdminException.Type.*;
 
 /**
  * @author Etienne Homer <etienne.homer at rte-france.com>
@@ -27,6 +26,8 @@ public class RestResponseEntityExceptionHandler {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(userAdminException.getType());
             } else if (userAdminException.getType().equals(NOT_FOUND)) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(userAdminException.getType());
+            } else if (userAdminException.getType().equals(BAD_REQUEST)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(userAdminException.getMessage());
             }
         }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

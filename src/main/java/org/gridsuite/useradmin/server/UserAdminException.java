@@ -14,13 +14,19 @@ import java.util.Objects;
 public class UserAdminException extends RuntimeException {
     public enum Type {
         FORBIDDEN,
-        NOT_FOUND
+        NOT_FOUND,
+        BAD_REQUEST,
     }
 
     private final Type type;
 
     public UserAdminException(Type type) {
         super(Objects.requireNonNull(type.name()));
+        this.type = type;
+    }
+
+    public UserAdminException(Type type, String message) {
+        super(message);
         this.type = type;
     }
 
