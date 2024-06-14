@@ -22,7 +22,6 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import static org.gridsuite.useradmin.server.UserAdminException.Type.BAD_REQUEST;
 import static org.gridsuite.useradmin.server.UserAdminException.Type.NOT_FOUND;
 
 /**
@@ -99,9 +98,6 @@ public class UserProfileService {
     public void createProfile(UserProfile userProfile, String userId) {
         adminRightService.assertIsAdmin(userId);
         UserProfileEntity userProfileEntity = toEntity(userProfile);
-        if (userProfileEntity == null) {
-            throw new UserAdminException(BAD_REQUEST, "Invalid user profile");
-        }
         userProfileRepository.save(userProfileEntity);
     }
 
@@ -127,9 +123,7 @@ public class UserProfileService {
     }
 
     private UserProfileEntity toEntity(final UserProfile userProfile) {
-        if (userProfile == null) {
-            return null;
-        }
+        Objects.requireNonNull(userProfile);
         return new UserProfileEntity(UUID.randomUUID(), userProfile.name(), userProfile.loadFlowParameterId(), userProfile.maxAllowedCases());
     }
 }
