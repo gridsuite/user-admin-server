@@ -14,6 +14,7 @@ import com.github.tomakehurst.wiremock.matching.StringValuePattern;
 import lombok.SneakyThrows;
 import org.gridsuite.useradmin.server.dto.ElementAttributes;
 import org.gridsuite.useradmin.server.dto.UserProfile;
+import org.gridsuite.useradmin.server.entity.UserInfosEntity;
 import org.gridsuite.useradmin.server.entity.UserProfileEntity;
 import org.gridsuite.useradmin.server.repository.UserInfosRepository;
 import org.gridsuite.useradmin.server.repository.UserProfileRepository;
@@ -33,6 +34,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import com.github.tomakehurst.wiremock.WireMockServer;
+import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
 import java.util.Map;
@@ -172,6 +174,36 @@ public class UserProfileTest {
     @SneakyThrows
     public void testProfileUpdateValidityKo() {
         updateProfile(false);
+    }
+
+    @Test
+    @SneakyThrows
+    public void testGetProfileMaxAllowedCases() {
+        UserProfileEntity userProfileEntity = new UserProfileEntity(UUID.randomUUID(), "profileName", null, 15);
+        UserInfosEntity userInfosEntity = new UserInfosEntity(UUID.randomUUID(), ADMIN_USER, userProfileEntity);
+        userProfileRepository.save(userProfileEntity);
+        userInfosRepository.save(userInfosEntity);
+
+        MvcResult result = mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users/{sub}/profile/max-cases", ADMIN_USER)
+                        .header("userId", ADMIN_USER)
+                )
+                .andExpect(status().isOk())
+                .andReturn();
+        assertEquals("15", result.getResponse().getContentAsString());
+    }
+
+    @Test
+    @SneakyThrows
+    public void testGetProfileMaxAllowedCasesWithNoProfileSet() {
+        UserInfosEntity userInfosEntity = new UserInfosEntity(UUID.randomUUID(), ADMIN_USER, null);
+        userInfosRepository.save(userInfosEntity);
+
+        MvcResult result = mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users/{sub}/profile/max-cases", ADMIN_USER)
+                        .header("userId", ADMIN_USER)
+                )
+                .andExpect(status().isOk())
+                .andReturn();
+        assertEquals("", result.getResponse().getContentAsString());
     }
 
     @SneakyThrows
