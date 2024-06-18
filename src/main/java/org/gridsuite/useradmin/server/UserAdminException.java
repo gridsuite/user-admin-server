@@ -15,7 +15,6 @@ public class UserAdminException extends RuntimeException {
     public enum Type {
         FORBIDDEN,
         NOT_FOUND,
-        BAD_REQUEST,
     }
 
     private final Type type;

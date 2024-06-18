@@ -124,7 +124,7 @@ public class UserAdminController {
     }
 
     @GetMapping(value = "/users/{sub}/profile/max-cases")
-    @Operation(summary = "Get the user's profile")
+    @Operation(summary = "Get the user's max allowed cases")
     @ApiResponse(responseCode = "200", description = "The user max allowed cases created")
     @ApiResponse(responseCode = "404", description = "The user doesn't exist")
     public ResponseEntity<Integer> getUserProfileMaxStudies(@PathVariable("sub") String sub) {
