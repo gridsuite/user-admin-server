@@ -25,10 +25,6 @@ import java.util.UUID;
 @Table(name = "user_profile")
 public class UserProfileEntity {
 
-    public UserProfileEntity(String name) {
-        this(UUID.randomUUID(), name, null);
-    }
-
     @Id
     @Column(name = "id")
     private UUID id;
@@ -38,5 +34,8 @@ public class UserProfileEntity {
 
     @Column(name = "loadFlowParameterId")
     private UUID loadFlowParameterId;
+
+    @Column(name = "maxAllowedCases")
+    private Integer maxAllowedCases;
 }
 

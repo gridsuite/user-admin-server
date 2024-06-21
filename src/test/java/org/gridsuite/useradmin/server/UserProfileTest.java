@@ -14,6 +14,7 @@ import com.github.tomakehurst.wiremock.matching.StringValuePattern;
 import lombok.SneakyThrows;
 import org.gridsuite.useradmin.server.dto.ElementAttributes;
 import org.gridsuite.useradmin.server.dto.UserProfile;
+import org.gridsuite.useradmin.server.entity.UserInfosEntity;
 import org.gridsuite.useradmin.server.entity.UserProfileEntity;
 import org.gridsuite.useradmin.server.repository.UserInfosRepository;
 import org.gridsuite.useradmin.server.repository.UserProfileRepository;
@@ -33,6 +34,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import com.github.tomakehurst.wiremock.WireMockServer;
+import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
 import java.util.Map;
@@ -113,25 +115,26 @@ public class UserProfileTest {
     @Test
     @SneakyThrows
     public void testCreateProfile() {
-        createProfile(PROFILE_1, ADMIN_USER, HttpStatus.CREATED);
+        createProfile(PROFILE_1, ADMIN_USER, 10, HttpStatus.CREATED);
 
         List<UserProfile> userProfiles = getProfileList();
         assertEquals(1, userProfiles.size());
         assertEquals(PROFILE_1, userProfiles.get(0).name());
         assertNull(userProfiles.get(0).loadFlowParameterId());
         assertNull(userProfiles.get(0).allParametersLinksValid());
+        assertEquals(10, userProfiles.get(0).maxAllowedCases());
     }
 
     @Test
     @SneakyThrows
     public void testCreateProfileForbidden() {
-        createProfile(PROFILE_1, NOT_ADMIN, HttpStatus.FORBIDDEN);
+        createProfile(PROFILE_1, NOT_ADMIN, 1, HttpStatus.FORBIDDEN);
     }
 
     @Test
     @SneakyThrows
     public void testDeleteExistingProfile() {
-        createProfile(PROFILE_1, ADMIN_USER, HttpStatus.CREATED);
+        createProfile(PROFILE_1, ADMIN_USER, null, HttpStatus.CREATED);
         assertEquals(1, getProfileList().size());
         removeProfile(PROFILE_1, ADMIN_USER, HttpStatus.NO_CONTENT);
         assertEquals(0, getProfileList().size());
@@ -152,13 +155,13 @@ public class UserProfileTest {
     @Test
     @SneakyThrows
     public void testProfileUpdateNotFound() {
-        updateProfile(new UserProfile(UUID.randomUUID(), PROFILE_2, null, null), ADMIN_USER, HttpStatus.NOT_FOUND);
+        updateProfile(new UserProfile(UUID.randomUUID(), PROFILE_2, null, null, null), ADMIN_USER, HttpStatus.NOT_FOUND);
     }
 
     @Test
     @SneakyThrows
     public void testProfileUpdateForbidden() {
-        updateProfile(new UserProfile(UUID.randomUUID(), PROFILE_2, null, null), NOT_ADMIN, HttpStatus.FORBIDDEN);
+        updateProfile(new UserProfile(UUID.randomUUID(), PROFILE_2, null, null, null), NOT_ADMIN, HttpStatus.FORBIDDEN);
     }
 
     @Test
@@ -173,6 +176,36 @@ public class UserProfileTest {
         updateProfile(false);
     }
 
+    @Test
+    @SneakyThrows
+    public void testGetProfileMaxAllowedCases() {
+        UserProfileEntity userProfileEntity = new UserProfileEntity(UUID.randomUUID(), "profileName", null, 15);
+        UserInfosEntity userInfosEntity = new UserInfosEntity(UUID.randomUUID(), ADMIN_USER, userProfileEntity);
+        userProfileRepository.save(userProfileEntity);
+        userInfosRepository.save(userInfosEntity);
+
+        MvcResult result = mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users/{sub}/profile/max-cases", ADMIN_USER)
+                        .header("userId", ADMIN_USER)
+                )
+                .andExpect(status().isOk())
+                .andReturn();
+        assertEquals("15", result.getResponse().getContentAsString());
+    }
+
+    @Test
+    @SneakyThrows
+    public void testGetProfileMaxAllowedCasesWithNoProfileSet() {
+        UserInfosEntity userInfosEntity = new UserInfosEntity(UUID.randomUUID(), ADMIN_USER, null);
+        userInfosRepository.save(userInfosEntity);
+
+        MvcResult result = mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users/{sub}/profile/max-cases", ADMIN_USER)
+                        .header("userId", ADMIN_USER)
+                )
+                .andExpect(status().isOk())
+                .andReturn();
+        assertEquals("", result.getResponse().getContentAsString());
+    }
+
     @SneakyThrows
     private void updateProfile(boolean validParameters) {
         UUID lfParametersUuid = UUID.randomUUID();
@@ -184,10 +217,10 @@ public class UserProfileTest {
                         .withBody(objectMapper.writeValueAsString(existingElements))
                         .withHeader("Content-Type", "application/json"))).getId();
 
-        UUID profileUuid = createProfile(PROFILE_1, ADMIN_USER, HttpStatus.CREATED);
+        UUID profileUuid = createProfile(PROFILE_1, ADMIN_USER, null, HttpStatus.CREATED);
 
-        // udpate the profile: change name and set its LF parameters
-        UserProfile userProfile = new UserProfile(profileUuid, PROFILE_2, lfParametersUuid, null);
+        // udpate the profile: change name and set its LF parameters and maxAllowedCases
+        UserProfile userProfile = new UserProfile(profileUuid, PROFILE_2, lfParametersUuid, null, 10);
         updateProfile(userProfile, ADMIN_USER, HttpStatus.OK);
 
         // profiles list (with validity flag)
@@ -196,6 +229,7 @@ public class UserProfileTest {
         assertEquals(1, userProfiles.size());
         assertEquals(lfParametersUuid, userProfiles.get(0).loadFlowParameterId());
         assertEquals(validParameters, userProfiles.get(0).allParametersLinksValid());
+        assertEquals(10, userProfiles.get(0).maxAllowedCases());
     }
 
     private Map<String, StringValuePattern> handleQueryParams(List<UUID> paramIds) {
@@ -203,8 +237,8 @@ public class UserProfileTest {
     }
 
     @SneakyThrows
-    private UUID createProfile(String profileName, String userName, HttpStatusCode status) {
-        UserProfile profileInfo = new UserProfile(null, profileName, null, false);
+    private UUID createProfile(String profileName, String userName, Integer maxAllowedCases, HttpStatusCode status) {
+        UserProfile profileInfo = new UserProfile(null, profileName, null, false, maxAllowedCases);
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/profiles")
                         .content(objectWriter.writeValueAsString(profileInfo))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -216,6 +250,7 @@ public class UserProfileTest {
             // check repository
             Optional<UserProfileEntity> profile1 = userProfileRepository.findByName(profileName);
             assertTrue(profile1.isPresent());
+            assertEquals(maxAllowedCases, profile1.get().getMaxAllowedCases());
             assertNull(profile1.get().getLoadFlowParameterId()); // no LF params by dft
             return profile1.get().getId();
         }
@@ -266,6 +301,7 @@ public class UserProfileTest {
             assertNotNull(updatedProfile);
             assertEquals(newData.name(), updatedProfile.name());
             assertEquals(newData.loadFlowParameterId(), updatedProfile.loadFlowParameterId());
+            assertEquals(newData.maxAllowedCases(), updatedProfile.maxAllowedCases());
             assertNull(updatedProfile.allParametersLinksValid()); // validity not set in this case
         }
     }

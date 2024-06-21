@@ -14,6 +14,7 @@ import org.gridsuite.useradmin.server.entity.UserProfileEntity;
 import org.gridsuite.useradmin.server.repository.UserInfosRepository;
 import org.gridsuite.useradmin.server.entity.UserInfosEntity;
 import org.gridsuite.useradmin.server.repository.UserProfileRepository;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,19 +38,22 @@ public class UserAdminService {
     private final NotificationService notificationService;
     private final AdminRightService adminRightService;
     private final UserProfileService userProfileService;
+    private final UserAdminService self;
 
     public UserAdminService(final UserInfosRepository userInfosRepository,
                             final UserProfileRepository userProfileRepository,
                             final ConnectionsService connectionsService,
                             final AdminRightService adminRightService,
                             final NotificationService notificationService,
-                            final UserProfileService userProfileService) {
+                            final UserProfileService userProfileService,
+                            @Lazy final UserAdminService userAdminService) {
         this.userInfosRepository = Objects.requireNonNull(userInfosRepository);
         this.userProfileRepository = Objects.requireNonNull(userProfileRepository);
         this.connectionsService = Objects.requireNonNull(connectionsService);
         this.adminRightService = Objects.requireNonNull(adminRightService);
         this.notificationService = Objects.requireNonNull(notificationService);
         this.userProfileService = Objects.requireNonNull(userProfileService);
+        this.self = Objects.requireNonNull(userAdminService);
     }
 
     private UserInfos toDtoUserInfo(final UserInfosEntity entity) {
@@ -116,6 +120,12 @@ public class UserAdminService {
         // this method is not restricted to Admin because it is called by any user to retrieve its own profile
         UserInfosEntity user = userInfosRepository.findBySub(sub).orElseThrow(() -> new UserAdminException(NOT_FOUND));
         return user.getProfile() == null ? Optional.empty() : userProfileService.getProfile(user.getProfile().getId());
+    }
+
+    @Transactional(readOnly = true)
+    public Integer getUserProfileMaxAllowedCases(String sub) {
+        UserProfile userProfile = self.getUserProfile(sub).orElse(null);
+        return userProfile == null ? null : userProfile.maxAllowedCases();
     }
 
     @Transactional(readOnly = true)

@@ -91,12 +91,14 @@ public class UserProfileService {
         UserProfileEntity profile = userProfileRepository.findById(profileUuid).orElseThrow(() -> new UserAdminException(NOT_FOUND));
         profile.setName(userProfile.name());
         profile.setLoadFlowParameterId(userProfile.loadFlowParameterId());
+        profile.setMaxAllowedCases(userProfile.maxAllowedCases());
     }
 
     @Transactional
-    public void createProfile(String profileName, String userId) {
+    public void createProfile(UserProfile userProfile, String userId) {
         adminRightService.assertIsAdmin(userId);
-        userProfileRepository.save(new UserProfileEntity(profileName));
+        UserProfileEntity userProfileEntity = toEntity(userProfile);
+        userProfileRepository.save(userProfileEntity);
     }
 
     @Transactional
@@ -117,6 +119,11 @@ public class UserProfileService {
         if (entity == null) {
             return null;
         }
-        return new UserProfile(entity.getId(), entity.getName(), entity.getLoadFlowParameterId(), allParametersLinksValid);
+        return new UserProfile(entity.getId(), entity.getName(), entity.getLoadFlowParameterId(), allParametersLinksValid, entity.getMaxAllowedCases());
+    }
+
+    private UserProfileEntity toEntity(final UserProfile userProfile) {
+        Objects.requireNonNull(userProfile);
+        return new UserProfileEntity(UUID.randomUUID(), userProfile.name(), userProfile.loadFlowParameterId(), userProfile.maxAllowedCases());
     }
 }

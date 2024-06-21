@@ -14,7 +14,7 @@ import java.util.Objects;
 public class UserAdminException extends RuntimeException {
     public enum Type {
         FORBIDDEN,
-        NOT_FOUND
+        NOT_FOUND,
     }
 
     private final Type type;

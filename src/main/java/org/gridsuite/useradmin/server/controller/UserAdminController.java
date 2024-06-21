@@ -123,6 +123,14 @@ public class UserAdminController {
         return ResponseEntity.of(service.getUserProfile(sub));
     }
 
+    @GetMapping(value = "/users/{sub}/profile/max-cases")
+    @Operation(summary = "Get the user's max allowed cases")
+    @ApiResponse(responseCode = "200", description = "The user max allowed cases created")
+    @ApiResponse(responseCode = "404", description = "The user doesn't exist")
+    public ResponseEntity<Integer> getUserProfileMaxStudies(@PathVariable("sub") String sub) {
+        return ResponseEntity.ok().body(service.getUserProfileMaxAllowedCases(sub));
+    }
+
     @GetMapping(value = "/connections", produces = {MediaType.APPLICATION_JSON_VALUE})
     @Operation(summary = "get the connections", description = "Access restricted to users of type: `admin`")
     @ApiResponse(responseCode = "200", description = "The connections list")

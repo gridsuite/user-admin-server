@@ -70,7 +70,7 @@ public class UserProfileController {
     @ApiResponse(responseCode = "201", description = "The profile has been created")
     public ResponseEntity<Void> createProfile(@RequestHeader("userId") String userId,
                                               @RequestBody UserProfile userProfile) {
-        service.createProfile(userProfile.name(), userId);
+        service.createProfile(userProfile, userId);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
