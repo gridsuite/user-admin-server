@@ -14,5 +14,5 @@ powsybl-ws:
 
 useradmin:
   admins:
-    - a
-    - b
+#    - admin1
+#    - admin2
