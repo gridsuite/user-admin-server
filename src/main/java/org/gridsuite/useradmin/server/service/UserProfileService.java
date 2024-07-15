@@ -92,6 +92,7 @@ public class UserProfileService {
         profile.setName(userProfile.name());
         profile.setLoadFlowParameterId(userProfile.loadFlowParameterId());
         profile.setMaxAllowedCases(userProfile.maxAllowedCases());
+        profile.setMaxAllowedBuilds(userProfile.maxAllowedBuilds());
     }
 
     @Transactional
@@ -119,11 +120,13 @@ public class UserProfileService {
         if (entity == null) {
             return null;
         }
-        return new UserProfile(entity.getId(), entity.getName(), entity.getLoadFlowParameterId(), allParametersLinksValid, entity.getMaxAllowedCases());
+        return new UserProfile(entity.getId(), entity.getName(), entity.getLoadFlowParameterId(),
+                               allParametersLinksValid, entity.getMaxAllowedCases(), entity.getMaxAllowedBuilds());
     }
 
     private UserProfileEntity toEntity(final UserProfile userProfile) {
         Objects.requireNonNull(userProfile);
-        return new UserProfileEntity(UUID.randomUUID(), userProfile.name(), userProfile.loadFlowParameterId(), userProfile.maxAllowedCases());
+        return new UserProfileEntity(UUID.randomUUID(), userProfile.name(), userProfile.loadFlowParameterId(),
+                                     userProfile.maxAllowedCases(), userProfile.maxAllowedBuilds());
     }
 }

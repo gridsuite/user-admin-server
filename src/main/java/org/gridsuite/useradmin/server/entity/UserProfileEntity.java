@@ -37,5 +37,8 @@ public class UserProfileEntity {
 
     @Column(name = "maxAllowedCases")
     private Integer maxAllowedCases;
+
+    @Column(name = "maxAllowedBuilds")
+    private Integer maxAllowedBuilds;
 }
 
