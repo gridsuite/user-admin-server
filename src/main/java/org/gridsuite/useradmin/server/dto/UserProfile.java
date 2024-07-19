@@ -13,5 +13,6 @@ public record UserProfile(
     String name,
     UUID loadFlowParameterId,
     Boolean allParametersLinksValid,
-    Integer maxAllowedCases
+    Integer maxAllowedCases,
+    Integer maxAllowedBuilds
 ) { }

@@ -371,7 +371,7 @@ class UserAdminTest {
     @SneakyThrows
     private void createProfile(String profileName) {
         ObjectWriter objectWriter = objectMapper.writer().withDefaultPrettyPrinter();
-        UserProfile profileInfo = new UserProfile(null, profileName, null, false, null);
+        UserProfile profileInfo = new UserProfile(null, profileName, null, false, null, null);
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/profiles")
                         .content(objectWriter.writeValueAsString(profileInfo))
                         .contentType(MediaType.APPLICATION_JSON)
