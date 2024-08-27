@@ -6,6 +6,7 @@
  */
 package org.gridsuite.useradmin.server.service;
 
+import org.gridsuite.useradmin.server.UserAdminApplicationProps;
 import org.gridsuite.useradmin.server.UserAdminException;
 import org.gridsuite.useradmin.server.dto.UserConnection;
 import org.gridsuite.useradmin.server.dto.UserInfos;
@@ -40,12 +41,15 @@ public class UserAdminService {
     private final UserProfileService userProfileService;
     private final UserAdminService self;
 
+    private final UserAdminApplicationProps applicationProps;
+
     public UserAdminService(final UserInfosRepository userInfosRepository,
                             final UserProfileRepository userProfileRepository,
                             final ConnectionsService connectionsService,
                             final AdminRightService adminRightService,
                             final NotificationService notificationService,
                             final UserProfileService userProfileService,
+                            final UserAdminApplicationProps applicationProps,
                             @Lazy final UserAdminService userAdminService) {
         this.userInfosRepository = Objects.requireNonNull(userInfosRepository);
         this.userProfileRepository = Objects.requireNonNull(userProfileRepository);
@@ -53,6 +57,7 @@ public class UserAdminService {
         this.adminRightService = Objects.requireNonNull(adminRightService);
         this.notificationService = Objects.requireNonNull(notificationService);
         this.userProfileService = Objects.requireNonNull(userProfileService);
+        this.applicationProps = Objects.requireNonNull(applicationProps);
         this.self = Objects.requireNonNull(userAdminService);
     }
 
@@ -125,7 +130,13 @@ public class UserAdminService {
     @Transactional(readOnly = true)
     public Integer getUserProfileMaxAllowedCases(String sub) {
         UserProfile userProfile = self.getUserProfile(sub).orElse(null);
-        return userProfile == null ? null : userProfile.maxAllowedCases();
+        return userProfile == null ? applicationProps.getDefaultAllowedCases().orElse(null) : userProfile.maxAllowedCases();
+    }
+
+    @Transactional(readOnly = true)
+    public Integer getUserProfileMaxAllowedBuilds(String sub) {
+        UserProfile userProfile = self.getUserProfile(sub).orElse(null);
+        return userProfile == null ? applicationProps.getDefaultAllowedBuilds().orElse(null) : userProfile.maxAllowedBuilds();
     }
 
     @Transactional(readOnly = true)
