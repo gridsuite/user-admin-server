@@ -195,6 +195,22 @@ public class UserProfileTest {
 
     @Test
     @SneakyThrows
+    public void testGetProfileMaxAllowedBuilds() {
+        UserProfileEntity userProfileEntity = new UserProfileEntity(UUID.randomUUID(), "profileName", null, null, 15);
+        UserInfosEntity userInfosEntity = new UserInfosEntity(UUID.randomUUID(), ADMIN_USER, userProfileEntity);
+        userProfileRepository.save(userProfileEntity);
+        userInfosRepository.save(userInfosEntity);
+
+        MvcResult result = mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users/{sub}/profile/max-builds", ADMIN_USER)
+                        .header("userId", ADMIN_USER)
+                )
+                .andExpect(status().isOk())
+                .andReturn();
+        assertEquals("15", result.getResponse().getContentAsString());
+    }
+
+    @Test
+    @SneakyThrows
     public void testGetProfileMaxAllowedCasesWithNoProfileSet() {
         UserInfosEntity userInfosEntity = new UserInfosEntity(UUID.randomUUID(), ADMIN_USER, null);
         userInfosRepository.save(userInfosEntity);
