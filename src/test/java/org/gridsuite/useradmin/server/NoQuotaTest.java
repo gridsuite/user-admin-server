@@ -73,7 +73,7 @@ class NoQuotaTest {
 
     @Test
     @SneakyThrows
-    public void testProfileCreationAndQuotas() {
+    void testProfileCreationAndQuotas() {
         UserProfile profileInfo = new UserProfile(null, PROFILE_ONE, null, false, null, null);
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/profiles")
                         .content(objectWriter.writeValueAsString(profileInfo))
@@ -116,7 +116,7 @@ class NoQuotaTest {
 
     @Test
     @SneakyThrows
-    public void testGetUserQuotasWithNoProfileSet() {
+    void testGetUserQuotasWithNoProfileSet() {
         UserInfosEntity userInfosEntity = new UserInfosEntity(UUID.randomUUID(), USER_SUB, null);
         userInfosRepository.save(userInfosEntity);
 
