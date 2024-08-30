@@ -289,12 +289,12 @@ public class UserProfileTest {
             // check repository
             Optional<UserProfileEntity> profile1 = userProfileRepository.findByName(profileName);
             assertTrue(profile1.isPresent());
-            if(maxAllowedCases == null) {
+            if (maxAllowedCases == null) {
                 assertEquals(userAdminApplicationProps.getDefaultMaxAllowedCases(), profile1.get().getMaxAllowedCases());
             } else {
                 assertEquals(maxAllowedCases, profile1.get().getMaxAllowedCases());
             }
-            if(maxAllowedBuilds == null) {
+            if (maxAllowedBuilds == null) {
                 assertEquals(userAdminApplicationProps.getDefaultMaxAllowedBuilds(), profile1.get().getMaxAllowedBuilds());
             } else {
                 assertEquals(maxAllowedBuilds, profile1.get().getMaxAllowedBuilds());
