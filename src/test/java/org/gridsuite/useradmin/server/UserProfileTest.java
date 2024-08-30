@@ -73,6 +73,9 @@ public class UserProfileTest {
     @Autowired
     private UserProfileRepository userProfileRepository;
 
+    @Autowired
+    private UserAdminApplicationProps userAdminApplicationProps;
+
     private WireMockServer wireMockServer;
 
     private WireMockUtils wireMockUtils;
@@ -124,6 +127,8 @@ public class UserProfileTest {
         assertNull(userProfiles.get(0).allParametersLinksValid());
         assertEquals(10, userProfiles.get(0).maxAllowedCases());
         assertEquals(15, userProfiles.get(0).maxAllowedBuilds());
+
+        createProfile(PROFILE_2, ADMIN_USER, null, null, HttpStatus.CREATED);
     }
 
     @Test
@@ -195,6 +200,22 @@ public class UserProfileTest {
 
     @Test
     @SneakyThrows
+    public void testGetProfileMaxAllowedBuilds() {
+        UserProfileEntity userProfileEntity = new UserProfileEntity(UUID.randomUUID(), "profileName", null, null, 15);
+        UserInfosEntity userInfosEntity = new UserInfosEntity(UUID.randomUUID(), ADMIN_USER, userProfileEntity);
+        userProfileRepository.save(userProfileEntity);
+        userInfosRepository.save(userInfosEntity);
+
+        MvcResult result = mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users/{sub}/profile/max-builds", ADMIN_USER)
+                        .header("userId", ADMIN_USER)
+                )
+                .andExpect(status().isOk())
+                .andReturn();
+        assertEquals("15", result.getResponse().getContentAsString());
+    }
+
+    @Test
+    @SneakyThrows
     public void testGetProfileMaxAllowedCasesWithNoProfileSet() {
         UserInfosEntity userInfosEntity = new UserInfosEntity(UUID.randomUUID(), ADMIN_USER, null);
         userInfosRepository.save(userInfosEntity);
@@ -204,7 +225,23 @@ public class UserProfileTest {
                 )
                 .andExpect(status().isOk())
                 .andReturn();
-        assertEquals("", result.getResponse().getContentAsString());
+        String defaultMaxAllowedCases = String.valueOf(userAdminApplicationProps.getDefaultMaxAllowedCases());
+        assertEquals(defaultMaxAllowedCases, result.getResponse().getContentAsString());
+    }
+
+    @Test
+    @SneakyThrows
+    public void testGetProfileMaxAllowedBuildsWithNoProfileSet() {
+        UserInfosEntity userInfosEntity = new UserInfosEntity(UUID.randomUUID(), ADMIN_USER, null);
+        userInfosRepository.save(userInfosEntity);
+
+        MvcResult result = mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users/{sub}/profile/max-builds", ADMIN_USER)
+                        .header("userId", ADMIN_USER)
+                )
+                .andExpect(status().isOk())
+                .andReturn();
+        String defaultMaxAllowedBuilds = String.valueOf(userAdminApplicationProps.getDefaultMaxAllowedBuilds());
+        assertEquals(defaultMaxAllowedBuilds, result.getResponse().getContentAsString());
     }
 
     @SneakyThrows
@@ -252,8 +289,14 @@ public class UserProfileTest {
             // check repository
             Optional<UserProfileEntity> profile1 = userProfileRepository.findByName(profileName);
             assertTrue(profile1.isPresent());
-            assertEquals(maxAllowedCases, profile1.get().getMaxAllowedCases());
-            assertEquals(maxAllowedBuilds, profile1.get().getMaxAllowedBuilds());
+            assertEquals(
+                    Optional.ofNullable(maxAllowedCases).orElse(userAdminApplicationProps.getDefaultMaxAllowedCases()),
+                    profile1.get().getMaxAllowedCases()
+            );
+            assertEquals(
+                    Optional.ofNullable(maxAllowedBuilds).orElse(userAdminApplicationProps.getDefaultMaxAllowedBuilds()),
+                    profile1.get().getMaxAllowedBuilds()
+            );
             assertNull(profile1.get().getLoadFlowParameterId()); // no LF params by dft
             return profile1.get().getId();
         }

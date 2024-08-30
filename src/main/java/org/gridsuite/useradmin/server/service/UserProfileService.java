@@ -7,6 +7,7 @@
 package org.gridsuite.useradmin.server.service;
 
 import com.google.common.collect.Sets;
+import org.gridsuite.useradmin.server.UserAdminApplicationProps;
 import org.gridsuite.useradmin.server.UserAdminException;
 import org.gridsuite.useradmin.server.dto.UserProfile;
 import org.gridsuite.useradmin.server.entity.UserProfileEntity;
@@ -33,12 +34,16 @@ public class UserProfileService {
     private final DirectoryService directoryService;
     private final AdminRightService adminRightService;
 
+    private final UserAdminApplicationProps applicationProps;
+
     public UserProfileService(final UserProfileRepository userProfileRepository,
                               final AdminRightService adminRightService,
-                              final DirectoryService directoryService) {
+                              final DirectoryService directoryService,
+                              final UserAdminApplicationProps applicationProps) {
         this.userProfileRepository = Objects.requireNonNull(userProfileRepository);
         this.adminRightService = Objects.requireNonNull(adminRightService);
         this.directoryService = Objects.requireNonNull(directoryService);
+        this.applicationProps = Objects.requireNonNull(applicationProps);
     }
 
     @Transactional(readOnly = true)
@@ -126,7 +131,12 @@ public class UserProfileService {
 
     private UserProfileEntity toEntity(final UserProfile userProfile) {
         Objects.requireNonNull(userProfile);
-        return new UserProfileEntity(UUID.randomUUID(), userProfile.name(), userProfile.loadFlowParameterId(),
-                                     userProfile.maxAllowedCases(), userProfile.maxAllowedBuilds());
+        return new UserProfileEntity(
+                UUID.randomUUID(),
+                userProfile.name(),
+                userProfile.loadFlowParameterId(),
+                Optional.ofNullable(userProfile.maxAllowedCases()).orElse(applicationProps.getDefaultMaxAllowedCases()),
+                Optional.ofNullable(userProfile.maxAllowedBuilds()).orElse(applicationProps.getDefaultMaxAllowedBuilds())
+        );
     }
 }
