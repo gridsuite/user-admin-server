@@ -289,16 +289,14 @@ public class UserProfileTest {
             // check repository
             Optional<UserProfileEntity> profile1 = userProfileRepository.findByName(profileName);
             assertTrue(profile1.isPresent());
-            if (maxAllowedCases == null) {
-                assertEquals(userAdminApplicationProps.getDefaultMaxAllowedCases(), profile1.get().getMaxAllowedCases());
-            } else {
-                assertEquals(maxAllowedCases, profile1.get().getMaxAllowedCases());
-            }
-            if (maxAllowedBuilds == null) {
-                assertEquals(userAdminApplicationProps.getDefaultMaxAllowedBuilds(), profile1.get().getMaxAllowedBuilds());
-            } else {
-                assertEquals(maxAllowedBuilds, profile1.get().getMaxAllowedBuilds());
-            }
+            assertEquals(
+                    Optional.ofNullable(maxAllowedCases).orElse(userAdminApplicationProps.getDefaultMaxAllowedCases()),
+                    profile1.get().getMaxAllowedCases()
+            );
+            assertEquals(
+                    Optional.ofNullable(maxAllowedBuilds).orElse(userAdminApplicationProps.getDefaultMaxAllowedBuilds()),
+                    profile1.get().getMaxAllowedBuilds()
+            );
             assertNull(profile1.get().getLoadFlowParameterId()); // no LF params by dft
             return profile1.get().getId();
         }

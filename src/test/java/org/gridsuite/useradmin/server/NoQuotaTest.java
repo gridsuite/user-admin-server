@@ -9,8 +9,8 @@ package org.gridsuite.useradmin.server;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import lombok.SneakyThrows;
+import org.gridsuite.useradmin.server.dto.UserInfos;
 import org.gridsuite.useradmin.server.dto.UserProfile;
-import org.gridsuite.useradmin.server.entity.UserInfosEntity;
 import org.gridsuite.useradmin.server.entity.UserProfileEntity;
 import org.gridsuite.useradmin.server.repository.UserInfosRepository;
 import org.gridsuite.useradmin.server.repository.UserProfileRepository;
@@ -20,16 +20,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -44,7 +42,13 @@ class NoQuotaTest {
 
     private static final String PROFILE_ONE = "profile_one";
 
+    private static final String PROFILE_TWO = "profile_two";
+
     private static final String USER_SUB = "user_one";
+
+    private static final String USER_SUB_TWO = "user_two";
+
+    private static final String API_BASE_PATH = "/" + UserAdminApi.API_VERSION;
 
     @Autowired
     private MockMvc mockMvc;
@@ -73,68 +77,111 @@ class NoQuotaTest {
 
     @Test
     @SneakyThrows
-    void testProfileCreationAndQuotas() {
-        UserProfile profileInfo = new UserProfile(null, PROFILE_ONE, null, false, null, null);
-        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/profiles")
-                        .content(objectWriter.writeValueAsString(profileInfo))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("userId", ADMIN_USER)
-                )
-                .andExpect(status().is(HttpStatus.CREATED.value()))
-                .andReturn();
-
-        Optional<UserProfileEntity> profile1 = userProfileRepository.findByName(PROFILE_ONE);
-        assertTrue(profile1.isPresent());
-        assertNull(profile1.get().getLoadFlowParameterId());
-        assertNull(profile1.get().getMaxAllowedCases());
-        assertNull(profile1.get().getMaxAllowedBuilds());
-
-        // create a user with the profile
-        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB)
-                        .header("userId", ADMIN_USER)
-                )
-                .andExpect(status().isCreated())
-                .andReturn();
-
-        // test default quotas for cases and builds when not provided
-        MvcResult buildsResult = mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users/{sub}/profile/max-builds", USER_SUB)
-                        .header("userId", ADMIN_USER)
-                )
-                .andExpect(status().isOk())
-                .andReturn();
-        String content = buildsResult.getResponse().getContentAsString();
-        assertTrue(content.isEmpty() || content.equals("null"));
-
-        MvcResult casesResult = mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users/{sub}/profile/max-cases", USER_SUB)
-                        .header("userId", ADMIN_USER)
-                )
-                .andExpect(status().isOk())
-                .andReturn();
-        content = casesResult.getResponse().getContentAsString();
-        assertTrue(content.isEmpty() || content.equals("null"));
+    void testProfileCreation() {
+        createProfile(PROFILE_ONE, null, null);
+        // test with quotas
+        createProfile(PROFILE_TWO, 10, 20);
     }
 
     @Test
     @SneakyThrows
-    void testGetUserQuotasWithNoProfileSet() {
-        UserInfosEntity userInfosEntity = new UserInfosEntity(UUID.randomUUID(), USER_SUB, null);
-        userInfosRepository.save(userInfosEntity);
+    void testUserCreationWithoutProfile() {
+        createUser(USER_SUB);
 
-        MvcResult casesResult = mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users/{sub}/profile/max-cases", USER_SUB)
-                        .header("userId", ADMIN_USER)
-                )
-                .andExpect(status().isOk())
-                .andReturn();
-        String content = casesResult.getResponse().getContentAsString();
-        assertTrue(content.isEmpty() || content.equals("null"));
-
-        MvcResult buildsResult = mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users/{sub}/profile/max-builds", USER_SUB)
-                        .header("userId", ADMIN_USER)
-                )
-                .andExpect(status().isOk())
-                .andReturn();
-        content = buildsResult.getResponse().getContentAsString();
-        assertTrue(content.isEmpty() || content.equals("null"));
+        assertTrue(getMaxAllowedBuilds(USER_SUB).isEmpty());
+        assertTrue(getMaxAllowedCases(USER_SUB).isEmpty());
     }
 
+    @Test
+    @SneakyThrows
+    void testUserCreationWithProfile() {
+        //profile with no quotas
+        createProfile(PROFILE_ONE, null, null);
+        createUser(USER_SUB);
+        associateProfileToUser(USER_SUB, PROFILE_ONE);
+
+        assertTrue(getMaxAllowedBuilds(USER_SUB).isEmpty());
+        assertTrue(getMaxAllowedCases(USER_SUB).isEmpty());
+
+        //profile with quotas
+        createProfile(PROFILE_TWO, 10, 20);
+        createUser(USER_SUB_TWO);
+        associateProfileToUser(USER_SUB_TWO, PROFILE_TWO);
+
+        assertEquals("10", getMaxAllowedCases(USER_SUB_TWO));
+        assertEquals("20", getMaxAllowedBuilds(USER_SUB_TWO));
+    }
+
+    @SneakyThrows
+    private void createProfile(String profileName, Integer maxAllowedCases, Integer maxAllowedBuilds) {
+        UserProfile profileInfo = new UserProfile(null, profileName, null, false, maxAllowedCases, maxAllowedBuilds);
+        performPost(API_BASE_PATH + "/profiles", profileInfo);
+
+        Optional<UserProfileEntity> createdProfile = userProfileRepository.findByName(profileName);
+        assertTrue(createdProfile.isPresent());
+        assertNull(createdProfile.get().getLoadFlowParameterId());
+        assertEquals(maxAllowedCases, createdProfile.get().getMaxAllowedCases());
+        assertEquals(maxAllowedBuilds, createdProfile.get().getMaxAllowedBuilds());
+    }
+
+    @SneakyThrows
+    private void createUser(String userSub) {
+        performPost(API_BASE_PATH + "/users/" + userSub, null);
+
+        // check user creation
+        UserInfos userInfos = getUserInfos(userSub);
+        assertNotNull(userInfos);
+        assertNull(userInfos.profileName());
+        assertEquals(userSub, userInfos.sub());
+    }
+
+    @SneakyThrows
+    private UserInfos getUserInfos(String userSub) {
+        MvcResult result = performGet(API_BASE_PATH + "/users/" + userSub);
+        return objectMapper.readValue(result.getResponse().getContentAsString(), UserInfos.class);
+    }
+
+    @SneakyThrows
+    private void associateProfileToUser(String userSub, String profileName) {
+        UserInfos userInfos = new UserInfos(userSub, false, profileName);
+        performPut(API_BASE_PATH + "/users/" + userSub, userInfos);
+    }
+
+    @SneakyThrows
+    private String getMaxAllowedBuilds(String userSub) {
+        MvcResult result = performGet(API_BASE_PATH + "/users/" + userSub + "/profile/max-builds");
+        return result.getResponse().getContentAsString();
+    }
+
+    @SneakyThrows
+    private String getMaxAllowedCases(String userSub) {
+        MvcResult result = performGet(API_BASE_PATH + "/users/" + userSub + "/profile/max-cases");
+        return result.getResponse().getContentAsString();
+    }
+
+    @SneakyThrows
+    private void performPost(String url, Object content) {
+        mockMvc.perform(post(url)
+                        .content(content != null ? objectWriter.writeValueAsString(content) : "")
+                        .contentType(APPLICATION_JSON)
+                        .header("userId", ADMIN_USER))
+                .andExpect(status().isCreated());
+    }
+
+    @SneakyThrows
+    private void performPut(String url, Object content) {
+        mockMvc.perform(put(url)
+                        .content(objectWriter.writeValueAsString(content))
+                        .contentType(APPLICATION_JSON)
+                        .header("userId", ADMIN_USER))
+                .andExpect(status().isOk());
+    }
+
+    @SneakyThrows
+    private MvcResult performGet(String url) {
+        return mockMvc.perform(get(url)
+                        .header("userId", ADMIN_USER))
+                .andExpect(status().isOk())
+                .andReturn();
+    }
 }
