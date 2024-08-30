@@ -15,6 +15,7 @@ import org.gridsuite.useradmin.server.dto.UserProfile;
 import org.gridsuite.useradmin.server.entity.ConnectionEntity;
 import org.gridsuite.useradmin.server.repository.ConnectionRepository;
 import org.gridsuite.useradmin.server.repository.UserInfosRepository;
+import org.gridsuite.useradmin.server.repository.UserProfileRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +58,9 @@ class UserAdminTest {
     private UserInfosRepository userInfosRepository;
 
     @Autowired
+    private UserProfileRepository userProfileRepository;
+
+    @Autowired
     private ConnectionRepository connectionRepository;
 
     @Autowired
@@ -69,6 +73,7 @@ class UserAdminTest {
     @AfterEach
     public void cleanDB() {
         userInfosRepository.deleteAll();
+        userProfileRepository.deleteAll();
         connectionRepository.deleteAll();
     }
 
