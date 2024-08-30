@@ -135,7 +135,7 @@ public class UserAdminController {
     @Operation(summary = "Get the user's max allowed builds")
     @ApiResponse(responseCode = "200", description = "The user max allowed builds")
     @ApiResponse(responseCode = "404", description = "The user doesn't exist")
-    public ResponseEntity<Integer> getUserProfileMaxBuilds(@PathVariable("sub") String sub) {
+    public ResponseEntity<Integer> getUserProfileMaxAllowedBuilds(@PathVariable("sub") String sub) {
         return ResponseEntity.ok().body(service.getUserProfileMaxAllowedBuilds(sub));
     }
 

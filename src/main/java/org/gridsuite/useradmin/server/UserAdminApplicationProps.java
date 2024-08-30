@@ -23,7 +23,7 @@ public class UserAdminApplicationProps {
 
     private List<String> admins;
 
-    private Optional<Integer> defaultAllowedCases = Optional.empty();
+    private Integer defaultMaxAllowedCases;
 
-    private Optional<Integer> defaultAllowedBuilds = Optional.empty();
+    private Integer defaultMaxAllowedBuilds;
 }

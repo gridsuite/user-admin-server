@@ -104,12 +104,6 @@ public class UserProfileService {
     public void createProfile(UserProfile userProfile, String userId) {
         adminRightService.assertIsAdmin(userId);
         UserProfileEntity userProfileEntity = toEntity(userProfile);
-        if (userProfileEntity.getMaxAllowedCases() == null) {
-            userProfileEntity.setMaxAllowedCases(applicationProps.getDefaultAllowedCases().orElse(null));
-        }
-        if (userProfileEntity.getMaxAllowedBuilds() == null) {
-            userProfileEntity.setMaxAllowedBuilds(applicationProps.getDefaultAllowedBuilds().orElse(null));
-        }
         userProfileRepository.save(userProfileEntity);
     }
 
@@ -137,7 +131,12 @@ public class UserProfileService {
 
     private UserProfileEntity toEntity(final UserProfile userProfile) {
         Objects.requireNonNull(userProfile);
-        return new UserProfileEntity(UUID.randomUUID(), userProfile.name(), userProfile.loadFlowParameterId(),
-                                     userProfile.maxAllowedCases(), userProfile.maxAllowedBuilds());
+        return new UserProfileEntity(
+                UUID.randomUUID(),
+                userProfile.name(),
+                userProfile.loadFlowParameterId(),
+                Optional.ofNullable(userProfile.maxAllowedCases()).orElse(applicationProps.getDefaultMaxAllowedCases()),
+                Optional.ofNullable(userProfile.maxAllowedBuilds()).orElse(applicationProps.getDefaultMaxAllowedBuilds())
+        );
     }
 }

@@ -129,14 +129,16 @@ public class UserAdminService {
 
     @Transactional(readOnly = true)
     public Integer getUserProfileMaxAllowedCases(String sub) {
-        UserProfile userProfile = self.getUserProfile(sub).orElse(null);
-        return userProfile == null ? applicationProps.getDefaultAllowedCases().orElse(null) : userProfile.maxAllowedCases();
+        return self.getUserProfile(sub)
+                .map(UserProfile::maxAllowedCases)
+                .orElse(applicationProps.getDefaultMaxAllowedCases());
     }
 
     @Transactional(readOnly = true)
     public Integer getUserProfileMaxAllowedBuilds(String sub) {
-        UserProfile userProfile = self.getUserProfile(sub).orElse(null);
-        return userProfile == null ? applicationProps.getDefaultAllowedBuilds().orElse(null) : userProfile.maxAllowedBuilds();
+        return self.getUserProfile(sub)
+                .map(UserProfile::maxAllowedBuilds)
+                .orElse(applicationProps.getDefaultMaxAllowedBuilds());
     }
 
     @Transactional(readOnly = true)
