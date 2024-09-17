@@ -10,115 +10,154 @@ import org.gridsuite.useradmin.server.UserAdminApplicationProps;
 import org.gridsuite.useradmin.server.UserAdminException;
 import org.gridsuite.useradmin.server.dto.UserConnection;
 import org.gridsuite.useradmin.server.dto.UserInfos;
+import org.gridsuite.useradmin.server.dto.UserProfile;
+import org.gridsuite.useradmin.server.entity.UserProfileEntity;
 import org.gridsuite.useradmin.server.repository.AnnouncementEntity;
-import org.gridsuite.useradmin.server.repository.UserAdminRepository;
-import org.gridsuite.useradmin.server.repository.UserInfosEntity;
+import org.gridsuite.useradmin.server.repository.UserInfosRepository;
+import org.gridsuite.useradmin.server.entity.UserInfosEntity;
+import org.gridsuite.useradmin.server.repository.UserProfileRepository;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
-import static org.gridsuite.useradmin.server.UserAdminException.Type.FORBIDDEN;
+import static org.gridsuite.useradmin.server.UserAdminException.Type.NOT_FOUND;
 
 /**
  * @author Etienne Homer <etienne.homer at rte-france.com>
  */
 @Service
 public class UserAdminService {
-    private final UserAdminRepository userAdminRepository;
+    private final UserInfosRepository userInfosRepository;
+    private final UserProfileRepository userProfileRepository;
     private final ConnectionsService connectionsService;
+    private final NotificationService notificationService;
+    private final AdminRightService adminRightService;
+    private final UserProfileService userProfileService;
     private final AnnouncementService announcementService;
+    private final UserAdminService self;
+
     private final UserAdminApplicationProps applicationProps;
 
-    public UserAdminService(final UserAdminApplicationProps applicationProps,
-                            final UserAdminRepository userAdminRepository,
+    public UserAdminService(final UserInfosRepository userInfosRepository,
+                            final UserProfileRepository userProfileRepository,
                             final ConnectionsService connectionsService,
-                            final AnnouncementService announcementService) {
-        this.applicationProps = Objects.requireNonNull(applicationProps);
-        this.userAdminRepository = Objects.requireNonNull(userAdminRepository);
+                            final AdminRightService adminRightService,
+                            final NotificationService notificationService,
+                            final UserProfileService userProfileService,
+                            final UserAdminApplicationProps applicationProps,
+                            final AnnouncementService announcementService,
+                            @Lazy final UserAdminService userAdminService) {
+        this.userInfosRepository = Objects.requireNonNull(userInfosRepository);
+        this.userProfileRepository = Objects.requireNonNull(userProfileRepository);
         this.connectionsService = Objects.requireNonNull(connectionsService);
+        this.adminRightService = Objects.requireNonNull(adminRightService);
+        this.notificationService = Objects.requireNonNull(notificationService);
+        this.userProfileService = Objects.requireNonNull(userProfileService);
+        this.applicationProps = Objects.requireNonNull(applicationProps);
         this.announcementService = Objects.requireNonNull(announcementService);
-    }
-
-    private boolean isAdmin(@lombok.NonNull String sub) {
-        final List<String> admins = applicationProps.getAdmins();
-        return admins.contains(sub);
-    }
-
-    private void assertIsAdmin(@lombok.NonNull String sub) throws UserAdminException {
-        if (!this.isAdmin(sub)) {
-            throw new UserAdminException(FORBIDDEN);
-        }
+        this.self = Objects.requireNonNull(userAdminService);
     }
 
     private UserInfos toDtoUserInfo(final UserInfosEntity entity) {
-        return UserInfosEntity.toDto(entity, this::isAdmin);
+        return UserInfosEntity.toDto(entity, adminRightService::isAdmin);
     }
 
     @Transactional(readOnly = true)
     public List<UserInfos> getUsers(String userId) {
-        assertIsAdmin(userId);
-        return userAdminRepository.findAll().stream().map(this::toDtoUserInfo).toList();
+        adminRightService.assertIsAdmin(userId);
+        return userInfosRepository.findAll().stream().map(this::toDtoUserInfo).toList();
     }
 
     @Transactional(readOnly = true)
     public List<UserConnection> getConnections(String userId) {
-        assertIsAdmin(userId);
+        adminRightService.assertIsAdmin(userId);
         return connectionsService.removeDuplicates();
     }
 
     @Transactional
     public void createUser(String sub, String userId) {
-        assertIsAdmin(userId);
-        userAdminRepository.save(new UserInfosEntity(sub));
+        adminRightService.assertIsAdmin(userId);
+        userInfosRepository.save(new UserInfosEntity(sub));
     }
 
     @Transactional
     public long delete(String sub, String userId) {
-        assertIsAdmin(userId);
-        return userAdminRepository.deleteBySub(sub);
+        adminRightService.assertIsAdmin(userId);
+        return userInfosRepository.deleteBySub(sub);
     }
 
     @Transactional
     public long delete(Collection<String> subs, String userId) {
-        assertIsAdmin(userId);
-        return userAdminRepository.deleteAllBySubIn(subs);
+        adminRightService.assertIsAdmin(userId);
+        return userInfosRepository.deleteAllBySubIn(subs);
+    }
+
+    @Transactional()
+    public void updateUser(String sub, String userId, UserInfos userInfos) {
+        adminRightService.assertIsAdmin(userId);
+        UserInfosEntity user = userInfosRepository.findBySub(sub).orElseThrow(() -> new UserAdminException(NOT_FOUND));
+        Optional<UserProfileEntity> profile = userProfileRepository.findByName(userInfos.profileName());
+        user.setSub(userInfos.sub());
+        user.setProfile(profile.orElse(null));
     }
 
     @Transactional
     public boolean subExists(String sub) {
-        final List<String> admins = applicationProps.getAdmins();
-        final boolean isAllowed = admins.isEmpty() && userAdminRepository.count() == 0L
-                                || admins.contains(sub)
-                                || userAdminRepository.existsBySub(sub);
+        final List<String> admins = adminRightService.getAdmins();
+        final boolean isAllowed = admins.isEmpty() && userInfosRepository.count() == 0L
+                || admins.contains(sub)
+                || userInfosRepository.existsBySub(sub);
         connectionsService.recordConnectionAttempt(sub, isAllowed);
         return isAllowed;
     }
 
     @Transactional(readOnly = true)
     public Optional<UserInfos> getUser(String sub, String userId) {
-        assertIsAdmin(userId);
-        return userAdminRepository.findBySub(sub).map(this::toDtoUserInfo);
+        adminRightService.assertIsAdmin(userId);
+        return userInfosRepository.findBySub(sub).map(this::toDtoUserInfo);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<UserProfile> getUserProfile(String sub) {
+        // this method is not restricted to Admin because it is called by any user to retrieve its own profile
+        UserInfosEntity user = userInfosRepository.findBySub(sub).orElseThrow(() -> new UserAdminException(NOT_FOUND));
+        return user.getProfile() == null ? Optional.empty() : userProfileService.getProfile(user.getProfile().getId());
+    }
+
+    @Transactional(readOnly = true)
+    public Integer getUserProfileMaxAllowedCases(String sub) {
+        return self.getUserProfile(sub)
+                .map(UserProfile::maxAllowedCases)
+                .orElse(applicationProps.getDefaultMaxAllowedCases());
+    }
+
+    @Transactional(readOnly = true)
+    public Integer getUserProfileMaxAllowedBuilds(String sub) {
+        return self.getUserProfile(sub)
+                .map(UserProfile::maxAllowedBuilds)
+                .orElse(applicationProps.getDefaultMaxAllowedBuilds());
     }
 
     @Transactional(readOnly = true)
     public boolean userIsAdmin(@NonNull String userId) {
-        return isAdmin(userId);
+        return adminRightService.isAdmin(userId);
     }
 
     public void sendAnnouncement(AnnouncementEntity announcement, String userId) {
-        assertIsAdmin(userId);
+        adminRightService.assertIsAdmin(userId);
         announcementService.sendAnnouncement(announcement);
     }
 
     public void cancelAnnouncement(UUID announcementId, String userId) {
-        assertIsAdmin(userId);
+        adminRightService.assertIsAdmin(userId);
         announcementService.cancelAnnouncement(announcementId);
     }
 
     public List<AnnouncementEntity> getAllAnnouncements(String userId) {
-        assertIsAdmin(userId);
+        adminRightService.assertIsAdmin(userId);
         return announcementService.getAllAnnouncements();
     }
 }

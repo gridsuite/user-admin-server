@@ -6,8 +6,13 @@
  */
 package org.gridsuite.useradmin.server.dto;
 
-public record UserInfos(
-    String sub,
-    boolean isAdmin,
-    String profileName
+import java.util.UUID;
+
+public record UserProfile(
+    UUID id,
+    String name,
+    UUID loadFlowParameterId,
+    Boolean allParametersLinksValid,
+    Integer maxAllowedCases,
+    Integer maxAllowedBuilds
 ) { }

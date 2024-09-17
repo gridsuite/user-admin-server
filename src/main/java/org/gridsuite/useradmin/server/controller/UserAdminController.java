@@ -4,15 +4,17 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package org.gridsuite.useradmin.server;
+package org.gridsuite.useradmin.server.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotEmpty;
+import org.gridsuite.useradmin.server.UserAdminApi;
 import org.gridsuite.useradmin.server.dto.UserConnection;
 import org.gridsuite.useradmin.server.dto.UserInfos;
+import org.gridsuite.useradmin.server.dto.UserProfile;
 import org.gridsuite.useradmin.server.repository.AnnouncementEntity;
 import org.gridsuite.useradmin.server.service.UserAdminService;
 import org.springframework.http.HttpStatus;
@@ -86,6 +88,17 @@ public class UserAdminController {
         }
     }
 
+    @PutMapping(value = "/users/{sub}")
+    @Operation(summary = "update a user", description = "Access restricted to users of type: `admin`")
+    @ApiResponse(responseCode = "200", description = "The user is updated")
+    @ApiResponse(responseCode = "404", description = "The user does not exist")
+    public ResponseEntity<UserProfile> updateUser(@PathVariable("sub") String sub,
+                                                  @RequestHeader("userId") String userId,
+                                                  @RequestBody UserInfos userInfos) {
+        service.updateUser(sub, userId, userInfos);
+        return ResponseEntity.ok().build();
+    }
+
     @RequestMapping(value = "/users/{sub}", method = RequestMethod.HEAD)
     @Operation(summary = "Test if a user exists and record connection attempt")
     @ApiResponse(responseCode = "200", description = "sub exists")
@@ -101,6 +114,30 @@ public class UserAdminController {
         return service.userIsAdmin(userId)
                 ? ResponseEntity.ok().build()
                 : ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+
+    @GetMapping(value = "/users/{sub}/profile")
+    @Operation(summary = "Get the user's profile")
+    @ApiResponse(responseCode = "200", description = "The user profile")
+    @ApiResponse(responseCode = "404", description = "The user doesn't exist")
+    public ResponseEntity<UserProfile> getUserProfile(@PathVariable("sub") String sub) {
+        return ResponseEntity.of(service.getUserProfile(sub));
+    }
+
+    @GetMapping(value = "/users/{sub}/profile/max-cases")
+    @Operation(summary = "Get the user's max allowed cases")
+    @ApiResponse(responseCode = "200", description = "The user max allowed cases created")
+    @ApiResponse(responseCode = "404", description = "The user doesn't exist")
+    public ResponseEntity<Integer> getUserProfileMaxStudies(@PathVariable("sub") String sub) {
+        return ResponseEntity.ok().body(service.getUserProfileMaxAllowedCases(sub));
+    }
+
+    @GetMapping(value = "/users/{sub}/profile/max-builds")
+    @Operation(summary = "Get the user's max allowed builds")
+    @ApiResponse(responseCode = "200", description = "The user max allowed builds")
+    @ApiResponse(responseCode = "404", description = "The user doesn't exist")
+    public ResponseEntity<Integer> getUserProfileMaxAllowedBuilds(@PathVariable("sub") String sub) {
+        return ResponseEntity.ok().body(service.getUserProfileMaxAllowedBuilds(sub));
     }
 
     @GetMapping(value = "/connections", produces = {MediaType.APPLICATION_JSON_VALUE})

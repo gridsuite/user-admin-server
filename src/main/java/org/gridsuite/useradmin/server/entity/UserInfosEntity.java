@@ -4,7 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package org.gridsuite.useradmin.server.repository;
+package org.gridsuite.useradmin.server.entity;
 
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
@@ -29,7 +29,7 @@ import java.util.function.Predicate;
 public class UserInfosEntity {
 
     public UserInfosEntity(String sub) {
-        this(UUID.randomUUID(), sub);
+        this(UUID.randomUUID(), sub, null);
     }
 
     @Id
@@ -39,7 +39,15 @@ public class UserInfosEntity {
     @Column(name = "sub", nullable = false, unique = true)
     private String sub;
 
+    @ManyToOne
+    @JoinColumn(name = "profile_id", foreignKey = @ForeignKey(name = "profile_id_fk_constraint"))
+    private UserProfileEntity profile;
+
     public static UserInfos toDto(@Nullable final UserInfosEntity entity, Predicate<String> isAdminFn) {
-        return entity == null ? null : new UserInfos(entity.getSub(), isAdminFn.test(entity.getSub()));
+        if (entity == null) {
+            return null;
+        }
+        String profileName = entity.getProfile() == null ? null : entity.getProfile().getName();
+        return new UserInfos(entity.getSub(), isAdminFn.test(entity.getSub()), profileName);
     }
 }

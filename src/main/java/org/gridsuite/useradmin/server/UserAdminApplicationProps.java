@@ -21,4 +21,8 @@ import java.util.List;
 public class UserAdminApplicationProps {
 
     private List<String> admins;
+
+    private Integer defaultMaxAllowedCases;
+
+    private Integer defaultMaxAllowedBuilds;
 }

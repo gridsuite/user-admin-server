@@ -9,5 +9,15 @@ databaseChangeLog:
       file: changesets/changelog_20240202T000000Z.xml
       relativeToChangelogFile: true
   - include:
+      file: changesets/changelog_20240326T150422Z.xml
+      relativeToChangelogFile: true
+  - include:
+      file: changesets/changelog_20240611T120441Z.xml
+      relativeToChangelogFile: true
+  - include:
+      file: changesets/changelog_20240715T114052Z.xml
+      relativeToChangelogFile: true
+  - include:
       file: changesets/changelog_20240329T134444Z.xml
       relativeToChangelogFile: true
+
