@@ -12,6 +12,7 @@ import org.gridsuite.useradmin.server.dto.UserConnection;
 import org.gridsuite.useradmin.server.dto.UserInfos;
 import org.gridsuite.useradmin.server.dto.UserProfile;
 import org.gridsuite.useradmin.server.entity.UserProfileEntity;
+import org.gridsuite.useradmin.server.repository.AnnouncementEntity;
 import org.gridsuite.useradmin.server.repository.UserInfosRepository;
 import org.gridsuite.useradmin.server.entity.UserInfosEntity;
 import org.gridsuite.useradmin.server.repository.UserProfileRepository;
@@ -20,12 +21,8 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
-import static org.gridsuite.useradmin.server.UserAdminException.Type.FORBIDDEN;
 import static org.gridsuite.useradmin.server.UserAdminException.Type.NOT_FOUND;
 
 /**
@@ -39,6 +36,7 @@ public class UserAdminService {
     private final NotificationService notificationService;
     private final AdminRightService adminRightService;
     private final UserProfileService userProfileService;
+    private final AnnouncementService announcementService;
     private final UserAdminService self;
 
     private final UserAdminApplicationProps applicationProps;
@@ -50,6 +48,7 @@ public class UserAdminService {
                             final NotificationService notificationService,
                             final UserProfileService userProfileService,
                             final UserAdminApplicationProps applicationProps,
+                            final AnnouncementService announcementService,
                             @Lazy final UserAdminService userAdminService) {
         this.userInfosRepository = Objects.requireNonNull(userInfosRepository);
         this.userProfileRepository = Objects.requireNonNull(userProfileRepository);
@@ -58,6 +57,7 @@ public class UserAdminService {
         this.notificationService = Objects.requireNonNull(notificationService);
         this.userProfileService = Objects.requireNonNull(userProfileService);
         this.applicationProps = Objects.requireNonNull(applicationProps);
+        this.announcementService = Objects.requireNonNull(announcementService);
         this.self = Objects.requireNonNull(userAdminService);
     }
 
@@ -108,8 +108,8 @@ public class UserAdminService {
     public boolean subExists(String sub) {
         final List<String> admins = adminRightService.getAdmins();
         final boolean isAllowed = admins.isEmpty() && userInfosRepository.count() == 0L
-                                || admins.contains(sub)
-                                || userInfosRepository.existsBySub(sub);
+                || admins.contains(sub)
+                || userInfosRepository.existsBySub(sub);
         connectionsService.recordConnectionAttempt(sub, isAllowed);
         return isAllowed;
     }
@@ -146,21 +146,18 @@ public class UserAdminService {
         return adminRightService.isAdmin(userId);
     }
 
-    public void sendMaintenanceMessage(String userId, Integer durationInSeconds, String message) {
-        if (!adminRightService.isAdmin(userId)) {
-            throw new UserAdminException(FORBIDDEN);
-        }
-        if (durationInSeconds == null) {
-            notificationService.emitMaintenanceMessage(message);
-        } else {
-            notificationService.emitMaintenanceMessage(message, durationInSeconds);
-        }
+    public void sendAnnouncement(AnnouncementEntity announcement, String userId) {
+        adminRightService.assertIsAdmin(userId);
+        announcementService.sendAnnouncement(announcement);
     }
 
-    public void sendCancelMaintenanceMessage(String userId) {
-        if (!adminRightService.isAdmin(userId)) {
-            throw new UserAdminException(FORBIDDEN);
-        }
-        notificationService.emitCancelMaintenanceMessage();
+    public void cancelAnnouncement(UUID announcementId, String userId) {
+        adminRightService.assertIsAdmin(userId);
+        announcementService.cancelAnnouncement(announcementId);
+    }
+
+    public List<AnnouncementEntity> getAllAnnouncements(String userId) {
+        adminRightService.assertIsAdmin(userId);
+        return announcementService.getAllAnnouncements();
     }
 }

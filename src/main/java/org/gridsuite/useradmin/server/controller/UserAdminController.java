@@ -7,7 +7,6 @@
 package org.gridsuite.useradmin.server.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -16,6 +15,7 @@ import org.gridsuite.useradmin.server.UserAdminApi;
 import org.gridsuite.useradmin.server.dto.UserConnection;
 import org.gridsuite.useradmin.server.dto.UserInfos;
 import org.gridsuite.useradmin.server.dto.UserProfile;
+import org.gridsuite.useradmin.server.repository.AnnouncementEntity;
 import org.gridsuite.useradmin.server.service.UserAdminService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -23,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author Etienne Homer <etienne.homer at rte-france.com>
@@ -146,27 +147,38 @@ public class UserAdminController {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getConnections(userId));
     }
 
-    @PostMapping(value = "/messages/maintenance")
-    @Operation(summary = "send a message to all users connected")
+    @PostMapping(value = "/announcements")
+    @Operation(summary = "Send an announcement to all the connected users")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "message sent"),
+        @ApiResponse(responseCode = "200", description = "announcement sent"),
         @ApiResponse(responseCode = "403", description = "user is not an admin")
     })
-    public ResponseEntity<Void> sendMaintenanceMessage(@RequestHeader("userId") String userId,
-                                                       @Parameter(description = "the display time of the message in seconds") @RequestParam(value = "durationInSeconds", required = false) Integer duration,
-                                                       @Parameter(description = "the message to display") @RequestBody String message) {
-        service.sendMaintenanceMessage(userId, duration, message);
+    public ResponseEntity<Void> sendAnnouncement(@RequestHeader("userId") String userId,
+                                                 @RequestBody AnnouncementEntity announcement) {
+        service.sendAnnouncement(announcement, userId);
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping(value = "/messages/cancel-maintenance")
-    @Operation(summary = "send a message to all users connected")
+    @DeleteMapping(value = "/announcements/{announcementId}")
+    @Operation(summary = "Cancel and delete an announcement")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "message sent"),
+        @ApiResponse(responseCode = "200", description = "announcement canceled"),
+        @ApiResponse(responseCode = "403", description = "user is not an admin"),
+        @ApiResponse(responseCode = "404", description = "announcement not found")
+    })
+    public ResponseEntity<Void> cancelAnnouncement(@RequestHeader("userId") String userId,
+                                                   @PathVariable("announcementId") UUID announcementId) {
+        service.cancelAnnouncement(announcementId, userId);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping(value = "/announcements")
+    @Operation(summary = "Get all the announcements")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "announcements retrieved"),
         @ApiResponse(responseCode = "403", description = "user is not an admin")
     })
-    public ResponseEntity<Void> sendCancelMaintenanceMessage(@RequestHeader("userId") String userId) {
-        service.sendCancelMaintenanceMessage(userId);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<List<AnnouncementEntity>> getAllAnnouncements(@RequestHeader("userId") String userId) {
+        return ResponseEntity.ok(service.getAllAnnouncements(userId));
     }
 }

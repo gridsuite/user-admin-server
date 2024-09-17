@@ -13,9 +13,7 @@ import lombok.SneakyThrows;
 import org.gridsuite.useradmin.server.dto.UserInfos;
 import org.gridsuite.useradmin.server.dto.UserProfile;
 import org.gridsuite.useradmin.server.entity.ConnectionEntity;
-import org.gridsuite.useradmin.server.repository.ConnectionRepository;
-import org.gridsuite.useradmin.server.repository.UserInfosRepository;
-import org.gridsuite.useradmin.server.repository.UserProfileRepository;
+import org.gridsuite.useradmin.server.repository.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,10 +28,13 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.UUID;
 
 import static org.gridsuite.useradmin.server.service.NotificationService.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -61,6 +62,9 @@ class UserAdminTest {
     private UserProfileRepository userProfileRepository;
 
     @Autowired
+    private AnnouncementRepository announcementRepository;
+
+    @Autowired
     private ConnectionRepository connectionRepository;
 
     @Autowired
@@ -75,6 +79,7 @@ class UserAdminTest {
         userInfosRepository.deleteAll();
         userProfileRepository.deleteAll();
         connectionRepository.deleteAll();
+        announcementRepository.deleteAll();
     }
 
     private static final String USER_SUB = "user1";
@@ -295,49 +300,80 @@ class UserAdminTest {
     @Test
     void testSendMaintenanceMessage() throws Exception {
         //Send a maintenance message and expect everything to be ok
-        String requestBody = objectMapper.writeValueAsString("The application will be on maintenance until the end of the maintenance");
-        Integer duration = 300;
-        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/messages/maintenance", USER_SUB)
-                .queryParam("durationInSeconds", duration.toString())
+        String message = "The application will be on maintenance until the end of the maintenance";
+        Duration duration = Duration.ofSeconds(300);
+        AnnouncementEntity announcement = new AnnouncementEntity(message, duration);
+        String requestBody = objectMapper.writeValueAsString(announcement);
+        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/announcements")
                 .header("userId", ADMIN_USER)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody))
                 .andExpect(status().isOk());
-        assertMaintenanceMessageSent(requestBody, duration);
+        assertMaintenanceMessageSent(message, duration.toSeconds());
+        assertEquals(1, announcementRepository.findAll().size());
 
         //Send a maintenance message without duration and expect everything to be ok
-        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/messages/maintenance")
+        announcement = new AnnouncementEntity(message, null);
+        requestBody = objectMapper.writeValueAsString(announcement);
+        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/announcements")
                         .header("userId", ADMIN_USER)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isOk());
-        assertMaintenanceMessageSent(requestBody, null);
+        assertMaintenanceMessageSent(message, null);
+        assertEquals(1, announcementRepository.findAll().size()); // only one at a time for now
 
         //Send a maintenance message with a user that's not an admin and expect 403 FORBIDDEN
-        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/messages/maintenance")
-                        .queryParam("durationInSeconds", String.valueOf(duration))
+        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/announcements")
                         .header("userId", NOT_ADMIN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isForbidden());
-
     }
 
     @Test
     void testCancelMaintenanceMessage() throws Exception {
+        AnnouncementEntity announcement = announcementRepository.save(new AnnouncementEntity("I think dangling line is a funny name for a line", Duration.ofSeconds(60)));
+        assertEquals(1, announcementRepository.findAll().size());
+
         //Send a cancel maintenance message and expect everything to be ok
-        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/messages/cancel-maintenance")
+        mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/announcements/" + announcement.getId())
                         .header("userId", ADMIN_USER))
                 .andExpect(status().isOk());
         assertCancelMaintenanceMessageSent();
+        assertEquals(0, announcementRepository.findAll().size());
+
+        // With a non-existing ID, expect 404
+        mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/announcements/" + UUID.randomUUID())
+                .header("userId", ADMIN_USER))
+            .andExpect(status().isNotFound());
 
         //Send a cancel maintenance message with a user that's not an admin and expect 403 FORBIDDEN
-        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/messages/cancel-maintenance")
+        mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/announcements/" + UUID.randomUUID())
                         .header("userId", NOT_ADMIN))
                 .andExpect(status().isForbidden());
     }
 
-    private void assertMaintenanceMessageSent(String maintenanceMessage, Integer duration) {
+    @Test
+    void testGetAllMaintenanceMessages() throws Exception {
+        announcementRepository.save(new AnnouncementEntity("I think dangling line is a funny name for a line", Duration.ofSeconds(60)));
+        assertEquals(1, announcementRepository.findAll().size());
+
+        // Try to retrieve all the messages and expect everything to be ok
+        MvcResult mvcResult = mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/announcements")
+                .header("userId", ADMIN_USER))
+            .andExpect(status().isOk()).andReturn();
+        List<AnnouncementEntity> announcements = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), new TypeReference<>() {
+        });
+        assertEquals(1, announcements.size());
+
+        // Try to retrieve all the messages with a user that's not an admin and expect 403 FORBIDDEN
+        mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/announcements")
+                        .header("userId", NOT_ADMIN))
+                .andExpect(status().isForbidden());
+    }
+
+    private void assertMaintenanceMessageSent(String maintenanceMessage, Long duration) {
         Message<byte[]> message = output.receive(TIMEOUT, maintenanceMessageDestination);
         assertEquals(maintenanceMessage, new String(message.getPayload()));
         MessageHeaders headers = message.getHeaders();
