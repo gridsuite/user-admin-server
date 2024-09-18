@@ -182,8 +182,15 @@ class UserAdminTest {
         mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/users")
                         .header("userId", NOT_ADMIN)
                         .contentType(APPLICATION_JSON)
-                        .content("[]"))
+                        .content("[\"" + USER_SUB + "\"]"))
                 .andExpect(status().isForbidden())
+                .andReturn();
+
+        mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/users")
+                        .header("userId", ADMIN_USER)
+                        .contentType(APPLICATION_JSON)
+                        .content("[]"))
+                .andExpect(status().isBadRequest())
                 .andReturn();
 
         mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/users")
