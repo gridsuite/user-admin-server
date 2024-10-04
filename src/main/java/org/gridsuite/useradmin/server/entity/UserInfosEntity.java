@@ -36,6 +36,7 @@ public class UserInfosEntity {
     @Column(name = "id")
     private UUID id;
 
+    // TODO rename to subject or userName
     @Column(name = "sub", nullable = false, unique = true)
     private String sub;
 
@@ -48,6 +49,14 @@ public class UserInfosEntity {
             return null;
         }
         String profileName = entity.getProfile() == null ? null : entity.getProfile().getName();
-        return new UserInfos(entity.getSub(), isAdminFn.test(entity.getSub()), profileName);
+        return new UserInfos(entity.getSub(), isAdminFn.test(entity.getSub()), profileName, null, null, null);
+    }
+
+    public static UserInfos toDto(@Nullable final UserInfosEntity userInfosEntity, Predicate<String> isAdminFn, Integer maxAllowedCases, Integer numberCasesUsed, Integer maxAllowedBuilds) {
+        if (userInfosEntity == null) {
+            return null;
+        }
+        UserProfileEntity userProfileEntity = userInfosEntity.getProfile();
+        return new UserInfos(userInfosEntity.getSub(), isAdminFn.test(userInfosEntity.getSub()), userProfileEntity.getName(), maxAllowedCases, numberCasesUsed, maxAllowedBuilds);
     }
 }

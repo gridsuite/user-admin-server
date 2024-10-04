@@ -9,5 +9,8 @@ package org.gridsuite.useradmin.server.dto;
 public record UserInfos(
     String sub,
     boolean isAdmin,
-    String profileName
+    String profileName,
+    Integer maxAllowedCases,
+    Integer numberCasesUsed,
+    Integer maxAllowedBuilds
 ) { }

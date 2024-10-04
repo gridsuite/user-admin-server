@@ -9,8 +9,11 @@ package org.gridsuite.useradmin.server.service;
 import com.google.common.collect.Sets;
 import org.gridsuite.useradmin.server.UserAdminApplicationProps;
 import org.gridsuite.useradmin.server.UserAdminException;
+import org.gridsuite.useradmin.server.dto.UserInfos;
 import org.gridsuite.useradmin.server.dto.UserProfile;
+import org.gridsuite.useradmin.server.entity.UserInfosEntity;
 import org.gridsuite.useradmin.server.entity.UserProfileEntity;
+import org.gridsuite.useradmin.server.repository.UserInfosRepository;
 import org.gridsuite.useradmin.server.repository.UserProfileRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,14 +39,18 @@ public class UserProfileService {
 
     private final UserAdminApplicationProps applicationProps;
 
+    private final UserInfosRepository userInfosRepository;
+
     public UserProfileService(final UserProfileRepository userProfileRepository,
                               final AdminRightService adminRightService,
                               final DirectoryService directoryService,
-                              final UserAdminApplicationProps applicationProps) {
+                              final UserAdminApplicationProps applicationProps,
+                              final UserInfosRepository userInfosRepository) {
         this.userProfileRepository = Objects.requireNonNull(userProfileRepository);
         this.adminRightService = Objects.requireNonNull(adminRightService);
         this.directoryService = Objects.requireNonNull(directoryService);
         this.applicationProps = Objects.requireNonNull(applicationProps);
+        this.userInfosRepository = Objects.requireNonNull(userInfosRepository);
     }
 
     @Transactional(readOnly = true)
@@ -115,6 +122,25 @@ public class UserProfileService {
 
     Optional<UserProfile> getProfile(UUID profileUuid) {
         return userProfileRepository.findById(profileUuid).map(this::toDto);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<UserInfos> getUserInfo(String sub) {
+        return userInfosRepository.findBySub(sub).map(this::toDtoUserInfo);
+    }
+
+    private UserInfos toDtoUserInfo(final UserInfosEntity userInfosEntity) {
+        // get number of cases used
+        Integer casesUsed = directoryService.getCasesCount(userInfosEntity.getSub());
+        // get max allowed cases
+        Integer maxAllowedCases = Optional.ofNullable(userInfosEntity.getProfile())
+                .map(UserProfileEntity::getMaxAllowedCases)
+                .orElse(applicationProps.getDefaultMaxAllowedCases());
+        // get max allowed builds
+        Integer maxAllowedBuilds = Optional.ofNullable(userInfosEntity.getProfile())
+                .map(UserProfileEntity::getMaxAllowedBuilds)
+                .orElse(applicationProps.getDefaultMaxAllowedBuilds());
+        return UserInfosEntity.toDto(userInfosEntity, adminRightService::isAdmin, maxAllowedCases, casesUsed, maxAllowedBuilds);
     }
 
     private UserProfile toDto(final UserProfileEntity entity) {
