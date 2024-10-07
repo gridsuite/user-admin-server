@@ -12,31 +12,30 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.gridsuite.useradmin.server.UserAdminApi;
 import org.gridsuite.useradmin.server.dto.UserInfos;
-import org.gridsuite.useradmin.server.service.UserProfileService;
+import org.gridsuite.useradmin.server.service.UserInfosService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 /**
  * @author Anis TOURI <anis.touri at rte-france.com>
- *
  */
 @RestController
 @RequestMapping(value = "/" + UserAdminApi.API_VERSION + "/users")
 @Tag(name = "UserInfoController")
 public class UserInfoController {
 
-    private final UserProfileService service;
+    private final UserInfosService userInfosService;
 
-    public UserInfoController(UserProfileService userService) {
-        this.service = userService;
+    public UserInfoController(UserInfosService userInfosService) {
+        this.userInfosService = userInfosService;
     }
 
     @GetMapping(value = "/{sub}/detail", produces = "application/json")
     @Operation(summary = "get detailed user information")
     @ApiResponse(responseCode = "200", description = "The user exist")
     @ApiResponse(responseCode = "404", description = "The user doesn't exist")
-    public ResponseEntity<UserInfos> getUser(@PathVariable("sub") String sub) {
-        return ResponseEntity.of(service.getUserInfo(sub));
+    public ResponseEntity<UserInfos> getUserDetail(@PathVariable("sub") String sub) {
+        return ResponseEntity.of(userInfosService.getUserInfo(sub));
     }
 }
 

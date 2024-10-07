@@ -24,12 +24,18 @@ class DtoConverterTest implements WithAssertions {
             // no profile
             assertThat(UserInfosEntity.toDto(new UserInfosEntity(uuid, "sub_user", null), sub -> true))
                     .as("dto result")
-                    .isEqualTo(new UserInfos("sub_user", true, null));
+                    .isEqualTo(new UserInfos("sub_user", true, null, null, null, null));
             // with profile
             UserProfileEntity profile = new UserProfileEntity(UUID.randomUUID(), "a profile", null, 5, 6);
+            // Test mapping without quota
             assertThat(UserInfosEntity.toDto(new UserInfosEntity(uuid, "sub_user", profile), sub -> true))
                     .as("dto result")
-                    .isEqualTo(new UserInfos("sub_user", true, "a profile"));
+                    .isEqualTo(new UserInfos("sub_user", true, "a profile", null, null, null));
+
+            // Test mapping with quota
+            assertThat(UserInfosEntity.toDto(new UserInfosEntity(uuid, "sub_user", profile), sub -> true, 5, 2, 6))
+                    .as("dto result")
+                    .isEqualTo(new UserInfos("sub_user", true, "a profile", 5, 2, 6));
         }
 
         @Test
@@ -39,7 +45,7 @@ class DtoConverterTest implements WithAssertions {
             Mockito.when(isAdminTest.test(Mockito.anyString())).thenReturn(false);
             assertThat(UserInfosEntity.toDto(new UserInfosEntity(uuid, "admin_user", null), isAdminTest))
                 .as("dto result")
-                .isEqualTo(new UserInfos("admin_user", false, null));
+                .isEqualTo(new UserInfos("admin_user", false, null, null, null, null));
             ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
             Mockito.verify(isAdminTest, Mockito.times(1)).test(argument.capture());
             assertThat(argument.getValue()).as("value predicate submitted").isEqualTo("admin_user");
