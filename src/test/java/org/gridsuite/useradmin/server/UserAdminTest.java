@@ -370,14 +370,6 @@ class UserAdminTest {
 
     }
 
-    private void assertUserMessageSent(String maintenanceMessage, Integer duration) {
-        Message<byte[]> message = output.receive(TIMEOUT, maintenanceMessageDestination);
-        assertEquals(maintenanceMessage, new String(message.getPayload()));
-        MessageHeaders headers = message.getHeaders();
-        assertEquals(MESSAGE_TYPE_MAINTENANCE, headers.get(HEADER_MESSAGE_TYPE));
-        assertEquals(duration, headers.get(HEADER_DURATION));
-    }
-
     private void assertMaintenanceMessageSent(String maintenanceMessage, Integer duration) {
         Message<byte[]> message = output.receive(TIMEOUT, maintenanceMessageDestination);
         assertEquals(maintenanceMessage, new String(message.getPayload()));
