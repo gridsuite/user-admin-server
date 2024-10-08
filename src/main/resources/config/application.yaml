@@ -6,7 +6,9 @@ spring:
       bindings:
         publishMessage-out-0:
           destination: ${powsybl-ws.rabbitmq.destination.prefix:}config.message
-      output-bindings: publishMessage-out-0
+        publishDirectoryUpdate-out-0:
+          destination: ${powsybl-ws.rabbitmq.destination.prefix:}directory.update
+      output-bindings: publishMessage-out-0;publishDirectoryUpdate-out-0
 
 powsybl-ws:
   database:
