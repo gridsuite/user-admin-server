@@ -34,7 +34,7 @@ public class NotificationService {
 
     public static final String HEADER_DURATION = "duration";
 
-    public static final String MESSAGE_TYPE_USER_MESSAGE = "userMessage";
+    public static final String HEADER_USER_MESSAGE = "userMessage";
 
     public static final String HEADER_UPDATE_TYPE = "updateType";
 
@@ -75,7 +75,7 @@ public class NotificationService {
 
     public void emitUserMessage(String sub, String messageId, String messageValues) {
         sendMessage(MessageBuilder.withPayload(messageValues)
-            .setHeader(MESSAGE_TYPE_USER_MESSAGE, messageId)
+            .setHeader(HEADER_USER_MESSAGE, messageId)
             .setHeader(HEADER_UPDATE_TYPE, HEADER_UPDATE_TYPE_DIRECTORY)
             .setHeader(HEADER_USER_ID, sub)
             .build(), DIRECTORY_UPDATE_BINDING);
