@@ -314,10 +314,10 @@ class UserAdminTest {
         String requestBody = objectMapper.writeValueAsString("The application will be on maintenance until the end of the maintenance");
         Integer duration = 300;
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/messages/maintenance", USER_SUB)
-                        .queryParam("durationInSeconds", duration.toString())
-                        .header("userId", ADMIN_USER)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
+                .queryParam("durationInSeconds", duration.toString())
+                .header("userId", ADMIN_USER)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
                 .andExpect(status().isOk());
         assertMaintenanceMessageSent(requestBody, duration);
 
@@ -455,9 +455,9 @@ class UserAdminTest {
     @SneakyThrows
     private UserProfile getUserProfile(String userName, HttpStatusCode status) {
         String response = mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users/" + userName + "/profile")
-                        .contentType(APPLICATION_JSON))
-                .andExpect(status().is(status.value()))
-                .andReturn().getResponse().getContentAsString();
+                                .contentType(APPLICATION_JSON))
+                        .andExpect(status().is(status.value()))
+                        .andReturn().getResponse().getContentAsString();
         if (status == HttpStatus.OK) {
             return objectMapper.readValue(response, new TypeReference<>() {
             });
