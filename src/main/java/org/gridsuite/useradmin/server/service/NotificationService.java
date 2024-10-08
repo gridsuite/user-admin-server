@@ -34,13 +34,11 @@ public class NotificationService {
 
     public static final String HEADER_DURATION = "duration";
 
-    static final String MESSAGE_TYPE_USER_MESSAGE = "userMessage";
+    public static final String MESSAGE_TYPE_USER_MESSAGE = "userMessage";
 
-    static final String USER_MESSAGE_VALUES = "messageValues";
+    public static final String HEADER_UPDATE_TYPE = "updateType";
 
-    static final String HEADER_UPDATE_TYPE = "updateType";
-
-    static final String HEADER_UPDATE_TYPE_DIRECTORY = "directories";
+    public static final String HEADER_UPDATE_TYPE_DIRECTORY = "directories";
 
     public static final String MESSAGE_LOG = "Sending message : {}";
 
