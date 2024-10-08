@@ -35,6 +35,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 
+import static com.powsybl.ws.commons.computation.service.NotificationService.HEADER_USER_ID;
 import static org.gridsuite.useradmin.server.service.NotificationService.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -67,6 +68,8 @@ class UserAdminTest {
     private OutputDestination output;
 
     private final String maintenanceMessageDestination = "config.message";
+
+    private final String userMessageDestination = "directory.update";
 
     private static final long TIMEOUT = 1000;
 
@@ -198,6 +201,12 @@ class UserAdminTest {
                         .contentType(APPLICATION_JSON)
                         .content("[\"" + USER_UNKNOWN + "\"]"))
                 .andExpect(status().isNotFound())
+                .andReturn();
+
+        mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/cases-alert-threshold")
+                        .header("userId", NOT_ADMIN)
+                )
+                .andExpect(status().isOk())
                 .andReturn();
     }
 
@@ -342,6 +351,23 @@ class UserAdminTest {
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/messages/cancel-maintenance")
                         .header("userId", NOT_ADMIN))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void testSendUserMessage() throws Exception {
+        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/messages/{sub}/user-message", USER_SUB)
+                        .queryParam("messageId", "messageIdTest")
+                ).andExpect(status().isOk())
+                .andReturn();
+        assertUserMessageSent("messageIdTest", USER_SUB);
+    }
+
+    private void assertUserMessageSent(String messageId, String sub) {
+        Message<byte[]> message = output.receive(TIMEOUT, userMessageDestination);
+        MessageHeaders headers = message.getHeaders();
+        assertEquals(messageId, headers.get(HEADER_USER_MESSAGE));
+        assertEquals(sub, headers.get(HEADER_USER_ID));
+
     }
 
     private void assertMaintenanceMessageSent(String maintenanceMessage, Integer duration) {

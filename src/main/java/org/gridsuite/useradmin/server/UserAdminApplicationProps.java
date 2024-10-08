@@ -24,5 +24,7 @@ public class UserAdminApplicationProps {
 
     private Integer defaultMaxAllowedCases;
 
+    private Integer casesAlertThreshold;
+
     private Integer defaultMaxAllowedBuilds;
 }

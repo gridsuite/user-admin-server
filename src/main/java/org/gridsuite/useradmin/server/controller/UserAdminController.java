@@ -20,13 +20,22 @@ import org.gridsuite.useradmin.server.service.UserAdminService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
 /**
  * @author Etienne Homer <etienne.homer at rte-france.com>
- *
  * @implNote /!\ TO DEV: remember to maintain list access restricted in operations' description
  */
 @RestController
@@ -111,8 +120,8 @@ public class UserAdminController {
     @ApiResponse(responseCode = "200", description = "user authorized and admin")
     public ResponseEntity<Void> userIsAdmin(@PathVariable("sub") String userId) {
         return service.userIsAdmin(userId)
-                ? ResponseEntity.ok().build()
-                : ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            ? ResponseEntity.ok().build()
+            : ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
     @GetMapping(value = "/users/{sub}/profile")
@@ -129,6 +138,13 @@ public class UserAdminController {
     @ApiResponse(responseCode = "404", description = "The user doesn't exist")
     public ResponseEntity<Integer> getUserProfileMaxStudies(@PathVariable("sub") String sub) {
         return ResponseEntity.ok().body(service.getUserProfileMaxAllowedCases(sub));
+    }
+
+    @GetMapping(value = "/cases-alert-threshold")
+    @Operation(summary = "Get the cases alert threshold")
+    @ApiResponse(responseCode = "200", description = "The cases alert threshold")
+    public ResponseEntity<Integer> getCasesAlertThreshold() {
+        return ResponseEntity.ok().body(service.getCasesAlertThreshold());
     }
 
     @GetMapping(value = "/users/{sub}/profile/max-builds")
@@ -167,6 +183,18 @@ public class UserAdminController {
     })
     public ResponseEntity<Void> sendCancelMaintenanceMessage(@RequestHeader("userId") String userId) {
         service.sendCancelMaintenanceMessage(userId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping(value = "/messages/{sub}/user-message")
+    @Operation(summary = "send a message to a specific user")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "message sent"),
+    })
+    public ResponseEntity<Void> sendUserMessage(@PathVariable("sub") String sub,
+                                                       @Parameter(description = "the message id to be displayed to the user") @RequestParam(value = "messageId") String messageId,
+                                                       @Parameter(description = "the message values attached to the message") @RequestBody(required = false) String messageValues) {
+        service.sendUserMessage(sub, messageId, messageValues);
         return ResponseEntity.ok().build();
     }
 }
