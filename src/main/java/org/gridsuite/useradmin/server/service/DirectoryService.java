@@ -34,6 +34,9 @@ public class DirectoryService {
     private static final String ELEMENTS_SERVER_ROOT_PATH = DELIMITER + DIRECTORY_SERVER_API_VERSION + DELIMITER
             + "elements";
 
+    private static final String USER_SERVER_ROOT_PATH = DELIMITER + DIRECTORY_SERVER_API_VERSION + DELIMITER
+            + "users";
+
     private final RestTemplate restTemplate = new RestTemplate();
 
     private static String directoryServerBaseUri;
@@ -58,5 +61,10 @@ public class DirectoryService {
                 new ParameterizedTypeReference<List<ElementAttributes>>() {
                 }).getBody();
         return existingElementList == null ? Set.of() : existingElementList.stream().map(ElementAttributes::getElementUuid).collect(Collectors.toSet());
+    }
+
+    public Integer getCasesCount(String userId) {
+        String path = UriComponentsBuilder.fromPath(USER_SERVER_ROOT_PATH + "/{userId}/cases/count").buildAndExpand(userId).toUriString();
+        return restTemplate.getForObject(directoryServerBaseUri + path, Integer.class);
     }
 }
