@@ -33,7 +33,7 @@ class DtoConverterTest implements WithAssertions {
                     .isEqualTo(new UserInfos("sub_user", true, "a profile", null, null, null));
 
             // Test mapping with quota
-            assertThat(UserInfosEntity.toDto(new UserInfosEntity(uuid, "sub_user", profile), sub -> true, 5, 2, 6))
+            assertThat(UserInfosEntity.toDtoWithDetail(new UserInfosEntity(uuid, "sub_user", profile), sub -> true, 5, 2, 6))
                     .as("dto result")
                     .isEqualTo(new UserInfos("sub_user", true, "a profile", 5, 2, 6));
         }

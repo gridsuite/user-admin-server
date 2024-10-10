@@ -27,6 +27,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.head;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -36,7 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @AutoConfigureMockMvc
 @SpringBootTest
-class UserInfosController {
+class UserInfosControllerTest {
 
     private static final String PROFILE_A = "profile_A";
     private static final String USER_A = "user_A";
@@ -79,7 +80,7 @@ class UserInfosController {
                         .andReturn().getResponse().getContentAsString(), UserInfos.class);
         assertNotNull(userInfos);
         assertEquals(USER_A, userInfos.sub());
-        assertEquals(false, userInfos.isAdmin());
+        assertFalse(userInfos.isAdmin());
         assertEquals(PROFILE_A, userInfos.profileName());
         assertEquals(10, userInfos.maxAllowedCases());
         assertEquals(5, userInfos.numberCasesUsed());

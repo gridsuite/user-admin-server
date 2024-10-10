@@ -31,10 +31,13 @@ import static org.mockito.Mockito.when;
  */
 
 @SpringBootTest(classes = {UserAdminApplication.class})
-public class UserInfosServiceTest {
+class UserInfosServiceTest {
 
     @Mock
-    private DirectoryService directoryService;
+    private UserInfosService userInfosServiceSelfMock;
+
+    @Mock
+    private DirectoryService directoryServiceMock;
 
     @Mock
     private UserProfileRepository userProfileRepositoryMock;
@@ -55,12 +58,12 @@ public class UserInfosServiceTest {
     @SneakyThrows
     void toDtoUserInfoTest() {
         // get number of cases used mock
-        when(directoryService.getCasesCount("user_A")).thenReturn(3);
+        when(directoryServiceMock.getCasesCount("user_A")).thenReturn(3);
         // create user and profile
         UserProfileEntity profile = new UserProfileEntity(UUID.randomUUID(), "profile_A", null, 5, 6);
         UserInfosEntity user = new UserInfosEntity(UUID.randomUUID(), "user_A", profile);
 
-        when(userInfosRepositoryMock.findBySub("user_A")).thenReturn(Optional.of(user));
+        when(userInfosServiceSelfMock.getUserInfosEntity("user_A")).thenReturn(Optional.of(user));
         Optional<UserInfos> userInfos = userInfosService.getUserInfo("user_A");
         assertTrue(userInfos.isPresent());
         assertEquals("user_A", userInfos.get().sub());

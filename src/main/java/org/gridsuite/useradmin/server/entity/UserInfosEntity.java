@@ -52,7 +52,7 @@ public class UserInfosEntity {
         return new UserInfos(entity.getSub(), isAdminFn.test(entity.getSub()), profileName, null, null, null);
     }
 
-    public static UserInfos toDto(@Nullable final UserInfosEntity userInfosEntity, Predicate<String> isAdminFn, Integer maxAllowedCases, Integer numberCasesUsed, Integer maxAllowedBuilds) {
+    public static UserInfos toDtoWithDetail(@Nullable final UserInfosEntity userInfosEntity, Predicate<String> isAdminFn, Integer maxAllowedCases, Integer numberCasesUsed, Integer maxAllowedBuilds) {
         if (userInfosEntity == null) {
             return null;
         }
