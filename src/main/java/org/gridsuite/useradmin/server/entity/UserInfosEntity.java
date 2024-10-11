@@ -57,6 +57,7 @@ public class UserInfosEntity {
             return null;
         }
         UserProfileEntity userProfileEntity = userInfosEntity.getProfile();
-        return new UserInfos(userInfosEntity.getSub(), isAdminFn.test(userInfosEntity.getSub()), userProfileEntity.getName(), maxAllowedCases, numberCasesUsed, maxAllowedBuilds);
+        String profileName = userProfileEntity != null ? userProfileEntity.getName() : null;
+        return new UserInfos(userInfosEntity.getSub(), isAdminFn.test(userInfosEntity.getSub()), profileName, maxAllowedCases, numberCasesUsed, maxAllowedBuilds);
     }
 }
