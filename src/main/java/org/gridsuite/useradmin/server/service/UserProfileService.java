@@ -15,11 +15,7 @@ import org.gridsuite.useradmin.server.repository.UserProfileRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -33,7 +29,6 @@ public class UserProfileService {
     private final UserProfileRepository userProfileRepository;
     private final DirectoryService directoryService;
     private final AdminRightService adminRightService;
-
     private final UserAdminApplicationProps applicationProps;
 
     public UserProfileService(final UserProfileRepository userProfileRepository,

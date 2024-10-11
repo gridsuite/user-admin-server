@@ -143,7 +143,7 @@ class NoQuotaTest {
 
     @SneakyThrows
     private void associateProfileToUser(String userSub, String profileName) {
-        UserInfos userInfos = new UserInfos(userSub, false, profileName);
+        UserInfos userInfos = new UserInfos(userSub, false, profileName, null, null, null);
         performPut(API_BASE_PATH + "/users/" + userSub, userInfos);
     }
 
