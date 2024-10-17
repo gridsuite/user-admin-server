@@ -11,9 +11,9 @@ import org.gridsuite.useradmin.server.UserAdminException;
 import org.gridsuite.useradmin.server.dto.UserConnection;
 import org.gridsuite.useradmin.server.dto.UserInfos;
 import org.gridsuite.useradmin.server.dto.UserProfile;
+import org.gridsuite.useradmin.server.entity.UserInfosEntity;
 import org.gridsuite.useradmin.server.entity.UserProfileEntity;
 import org.gridsuite.useradmin.server.repository.UserInfosRepository;
-import org.gridsuite.useradmin.server.entity.UserInfosEntity;
 import org.gridsuite.useradmin.server.repository.UserProfileRepository;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.lang.NonNull;
@@ -134,6 +134,10 @@ public class UserAdminService {
                 .orElse(applicationProps.getDefaultMaxAllowedCases());
     }
 
+    public Integer getCasesAlertThreshold() {
+        return Optional.ofNullable(applicationProps.getCasesAlertThreshold()).orElse(90);
+    }
+
     @Transactional(readOnly = true)
     public Integer getUserProfileMaxAllowedBuilds(String sub) {
         return self.getUserProfile(sub)
@@ -162,5 +166,10 @@ public class UserAdminService {
             throw new UserAdminException(FORBIDDEN);
         }
         notificationService.emitCancelMaintenanceMessage();
+    }
+
+    public void sendUserMessage(String sub, String messageId, String messageValues) {
+        String values = messageValues != null ? messageValues : "";
+        notificationService.emitUserMessage(sub, messageId, values);
     }
 }

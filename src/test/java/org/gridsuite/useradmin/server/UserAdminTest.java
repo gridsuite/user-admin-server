@@ -34,6 +34,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 
+import static com.powsybl.ws.commons.computation.service.NotificationService.HEADER_USER_ID;
 import static org.gridsuite.useradmin.server.service.NotificationService.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -66,6 +67,8 @@ class UserAdminTest {
     private OutputDestination output;
 
     private static final String MAINTENANCE_MESSAGE_DESTINATION = "config.message";
+
+    private static final String USER_MESSAGE_DESTINATION = "directory.update";
 
     private static final long TIMEOUT = 1000;
 
@@ -195,6 +198,12 @@ class UserAdminTest {
                         .content("[\"" + USER_UNKNOWN + "\"]"))
                 .andExpect(status().isNotFound())
                 .andReturn();
+
+        mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/cases-alert-threshold")
+                        .header("userId", NOT_ADMIN)
+                )
+                .andExpect(status().isOk())
+                .andReturn();
     }
 
     @Test
@@ -203,7 +212,7 @@ class UserAdminTest {
         createProfile(PROFILE_1);
 
         // udpate the user: change its name and link it to the profile
-        UserInfos userInfo = new UserInfos(USER_SUB2, false, PROFILE_1);
+        UserInfos userInfo = new UserInfos(USER_SUB2, false, PROFILE_1, null, null, null);
         updateUser(USER_SUB, userInfo, HttpStatus.OK, ADMIN_USER);
 
         // Get and check user profile
@@ -214,12 +223,12 @@ class UserAdminTest {
 
     @Test
     void testUpdateUserNotFound() throws Exception {
-        updateUser("nofFound", new UserInfos("nofFound", false, "prof"), HttpStatus.NOT_FOUND, ADMIN_USER);
+        updateUser("nofFound", new UserInfos("nofFound", false, "prof", null, null, null), HttpStatus.NOT_FOUND, ADMIN_USER);
     }
 
     @Test
     void testUpdateUserForbidden() throws Exception {
-        updateUser("dummy", new UserInfos("dummy", false, "prof"), HttpStatus.FORBIDDEN, NOT_ADMIN);
+        updateUser("dummy", new UserInfos("dummy", false, "prof", null, null, null), HttpStatus.FORBIDDEN, NOT_ADMIN);
     }
 
     @Test
@@ -331,6 +340,23 @@ class UserAdminTest {
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/messages/cancel-maintenance")
                         .header("userId", NOT_ADMIN))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void testSendUserMessage() throws Exception {
+        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/messages/{sub}/user-message", USER_SUB)
+                        .queryParam("messageId", "messageIdTest")
+                ).andExpect(status().isOk())
+                .andReturn();
+        assertUserMessageSent("messageIdTest", USER_SUB);
+    }
+
+    private void assertUserMessageSent(String messageId, String sub) {
+        Message<byte[]> message = output.receive(TIMEOUT, USER_MESSAGE_DESTINATION);
+        MessageHeaders headers = message.getHeaders();
+        assertEquals(messageId, headers.get(HEADER_USER_MESSAGE));
+        assertEquals(sub, headers.get(HEADER_USER_ID));
+
     }
 
     private void assertMaintenanceMessageSent(String maintenanceMessage, Integer duration) {
