@@ -8,7 +8,6 @@ package org.gridsuite.useradmin.server;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import lombok.SneakyThrows;
 import org.gridsuite.useradmin.server.dto.UserInfos;
 import org.gridsuite.useradmin.server.dto.UserProfile;
 import org.gridsuite.useradmin.server.entity.UserProfileEntity;
@@ -65,27 +64,25 @@ class NoQuotaTest {
     private ObjectWriter objectWriter;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         objectWriter = objectMapper.writer().withDefaultPrettyPrinter();
     }
 
     @AfterEach
-    public void cleanDB() {
+    void cleanDB() {
         userInfosRepository.deleteAll();
         userProfileRepository.deleteAll();
     }
 
     @Test
-    @SneakyThrows
-    void testProfileCreation() {
+    void testProfileCreation() throws Exception {
         createProfile(PROFILE_ONE, null, null);
         // test with quotas
         createProfile(PROFILE_TWO, 10, 20);
     }
 
     @Test
-    @SneakyThrows
-    void testUserCreationWithoutProfile() {
+    void testUserCreationWithoutProfile() throws Exception {
         createUser(USER_SUB);
 
         assertTrue(getMaxAllowedBuilds(USER_SUB).isEmpty());
@@ -93,8 +90,7 @@ class NoQuotaTest {
     }
 
     @Test
-    @SneakyThrows
-    void testUserCreationWithProfile() {
+    void testUserCreationWithProfile() throws Exception {
         //profile with no quotas
         createProfile(PROFILE_ONE, null, null);
         createUser(USER_SUB);
@@ -112,8 +108,7 @@ class NoQuotaTest {
         assertEquals("20", getMaxAllowedBuilds(USER_SUB_TWO));
     }
 
-    @SneakyThrows
-    private void createProfile(String profileName, Integer maxAllowedCases, Integer maxAllowedBuilds) {
+    private void createProfile(String profileName, Integer maxAllowedCases, Integer maxAllowedBuilds) throws Exception {
         UserProfile profileInfo = new UserProfile(null, profileName, null, false, maxAllowedCases, maxAllowedBuilds);
         performPost(API_BASE_PATH + "/profiles", profileInfo);
 
@@ -124,8 +119,7 @@ class NoQuotaTest {
         assertEquals(maxAllowedBuilds, createdProfile.get().getMaxAllowedBuilds());
     }
 
-    @SneakyThrows
-    private void createUser(String userSub) {
+    private void createUser(String userSub) throws Exception {
         performPost(API_BASE_PATH + "/users/" + userSub, null);
 
         // check user creation
@@ -135,32 +129,27 @@ class NoQuotaTest {
         assertEquals(userSub, userInfos.sub());
     }
 
-    @SneakyThrows
-    private UserInfos getUserInfos(String userSub) {
+    private UserInfos getUserInfos(String userSub) throws Exception {
         MvcResult result = performGet(API_BASE_PATH + "/users/" + userSub);
         return objectMapper.readValue(result.getResponse().getContentAsString(), UserInfos.class);
     }
 
-    @SneakyThrows
-    private void associateProfileToUser(String userSub, String profileName) {
+    private void associateProfileToUser(String userSub, String profileName) throws Exception {
         UserInfos userInfos = new UserInfos(userSub, false, profileName);
         performPut(API_BASE_PATH + "/users/" + userSub, userInfos);
     }
 
-    @SneakyThrows
-    private String getMaxAllowedBuilds(String userSub) {
+    private String getMaxAllowedBuilds(String userSub) throws Exception {
         MvcResult result = performGet(API_BASE_PATH + "/users/" + userSub + "/profile/max-builds");
         return result.getResponse().getContentAsString();
     }
 
-    @SneakyThrows
-    private String getMaxAllowedCases(String userSub) {
+    private String getMaxAllowedCases(String userSub) throws Exception {
         MvcResult result = performGet(API_BASE_PATH + "/users/" + userSub + "/profile/max-cases");
         return result.getResponse().getContentAsString();
     }
 
-    @SneakyThrows
-    private void performPost(String url, Object content) {
+    private void performPost(String url, Object content) throws Exception {
         mockMvc.perform(post(url)
                         .content(content != null ? objectWriter.writeValueAsString(content) : "")
                         .contentType(APPLICATION_JSON)
@@ -168,8 +157,7 @@ class NoQuotaTest {
                 .andExpect(status().isCreated());
     }
 
-    @SneakyThrows
-    private void performPut(String url, Object content) {
+    private void performPut(String url, Object content) throws Exception {
         mockMvc.perform(put(url)
                         .content(objectWriter.writeValueAsString(content))
                         .contentType(APPLICATION_JSON)
@@ -177,8 +165,7 @@ class NoQuotaTest {
                 .andExpect(status().isOk());
     }
 
-    @SneakyThrows
-    private MvcResult performGet(String url) {
+    private MvcResult performGet(String url) throws Exception {
         return mockMvc.perform(get(url)
                         .header("userId", ADMIN_USER))
                 .andExpect(status().isOk())

@@ -6,9 +6,9 @@
  */
 package org.gridsuite.useradmin.server;
 
+import org.gridsuite.useradmin.server.entity.UserInfosEntity;
 import org.gridsuite.useradmin.server.repository.ConnectionRepository;
 import org.gridsuite.useradmin.server.repository.UserInfosRepository;
-import org.gridsuite.useradmin.server.entity.UserInfosEntity;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +39,7 @@ class NoAdminTest {
     private ConnectionRepository connectionRepository;
 
     @AfterEach
-    public void cleanDB() {
+    void cleanDB() {
         userInfosRepository.deleteAll();
         connectionRepository.deleteAll();
     }

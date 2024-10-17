@@ -9,7 +9,6 @@ package org.gridsuite.useradmin.server;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import lombok.SneakyThrows;
 import org.gridsuite.useradmin.server.dto.UserInfos;
 import org.gridsuite.useradmin.server.dto.UserProfile;
 import org.gridsuite.useradmin.server.entity.ConnectionEntity;
@@ -66,12 +65,12 @@ class UserAdminTest {
     @Autowired
     private OutputDestination output;
 
-    private final String maintenanceMessageDestination = "config.message";
+    private static final String MAINTENANCE_MESSAGE_DESTINATION = "config.message";
 
     private static final long TIMEOUT = 1000;
 
     @AfterEach
-    public void cleanDB() {
+    void cleanDB() {
         userInfosRepository.deleteAll();
         userProfileRepository.deleteAll();
         connectionRepository.deleteAll();
@@ -100,8 +99,7 @@ class UserAdminTest {
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),
-                new TypeReference<>() {
-                });
+                new TypeReference<>() { });
 
         assertEquals(0, userInfos.size());
 
@@ -121,8 +119,7 @@ class UserAdminTest {
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),
-                new TypeReference<>() {
-                });
+                new TypeReference<>() { });
 
         assertEquals(1, userInfos.size());
 
@@ -157,8 +154,7 @@ class UserAdminTest {
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),
-                new TypeReference<>() {
-                });
+                new TypeReference<>() { });
         assertEquals(0, userInfos.size());
 
         mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB)
@@ -202,8 +198,7 @@ class UserAdminTest {
     }
 
     @Test
-    @SneakyThrows
-    void testUpdateUser() {
+    void testUpdateUser() throws Exception {
         createUser(USER_SUB);
         createProfile(PROFILE_1);
 
@@ -218,20 +213,17 @@ class UserAdminTest {
     }
 
     @Test
-    @SneakyThrows
-    void testUpdateUserNotFound() {
+    void testUpdateUserNotFound() throws Exception {
         updateUser("nofFound", new UserInfos("nofFound", false, "prof"), HttpStatus.NOT_FOUND, ADMIN_USER);
     }
 
     @Test
-    @SneakyThrows
-    void testUpdateUserForbidden() {
+    void testUpdateUserForbidden() throws Exception {
         updateUser("dummy", new UserInfos("dummy", false, "prof"), HttpStatus.FORBIDDEN, NOT_ADMIN);
     }
 
     @Test
-    @SneakyThrows
-    void testGetUserProfileNotFound() {
+    void testGetUserProfileNotFound() throws Exception {
         getUserProfile("BadUser", HttpStatus.NOT_FOUND);
     }
 
@@ -255,8 +247,7 @@ class UserAdminTest {
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),
-                new TypeReference<>() {
-                });
+                new TypeReference<>() { });
 
         assertEquals(2, userInfos.size());
 
@@ -274,8 +265,7 @@ class UserAdminTest {
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),
-                new TypeReference<>() {
-                });
+                new TypeReference<>() { });
 
         assertEquals(2, connectionEntities.size());
 
@@ -289,8 +279,7 @@ class UserAdminTest {
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),
-                new TypeReference<>() {
-                });
+                new TypeReference<>() { });
         assertEquals(2, connectionEntities.size());
 
         mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/connections")
@@ -345,7 +334,7 @@ class UserAdminTest {
     }
 
     private void assertMaintenanceMessageSent(String maintenanceMessage, Integer duration) {
-        Message<byte[]> message = output.receive(TIMEOUT, maintenanceMessageDestination);
+        Message<byte[]> message = output.receive(TIMEOUT, MAINTENANCE_MESSAGE_DESTINATION);
         assertEquals(maintenanceMessage, new String(message.getPayload()));
         MessageHeaders headers = message.getHeaders();
         assertEquals(MESSAGE_TYPE_MAINTENANCE, headers.get(HEADER_MESSAGE_TYPE));
@@ -353,14 +342,13 @@ class UserAdminTest {
     }
 
     private void assertCancelMaintenanceMessageSent() {
-        Message<byte[]> message = output.receive(TIMEOUT, maintenanceMessageDestination);
+        Message<byte[]> message = output.receive(TIMEOUT, MAINTENANCE_MESSAGE_DESTINATION);
         assertEquals("", new String(message.getPayload()));
         MessageHeaders headers = message.getHeaders();
         assertEquals(MESSAGE_TYPE_CANCEL_MAINTENANCE, headers.get(HEADER_MESSAGE_TYPE));
     }
 
-    @SneakyThrows
-    private void createUser(String userName) {
+    private void createUser(String userName) throws Exception {
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/users/{sub}", userName)
                         .header("userId", ADMIN_USER)
                 )
@@ -372,16 +360,14 @@ class UserAdminTest {
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),
-                new TypeReference<>() {
-                });
+                new TypeReference<>() { });
         // the new user has no profile by default
         assertNotNull(userInfos);
         assertNull(userInfos.profileName());
         assertEquals(userName, userInfos.sub());
     }
 
-    @SneakyThrows
-    private void createProfile(String profileName) {
+    private void createProfile(String profileName) throws Exception {
         ObjectWriter objectWriter = objectMapper.writer().withDefaultPrettyPrinter();
         UserProfile profileInfo = new UserProfile(null, profileName, null, false, null, null);
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/profiles")
@@ -393,8 +379,7 @@ class UserAdminTest {
                 .andReturn();
     }
 
-    @SneakyThrows
-    private void updateUser(String updatedUserName, UserInfos userInfos, HttpStatusCode status, String userName) {
+    private void updateUser(String updatedUserName, UserInfos userInfos, HttpStatusCode status, String userName) throws Exception {
         ObjectWriter objectWriter = objectMapper.writer().withDefaultPrettyPrinter();
         mockMvc.perform(put("/" + UserAdminApi.API_VERSION + "/users/{sub}", updatedUserName)
                         .content(objectWriter.writeValueAsString(userInfos))
@@ -409,8 +394,7 @@ class UserAdminTest {
                                     .contentType(APPLICATION_JSON))
                             .andExpect(status().isOk())
                             .andReturn().getResponse().getContentAsString(),
-                    new TypeReference<>() {
-                    });
+                    new TypeReference<>() { });
             // the new user has the new name and profile
             assertNotNull(updatedUserInfos);
             assertEquals(userInfos.sub(), updatedUserInfos.sub());
@@ -418,15 +402,13 @@ class UserAdminTest {
         }
     }
 
-    @SneakyThrows
-    private UserProfile getUserProfile(String userName, HttpStatusCode status) {
+    private UserProfile getUserProfile(String userName, HttpStatusCode status) throws Exception {
         String response = mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users/" + userName + "/profile")
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().is(status.value()))
                         .andReturn().getResponse().getContentAsString();
         if (status == HttpStatus.OK) {
-            return objectMapper.readValue(response, new TypeReference<>() {
-            });
+            return objectMapper.readValue(response, new TypeReference<>() { });
         }
         return null;
     }
