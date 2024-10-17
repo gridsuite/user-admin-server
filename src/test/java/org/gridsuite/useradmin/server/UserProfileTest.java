@@ -9,9 +9,9 @@ package org.gridsuite.useradmin.server;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.matching.StringValuePattern;
-import lombok.SneakyThrows;
 import org.gridsuite.useradmin.server.dto.ElementAttributes;
 import org.gridsuite.useradmin.server.dto.UserProfile;
 import org.gridsuite.useradmin.server.entity.UserInfosEntity;
@@ -20,20 +20,17 @@ import org.gridsuite.useradmin.server.repository.UserInfosRepository;
 import org.gridsuite.useradmin.server.repository.UserProfileRepository;
 import org.gridsuite.useradmin.server.service.DirectoryService;
 import org.gridsuite.useradmin.server.utils.WireMockUtils;
-import org.junit.Assert;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import com.github.tomakehurst.wiremock.WireMockServer;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
@@ -43,24 +40,17 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * @author David Braquart <david.braquart at rte-france.com>
  */
-@RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
-public class UserProfileTest {
+class UserProfileTest {
     @Autowired
     private MockMvc mockMvc;
 
@@ -82,8 +72,8 @@ public class UserProfileTest {
 
     private ObjectWriter objectWriter;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         wireMockServer = new WireMockServer(wireMockConfig().dynamicPort());
         wireMockServer.start();
         DirectoryService.setDirectoryServerBaseUri(wireMockServer.baseUrl());
@@ -91,14 +81,14 @@ public class UserProfileTest {
         objectWriter = objectMapper.writer().withDefaultPrettyPrinter();
     }
 
-    @After
-    public void tearOff() {
+    @AfterEach
+    void tearOff() {
         userInfosRepository.deleteAll();
         userProfileRepository.deleteAll();
 
         try {
             wireMockServer.checkForUnmatchedRequests();
-            Assert.assertEquals(0, wireMockServer.findAll(WireMock.anyRequestedFor(WireMock.anyUrl())).size());
+            assertEquals(0, wireMockServer.findAll(WireMock.anyRequestedFor(WireMock.anyUrl())).size());
         } finally {
             wireMockServer.shutdown();
         }
@@ -110,14 +100,13 @@ public class UserProfileTest {
     private static final String PROFILE_2 = "profile_2";
 
     @Test
-    public void testEmptyProfileList() {
+    void testEmptyProfileList() throws Exception {
         // no existing profile in empty db
         assertEquals(0, getProfileList().size());
     }
 
     @Test
-    @SneakyThrows
-    public void testCreateProfile() {
+    void testCreateProfile() throws Exception {
         createProfile(PROFILE_1, ADMIN_USER, 10, 15, HttpStatus.CREATED);
 
         List<UserProfile> userProfiles = getProfileList();
@@ -132,14 +121,12 @@ public class UserProfileTest {
     }
 
     @Test
-    @SneakyThrows
-    public void testCreateProfileForbidden() {
+    void testCreateProfileForbidden() throws Exception {
         createProfile(PROFILE_1, NOT_ADMIN, 1, 0, HttpStatus.FORBIDDEN);
     }
 
     @Test
-    @SneakyThrows
-    public void testDeleteExistingProfile() {
+    void testDeleteExistingProfile() throws Exception {
         createProfile(PROFILE_1, ADMIN_USER, null, null, HttpStatus.CREATED);
         assertEquals(1, getProfileList().size());
         removeProfile(PROFILE_1, ADMIN_USER, HttpStatus.NO_CONTENT);
@@ -147,44 +134,37 @@ public class UserProfileTest {
     }
 
     @Test
-    @SneakyThrows
-    public void testDeleteProfileForbidden() {
+    void testDeleteProfileForbidden() throws Exception {
         removeProfile(PROFILE_1, NOT_ADMIN, HttpStatus.FORBIDDEN);
     }
 
     @Test
-    @SneakyThrows
-    public void testDeleteProfileNotFound() {
+    void testDeleteProfileNotFound() throws Exception {
         removeProfile("noExist", ADMIN_USER, HttpStatus.NOT_FOUND);
     }
 
     @Test
-    @SneakyThrows
-    public void testProfileUpdateNotFound() {
+    void testProfileUpdateNotFound() throws Exception {
         updateProfile(new UserProfile(UUID.randomUUID(), PROFILE_2, null, null, null, null), ADMIN_USER, HttpStatus.NOT_FOUND);
     }
 
     @Test
-    @SneakyThrows
-    public void testProfileUpdateForbidden() {
+    void testProfileUpdateForbidden() throws Exception {
         updateProfile(new UserProfile(UUID.randomUUID(), PROFILE_2, null, null, null, null), NOT_ADMIN, HttpStatus.FORBIDDEN);
     }
 
     @Test
-    @SneakyThrows
-    public void testProfileUpdateValidityOk() {
+    void testProfileUpdateValidityOk() throws Exception {
         updateProfile(true);
     }
 
     @Test
-    @SneakyThrows
-    public void testProfileUpdateValidityKo() {
+    void testProfileUpdateValidityKo() throws Exception {
         updateProfile(false);
     }
 
     @Test
-    @SneakyThrows
-    public void testGetProfileMaxAllowedCases() {
+    void testGetProfileMaxAllowedCases() throws Exception {
         UserProfileEntity userProfileEntity = new UserProfileEntity(UUID.randomUUID(), "profileName", null, 15, null);
         UserInfosEntity userInfosEntity = new UserInfosEntity(UUID.randomUUID(), ADMIN_USER, userProfileEntity);
         userProfileRepository.save(userProfileEntity);
@@ -199,8 +179,7 @@ public class UserProfileTest {
     }
 
     @Test
-    @SneakyThrows
-    public void testGetProfileMaxAllowedBuilds() {
+    void testGetProfileMaxAllowedBuilds() throws Exception {
         UserProfileEntity userProfileEntity = new UserProfileEntity(UUID.randomUUID(), "profileName", null, null, 15);
         UserInfosEntity userInfosEntity = new UserInfosEntity(UUID.randomUUID(), ADMIN_USER, userProfileEntity);
         userProfileRepository.save(userProfileEntity);
@@ -215,8 +194,7 @@ public class UserProfileTest {
     }
 
     @Test
-    @SneakyThrows
-    public void testGetProfileMaxAllowedCasesWithNoProfileSet() {
+    void testGetProfileMaxAllowedCasesWithNoProfileSet() throws Exception {
         UserInfosEntity userInfosEntity = new UserInfosEntity(UUID.randomUUID(), ADMIN_USER, null);
         userInfosRepository.save(userInfosEntity);
 
@@ -230,8 +208,7 @@ public class UserProfileTest {
     }
 
     @Test
-    @SneakyThrows
-    public void testGetProfileMaxAllowedBuildsWithNoProfileSet() {
+    void testGetProfileMaxAllowedBuildsWithNoProfileSet() throws Exception {
         UserInfosEntity userInfosEntity = new UserInfosEntity(UUID.randomUUID(), ADMIN_USER, null);
         userInfosRepository.save(userInfosEntity);
 
@@ -244,8 +221,7 @@ public class UserProfileTest {
         assertEquals(defaultMaxAllowedBuilds, result.getResponse().getContentAsString());
     }
 
-    @SneakyThrows
-    private void updateProfile(boolean validParameters) {
+    private void updateProfile(boolean validParameters) throws Exception {
         UUID lfParametersUuid = UUID.randomUUID();
         // stub for parameters elements existence check
         final String urlPath = "/v1/elements";
@@ -253,7 +229,7 @@ public class UserProfileTest {
         UUID stubId = wireMockServer.stubFor(WireMock.get(WireMock.urlMatching(urlPath + "\\?strictMode=false&ids=" + lfParametersUuid))
                 .willReturn(WireMock.ok()
                         .withBody(objectMapper.writeValueAsString(existingElements))
-                        .withHeader("Content-Type", "application/json"))).getId();
+                        .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE))).getId();
 
         UUID profileUuid = createProfile(PROFILE_1, ADMIN_USER, null, 0, HttpStatus.CREATED);
 
@@ -271,12 +247,11 @@ public class UserProfileTest {
         assertEquals(11, userProfiles.get(0).maxAllowedBuilds());
     }
 
-    private Map<String, StringValuePattern> handleQueryParams(List<UUID> paramIds) {
+    private static Map<String, StringValuePattern> handleQueryParams(List<UUID> paramIds) {
         return Map.of("ids", WireMock.matching(paramIds.stream().map(uuid -> ".+").collect(Collectors.joining(","))));
     }
 
-    @SneakyThrows
-    private UUID createProfile(String profileName, String userName, Integer maxAllowedCases, Integer maxAllowedBuilds, HttpStatusCode status) {
+    private UUID createProfile(String profileName, String userName, Integer maxAllowedCases, Integer maxAllowedBuilds, HttpStatusCode status) throws Exception {
         UserProfile profileInfo = new UserProfile(null, profileName, null, false, maxAllowedCases, maxAllowedBuilds);
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/profiles")
                         .content(objectWriter.writeValueAsString(profileInfo))
@@ -303,20 +278,17 @@ public class UserProfileTest {
         return null;
     }
 
-    @SneakyThrows
-    private List<UserProfile> getProfileList() {
+    private List<UserProfile> getProfileList() throws Exception {
         return objectMapper.readValue(
                 mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/profiles")
                                 .header("userId", ADMIN_USER)
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),
-                new TypeReference<>() {
-                });
+                new TypeReference<>() { });
     }
 
-    @SneakyThrows
-    private void removeProfile(String profileName, String userName, HttpStatusCode status) {
+    private void removeProfile(String profileName, String userName, HttpStatusCode status) throws Exception {
         mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/profiles")
                         .content(objectWriter.writeValueAsString(List.of(profileName)))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -326,8 +298,7 @@ public class UserProfileTest {
                 .andReturn();
     }
 
-    @SneakyThrows
-    private void updateProfile(UserProfile newData, String userName, HttpStatusCode status) {
+    private void updateProfile(UserProfile newData, String userName, HttpStatusCode status) throws Exception {
         mockMvc.perform(put("/" + UserAdminApi.API_VERSION + "/profiles/{profileUuid}", newData.id())
                         .content(objectWriter.writeValueAsString(newData))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -342,8 +313,7 @@ public class UserProfileTest {
                                     .contentType(APPLICATION_JSON))
                             .andExpect(status().isOk())
                             .andReturn().getResponse().getContentAsString(),
-                    new TypeReference<>() {
-                    });
+                    new TypeReference<>() { });
             assertNotNull(updatedProfile);
             assertEquals(newData.name(), updatedProfile.name());
             assertEquals(newData.loadFlowParameterId(), updatedProfile.loadFlowParameterId());

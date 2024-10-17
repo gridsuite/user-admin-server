@@ -25,9 +25,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.head;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -45,7 +43,7 @@ class UserInfosControllerTest {
     private static final String API_BASE_PATH = "/" + UserAdminApi.API_VERSION;
 
     @Autowired
-    UserProfileRepository userProfileRepository;
+    private UserProfileRepository userProfileRepository;
     @Autowired
     private UserInfosRepository userInfosRepository;
 
@@ -85,6 +83,5 @@ class UserInfosControllerTest {
         assertEquals(10, userInfos.maxAllowedCases());
         assertEquals(5, userInfos.numberCasesUsed());
         assertEquals(20, userInfos.maxAllowedBuilds());
-
     }
 }

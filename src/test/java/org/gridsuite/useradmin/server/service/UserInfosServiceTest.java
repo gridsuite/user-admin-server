@@ -6,7 +6,6 @@
  */
 package org.gridsuite.useradmin.server.service;
 
-import lombok.SneakyThrows;
 import org.gridsuite.useradmin.server.UserAdminApplication;
 import org.gridsuite.useradmin.server.UserAdminApplicationProps;
 import org.gridsuite.useradmin.server.dto.UserInfos;
@@ -55,7 +54,6 @@ class UserInfosServiceTest {
     private UserInfosService userInfosService;
 
     @Test
-    @SneakyThrows
     void toDtoUserInfoTest() {
         // get number of cases used mock
         when(directoryServiceMock.getCasesCount("user_A")).thenReturn(3);
