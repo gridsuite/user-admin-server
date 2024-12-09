@@ -109,12 +109,16 @@ class NoQuotaTest {
     }
 
     private void createProfile(String profileName, Integer maxAllowedCases, Integer maxAllowedBuilds) throws Exception {
-        UserProfile profileInfo = new UserProfile(null, profileName, null, false, maxAllowedCases, maxAllowedBuilds);
+        UserProfile profileInfo = new UserProfile(null, profileName, null, null, null, null, null, false, maxAllowedCases, maxAllowedBuilds);
         performPost(API_BASE_PATH + "/profiles", profileInfo);
 
         Optional<UserProfileEntity> createdProfile = userProfileRepository.findByName(profileName);
         assertTrue(createdProfile.isPresent());
         assertNull(createdProfile.get().getLoadFlowParameterId());
+        assertNull(createdProfile.get().getSecurityAnalysisParameterId());
+        assertNull(createdProfile.get().getSensitivityAnalysisParameterId());
+        assertNull(createdProfile.get().getShortcircuitParameterId());
+        assertNull(createdProfile.get().getVoltageInitParameterId());
         assertEquals(maxAllowedCases, createdProfile.get().getMaxAllowedCases());
         assertEquals(maxAllowedBuilds, createdProfile.get().getMaxAllowedBuilds());
     }

@@ -35,6 +35,18 @@ public class UserProfileEntity {
     @Column(name = "loadFlowParameterId")
     private UUID loadFlowParameterId;
 
+    @Column(name = "securityAnalysisParameterId")
+    private UUID securityAnalysisParameterId;
+
+    @Column(name = "sensitivityAnalysisParameterId")
+    private UUID sensitivityAnalysisParameterId;
+
+    @Column(name = "shortcircuitParameterId")
+    private UUID shortcircuitParameterId;
+
+    @Column(name = "voltageInitParameterId")
+    private UUID voltageInitParameterId;
+
     @Column(name = "maxAllowedCases")
     private Integer maxAllowedCases;
 

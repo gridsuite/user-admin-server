@@ -12,6 +12,10 @@ public record UserProfile(
     UUID id,
     String name,
     UUID loadFlowParameterId,
+    UUID securityAnalysisParameterId,
+    UUID sensitivityAnalysisParameterId,
+    UUID shortcircuitParameterId,
+    UUID voltageInitParameterId,
     Boolean allParametersLinksValid,
     Integer maxAllowedCases,
     Integer maxAllowedBuilds
