@@ -26,7 +26,7 @@ class DtoConverterTest implements WithAssertions {
                     .as("dto result")
                     .isEqualTo(new UserInfos("sub_user", true, null, null, null, null));
             // with profile
-            UserProfileEntity profile = new UserProfileEntity(UUID.randomUUID(), "a profile", null, 5, 6);
+            UserProfileEntity profile = new UserProfileEntity(UUID.randomUUID(), "a profile", null, null, null, null, null, 5, 6);
             // Test mapping without quota
             assertThat(UserInfosEntity.toDto(new UserInfosEntity(uuid, "sub_user", profile), sub -> true))
                     .as("dto result")

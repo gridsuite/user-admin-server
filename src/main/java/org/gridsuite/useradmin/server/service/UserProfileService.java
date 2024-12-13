@@ -7,6 +7,7 @@
 package org.gridsuite.useradmin.server.service;
 
 import com.google.common.collect.Sets;
+import org.apache.commons.lang3.BooleanUtils;
 import org.gridsuite.useradmin.server.UserAdminApplicationProps;
 import org.gridsuite.useradmin.server.UserAdminException;
 import org.gridsuite.useradmin.server.dto.UserProfile;
@@ -16,8 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.gridsuite.useradmin.server.UserAdminException.Type.NOT_FOUND;
 
@@ -57,12 +58,15 @@ public class UserProfileService {
         }
 
         Set<UUID> allParametersUuidInAllProfiles = profiles
-                .stream()
-                .mapMulti((UserProfileEntity e, Consumer<UUID> consumer) ->
-                    consumer.accept(e.getLoadFlowParameterId())
-                )
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
+            .stream()
+            .flatMap(e -> Stream.of(
+                e.getLoadFlowParameterId(),
+                e.getSecurityAnalysisParameterId(),
+                e.getSensitivityAnalysisParameterId(),
+                e.getShortcircuitParameterId(),
+                e.getVoltageInitParameterId()))
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet());
         Set<UUID> existingParametersUuids = directoryService.getExistingElements(allParametersUuidInAllProfiles);
         // relative complement will be used to check the elements validity (the missing set should be very small)
         Set<UUID> missingParametersUuids = Sets.difference(allParametersUuidInAllProfiles, existingParametersUuids);
@@ -73,6 +77,18 @@ public class UserProfileService {
                     Boolean allParametersLinksValid = null;
                     if (p.getLoadFlowParameterId() != null) {
                         allParametersLinksValid = !missingParametersUuids.contains(p.getLoadFlowParameterId());
+                    }
+                    if (BooleanUtils.toBooleanDefaultIfNull(allParametersLinksValid, true) && p.getSecurityAnalysisParameterId() != null) {
+                        allParametersLinksValid = !missingParametersUuids.contains(p.getSecurityAnalysisParameterId());
+                    }
+                    if (BooleanUtils.toBooleanDefaultIfNull(allParametersLinksValid, true) && p.getSensitivityAnalysisParameterId() != null) {
+                        allParametersLinksValid = !missingParametersUuids.contains(p.getSensitivityAnalysisParameterId());
+                    }
+                    if (BooleanUtils.toBooleanDefaultIfNull(allParametersLinksValid, true) && p.getShortcircuitParameterId() != null) {
+                        allParametersLinksValid = !missingParametersUuids.contains(p.getShortcircuitParameterId());
+                    }
+                    if (BooleanUtils.toBooleanDefaultIfNull(allParametersLinksValid, true) && p.getVoltageInitParameterId() != null) {
+                        allParametersLinksValid = !missingParametersUuids.contains(p.getVoltageInitParameterId());
                     }
                     return toDto(p, allParametersLinksValid);
                 })
@@ -91,6 +107,10 @@ public class UserProfileService {
         UserProfileEntity profile = userProfileRepository.findById(profileUuid).orElseThrow(() -> new UserAdminException(NOT_FOUND));
         profile.setName(userProfile.name());
         profile.setLoadFlowParameterId(userProfile.loadFlowParameterId());
+        profile.setSecurityAnalysisParameterId(userProfile.securityAnalysisParameterId());
+        profile.setSensitivityAnalysisParameterId(userProfile.sensitivityAnalysisParameterId());
+        profile.setShortcircuitParameterId(userProfile.shortcircuitParameterId());
+        profile.setVoltageInitParameterId(userProfile.voltageInitParameterId());
         profile.setMaxAllowedCases(userProfile.maxAllowedCases());
         profile.setMaxAllowedBuilds(userProfile.maxAllowedBuilds());
     }
@@ -121,17 +141,23 @@ public class UserProfileService {
             return null;
         }
         return new UserProfile(entity.getId(), entity.getName(), entity.getLoadFlowParameterId(),
+                               entity.getSecurityAnalysisParameterId(), entity.getSensitivityAnalysisParameterId(),
+                               entity.getShortcircuitParameterId(), entity.getVoltageInitParameterId(),
                                allParametersLinksValid, entity.getMaxAllowedCases(), entity.getMaxAllowedBuilds());
     }
 
     private UserProfileEntity toEntity(final UserProfile userProfile) {
         Objects.requireNonNull(userProfile);
         return new UserProfileEntity(
-                UUID.randomUUID(),
-                userProfile.name(),
-                userProfile.loadFlowParameterId(),
-                Optional.ofNullable(userProfile.maxAllowedCases()).orElse(applicationProps.getDefaultMaxAllowedCases()),
-                Optional.ofNullable(userProfile.maxAllowedBuilds()).orElse(applicationProps.getDefaultMaxAllowedBuilds())
+            UUID.randomUUID(),
+            userProfile.name(),
+            userProfile.loadFlowParameterId(),
+            userProfile.securityAnalysisParameterId(),
+            userProfile.sensitivityAnalysisParameterId(),
+            userProfile.shortcircuitParameterId(),
+            userProfile.voltageInitParameterId(),
+            Optional.ofNullable(userProfile.maxAllowedCases()).orElse(applicationProps.getDefaultMaxAllowedCases()),
+            Optional.ofNullable(userProfile.maxAllowedBuilds()).orElse(applicationProps.getDefaultMaxAllowedBuilds())
         );
     }
 }
