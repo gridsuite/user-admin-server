@@ -9,10 +9,12 @@ package org.gridsuite.useradmin.server.service;
 import org.gridsuite.useradmin.server.UserAdminApplicationProps;
 import org.gridsuite.useradmin.server.UserAdminException;
 import org.gridsuite.useradmin.server.dto.UserConnection;
+import org.gridsuite.useradmin.server.dto.UserGroup;
 import org.gridsuite.useradmin.server.dto.UserInfos;
 import org.gridsuite.useradmin.server.dto.UserProfile;
 import org.gridsuite.useradmin.server.entity.UserInfosEntity;
 import org.gridsuite.useradmin.server.entity.UserProfileEntity;
+import org.gridsuite.useradmin.server.repository.UserGroupRepository;
 import org.gridsuite.useradmin.server.repository.UserInfosRepository;
 import org.gridsuite.useradmin.server.repository.UserProfileRepository;
 import org.springframework.context.annotation.Lazy;
@@ -21,9 +23,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.gridsuite.useradmin.server.UserAdminException.Type.FORBIDDEN;
 import static org.gridsuite.useradmin.server.UserAdminException.Type.NOT_FOUND;
@@ -39,9 +44,11 @@ public class UserAdminService {
     private final NotificationService notificationService;
     private final AdminRightService adminRightService;
     private final UserProfileService userProfileService;
+    private final UserGroupService userGroupService;
     private final UserAdminService self;
 
     private final UserAdminApplicationProps applicationProps;
+    private final UserGroupRepository userGroupRepository;
 
     public UserAdminService(final UserInfosRepository userInfosRepository,
                             final UserProfileRepository userProfileRepository,
@@ -49,16 +56,19 @@ public class UserAdminService {
                             final AdminRightService adminRightService,
                             final NotificationService notificationService,
                             final UserProfileService userProfileService,
+                            final UserGroupService userGroupService,
                             final UserAdminApplicationProps applicationProps,
-                            @Lazy final UserAdminService userAdminService) {
+                            @Lazy final UserAdminService userAdminService, UserGroupRepository userGroupRepository) {
         this.userInfosRepository = Objects.requireNonNull(userInfosRepository);
         this.userProfileRepository = Objects.requireNonNull(userProfileRepository);
         this.connectionsService = Objects.requireNonNull(connectionsService);
         this.adminRightService = Objects.requireNonNull(adminRightService);
         this.notificationService = Objects.requireNonNull(notificationService);
         this.userProfileService = Objects.requireNonNull(userProfileService);
+        this.userGroupService = Objects.requireNonNull(userGroupService);
         this.applicationProps = Objects.requireNonNull(applicationProps);
         this.self = Objects.requireNonNull(userAdminService);
+        this.userGroupRepository = userGroupRepository;
     }
 
     private UserInfos toDtoUserInfo(final UserInfosEntity entity) {
@@ -86,12 +96,23 @@ public class UserAdminService {
     @Transactional
     public long delete(String sub, String userId) {
         adminRightService.assertIsAdmin(userId);
+
+        UserInfosEntity userInfosEntity = userInfosRepository.findBySub(sub).orElseThrow(() -> new UserAdminException(NOT_FOUND));
+        if (userInfosEntity.getGroups() != null) {
+            userInfosEntity.getGroups().forEach(group -> group.getUsers().removeIf(user2 -> user2.getSub().equals(sub)));
+        }
         return userInfosRepository.deleteBySub(sub);
     }
 
     @Transactional
     public long delete(Collection<String> subs, String userId) {
         adminRightService.assertIsAdmin(userId);
+        subs.forEach(sub -> {
+            UserInfosEntity userInfosEntity = userInfosRepository.findBySub(sub).orElseThrow(() -> new UserAdminException(NOT_FOUND));
+            if (userInfosEntity.getGroups() != null) {
+                userInfosEntity.getGroups().forEach(group -> group.getUsers().removeIf(user2 -> user2.getSub().equals(sub)));
+            }
+        });
         return userInfosRepository.deleteAllBySubIn(subs);
     }
 
@@ -102,6 +123,29 @@ public class UserAdminService {
         Optional<UserProfileEntity> profile = userProfileRepository.findByName(userInfos.profileName());
         user.setSub(userInfos.sub());
         user.setProfile(profile.orElse(null));
+
+        // remove user from all of his existing groups
+        if (user.getGroups() != null) {
+            user.getGroups().forEach(group -> group.getUsers().removeIf(user2 -> user2.getSub().equals(userInfos.sub())));
+        }
+
+        // set all new groups for user
+        user.setGroups(userInfos.groups() == null ?
+            null :
+            userInfos.groups().stream().map(userGroupRepository::findByName)
+                .filter(Optional::isPresent)
+                .map(Optional::get).collect(Collectors.toSet()));
+
+        // add user to all groups
+        if (user.getGroups() != null) {
+            user.getGroups().forEach(group -> {
+                Set<UserInfosEntity> users = group.getUsers();
+                if (users == null) {
+                    users = new HashSet<>();
+                }
+                users.add(user);
+            });
+        }
     }
 
     @Transactional
@@ -125,6 +169,17 @@ public class UserAdminService {
         // this method is not restricted to Admin because it is called by any user to retrieve its own profile
         UserInfosEntity user = userInfosRepository.findBySub(sub).orElseThrow(() -> new UserAdminException(NOT_FOUND));
         return user.getProfile() == null ? Optional.empty() : userProfileService.getProfile(user.getProfile().getId());
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<List<UserGroup>> getUserGroups(String sub) {
+        // this method is not restricted to Admin because it is called by any user to retrieve its own profile
+        UserInfosEntity user = userInfosRepository.findBySub(sub).orElseThrow(() -> new UserAdminException(NOT_FOUND));
+        return user.getGroups() == null ?
+            Optional.empty() :
+            Optional.of(user.getGroups().stream().map(g -> userGroupService.getGroup(g.getId()))
+                .filter(Optional::isPresent)
+                .map(Optional::get).toList());
     }
 
     @Transactional(readOnly = true)
