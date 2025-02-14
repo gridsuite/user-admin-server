@@ -9,10 +9,13 @@ package org.gridsuite.useradmin.server;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import org.apache.commons.collections4.CollectionUtils;
+import org.gridsuite.useradmin.server.dto.UserGroup;
 import org.gridsuite.useradmin.server.dto.UserInfos;
 import org.gridsuite.useradmin.server.dto.UserProfile;
 import org.gridsuite.useradmin.server.entity.ConnectionEntity;
 import org.gridsuite.useradmin.server.repository.ConnectionRepository;
+import org.gridsuite.useradmin.server.repository.UserGroupRepository;
 import org.gridsuite.useradmin.server.repository.UserInfosRepository;
 import org.gridsuite.useradmin.server.repository.UserProfileRepository;
 import org.junit.jupiter.api.AfterEach;
@@ -33,6 +36,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Set;
 
 import static org.gridsuite.useradmin.server.service.NotificationService.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -57,6 +61,9 @@ class UserAdminTest {
     private UserInfosRepository userInfosRepository;
 
     @Autowired
+    private UserGroupRepository userGroupRepository;
+
+    @Autowired
     private UserProfileRepository userProfileRepository;
 
     @Autowired
@@ -71,6 +78,7 @@ class UserAdminTest {
 
     @AfterEach
     void cleanDB() {
+        userGroupRepository.deleteAll();
         userInfosRepository.deleteAll();
         userProfileRepository.deleteAll();
         connectionRepository.deleteAll();
@@ -82,6 +90,8 @@ class UserAdminTest {
     private static final String ADMIN_USER = "admin1";
     private static final String NOT_ADMIN = "notAdmin";
     private static final String PROFILE_1 = "profile_1";
+    private static final String GROUP_1 = "group_1";
+    private static final String GROUP_2 = "group_2";
 
     @Test
     void testUserAdmin() throws Exception {
@@ -207,15 +217,31 @@ class UserAdminTest {
     void testUpdateUser() throws Exception {
         createUser(USER_SUB);
         createProfile(PROFILE_1);
+        createGroup(GROUP_1);
+        createGroup(GROUP_2);
 
-        // udpate the user: change its name and link it to the profile
-        UserInfos userInfo = new UserInfos(USER_SUB2, false, PROFILE_1, null, null, null, null);
+        // udpate the user: change its name and link it to the profile and to the first group
+        UserInfos userInfo = new UserInfos(USER_SUB2, false, PROFILE_1, null, null, null, Set.of(GROUP_1));
         updateUser(USER_SUB, userInfo, HttpStatus.OK, ADMIN_USER);
 
         // Get and check user profile
         UserProfile userProfile = getUserProfile(USER_SUB2, HttpStatus.OK);
         assertNotNull(userProfile);
         assertEquals(PROFILE_1, userProfile.name());
+
+        // Get and check user groups
+        List<UserGroup> userGroups = getUserGroups(USER_SUB2, HttpStatus.OK);
+        assertEquals(1, CollectionUtils.size(userGroups));
+        assertEquals(GROUP_1, userGroups.get(0).name());
+
+        // udpate the user: change groups
+        userInfo = new UserInfos(USER_SUB2, false, PROFILE_1, null, null, null, Set.of(GROUP_2));
+        updateUser(USER_SUB2, userInfo, HttpStatus.OK, ADMIN_USER);
+
+        // Get and check user groups
+        userGroups = getUserGroups(USER_SUB2, HttpStatus.OK);
+        assertEquals(1, CollectionUtils.size(userGroups));
+        assertEquals(GROUP_2, userGroups.get(0).name());
     }
 
     @Test
@@ -385,6 +411,24 @@ class UserAdminTest {
                 .andReturn();
     }
 
+    private void createGroup(String groupName) throws Exception {
+        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/groups/{name}", groupName)
+                        .header("userId", ADMIN_USER)
+                )
+                .andExpect(status().isCreated())
+                .andReturn();
+        UserGroup groupInfos = objectMapper.readValue(
+                mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/groups/{name}", groupName)
+                                .header("userId", ADMIN_USER)
+                                .contentType(APPLICATION_JSON))
+                        .andExpect(status().isOk())
+                        .andReturn().getResponse().getContentAsString(),
+                new TypeReference<>() { });
+        // the new group has no users by default
+        assertNotNull(groupInfos);
+        assertTrue(CollectionUtils.isEmpty(groupInfos.users()));
+    }
+
     private void updateUser(String updatedUserName, UserInfos userInfos, HttpStatusCode status, String userName) throws Exception {
         ObjectWriter objectWriter = objectMapper.writer().withDefaultPrettyPrinter();
         mockMvc.perform(put("/" + UserAdminApi.API_VERSION + "/users/{sub}", updatedUserName)
@@ -413,6 +457,17 @@ class UserAdminTest {
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().is(status.value()))
                         .andReturn().getResponse().getContentAsString();
+        if (status == HttpStatus.OK) {
+            return objectMapper.readValue(response, new TypeReference<>() { });
+        }
+        return null;
+    }
+
+    private List<UserGroup> getUserGroups(String userName, HttpStatusCode status) throws Exception {
+        String response = mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users/" + userName + "/groups")
+                .contentType(APPLICATION_JSON))
+            .andExpect(status().is(status.value()))
+            .andReturn().getResponse().getContentAsString();
         if (status == HttpStatus.OK) {
             return objectMapper.readValue(response, new TypeReference<>() { });
         }
