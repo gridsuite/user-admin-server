@@ -59,6 +59,5 @@ public class UserInfosService {
     @Transactional(readOnly = true)
     public Optional<UserInfosEntity> getUserInfosEntity(String sub) {
         return userInfosRepository.findBySub(sub);
-
     }
 }

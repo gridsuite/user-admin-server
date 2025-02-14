@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotEmpty;
 import org.gridsuite.useradmin.server.UserAdminApi;
 import org.gridsuite.useradmin.server.dto.UserConnection;
+import org.gridsuite.useradmin.server.dto.UserGroup;
 import org.gridsuite.useradmin.server.dto.UserInfos;
 import org.gridsuite.useradmin.server.dto.UserProfile;
 import org.gridsuite.useradmin.server.service.UserAdminService;
@@ -130,6 +131,14 @@ public class UserAdminController {
     @ApiResponse(responseCode = "404", description = "The user doesn't exist")
     public ResponseEntity<UserProfile> getUserProfile(@PathVariable("sub") String sub) {
         return ResponseEntity.of(service.getUserProfile(sub));
+    }
+
+    @GetMapping(value = "/users/{sub}/groups")
+    @Operation(summary = "Get the user's groups")
+    @ApiResponse(responseCode = "200", description = "The user groups")
+    @ApiResponse(responseCode = "404", description = "The user doesn't exist")
+    public ResponseEntity<List<UserGroup>> getUserGroups(@PathVariable("sub") String sub) {
+        return ResponseEntity.of(service.getUserGroups(sub));
     }
 
     @GetMapping(value = "/users/{sub}/profile/max-cases")
