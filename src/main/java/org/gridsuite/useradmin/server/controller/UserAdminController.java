@@ -194,16 +194,4 @@ public class UserAdminController {
         service.sendCancelMaintenanceMessage(userId);
         return ResponseEntity.ok().build();
     }
-
-    @PostMapping(value = "/messages/{sub}/user-message")
-    @Operation(summary = "send a message to a specific user")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "message sent"),
-    })
-    public ResponseEntity<Void> sendUserMessage(@PathVariable("sub") String sub,
-                                                       @Parameter(description = "the message id to be displayed to the user") @RequestParam(value = "messageId") String messageId,
-                                                       @Parameter(description = "the message values attached to the message") @RequestBody(required = false) String messageValues) {
-        service.sendUserMessage(sub, messageId, messageValues);
-        return ResponseEntity.ok().build();
-    }
 }

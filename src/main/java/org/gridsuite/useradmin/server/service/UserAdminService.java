@@ -222,9 +222,4 @@ public class UserAdminService {
         }
         notificationService.emitCancelMaintenanceMessage();
     }
-
-    public void sendUserMessage(String sub, String messageId, String messageValues) {
-        String values = messageValues != null ? messageValues : "";
-        notificationService.emitUserMessage(sub, messageId, values);
-    }
 }
