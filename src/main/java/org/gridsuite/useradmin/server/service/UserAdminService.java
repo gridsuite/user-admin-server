@@ -93,14 +93,17 @@ public class UserAdminService {
         userInfosRepository.save(new UserInfosEntity(sub));
     }
 
+    private static void removeUserFromGroups(UserInfosEntity entity) {
+        if (entity.getGroups() != null) {
+            entity.getGroups().forEach(group -> group.getUsers().removeIf(user -> user.getSub().equals(entity.getSub())));
+        }
+    }
+
     @Transactional
     public long delete(String sub, String userId) {
         adminRightService.assertIsAdmin(userId);
-
         UserInfosEntity userInfosEntity = userInfosRepository.findBySub(sub).orElseThrow(() -> new UserAdminException(NOT_FOUND));
-        if (userInfosEntity.getGroups() != null) {
-            userInfosEntity.getGroups().forEach(group -> group.getUsers().removeIf(user2 -> user2.getSub().equals(sub)));
-        }
+        removeUserFromGroups(userInfosEntity);
         return userInfosRepository.deleteBySub(sub);
     }
 
@@ -109,9 +112,7 @@ public class UserAdminService {
         adminRightService.assertIsAdmin(userId);
         subs.forEach(sub -> {
             UserInfosEntity userInfosEntity = userInfosRepository.findBySub(sub).orElseThrow(() -> new UserAdminException(NOT_FOUND));
-            if (userInfosEntity.getGroups() != null) {
-                userInfosEntity.getGroups().forEach(group -> group.getUsers().removeIf(user2 -> user2.getSub().equals(sub)));
-            }
+            removeUserFromGroups(userInfosEntity);
         });
         return userInfosRepository.deleteAllBySubIn(subs);
     }
@@ -125,9 +126,7 @@ public class UserAdminService {
         user.setProfile(profile.orElse(null));
 
         // remove user from all of his existing groups
-        if (user.getGroups() != null) {
-            user.getGroups().forEach(group -> group.getUsers().removeIf(user2 -> user2.getSub().equals(userInfos.sub())));
-        }
+        removeUserFromGroups(user);
 
         // set all new groups for user
         user.setGroups(userInfos.groups() == null ?

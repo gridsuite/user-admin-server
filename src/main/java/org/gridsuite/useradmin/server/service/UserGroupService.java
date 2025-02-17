@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static org.gridsuite.useradmin.server.UserAdminException.Type.GROUP_ALREADY_EXISTS;
 import static org.gridsuite.useradmin.server.UserAdminException.Type.NOT_FOUND;
 
 /**
@@ -102,6 +103,10 @@ public class UserGroupService {
     @Transactional
     public void createGroup(String group, String userId) {
         adminRightService.assertIsAdmin(userId);
+        Optional<GroupInfosEntity> groupInfosEntity = userGroupRepository.findByName(group);
+        if (groupInfosEntity.isPresent()) {
+            throw new UserAdminException(GROUP_ALREADY_EXISTS);
+        }
         userGroupRepository.save(new GroupInfosEntity(group));
     }
 

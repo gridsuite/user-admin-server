@@ -15,6 +15,7 @@ public class UserAdminException extends RuntimeException {
     public enum Type {
         FORBIDDEN,
         NOT_FOUND,
+        GROUP_ALREADY_EXISTS
     }
 
     private final Type type;

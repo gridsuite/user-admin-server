@@ -47,7 +47,7 @@ public class UserGroupController {
     }
 
     @GetMapping(value = "", produces = {MediaType.APPLICATION_JSON_VALUE})
-    @Operation(summary = "get all the groups")
+    @Operation(summary = "get all the groups", description = "Access restricted to users of type: `admin`")
     @ApiResponse(responseCode = "200", description = "The groups set")
     public ResponseEntity<Set<UserGroup>> getGroups(@RequestHeader("userId") String userId) {
         return ResponseEntity.ok().body(service.getGroups(userId));
@@ -66,9 +66,9 @@ public class UserGroupController {
     @Operation(summary = "update a group", description = "Access restricted to users of type: `admin`")
     @ApiResponse(responseCode = "200", description = "The group exists")
     @ApiResponse(responseCode = "404", description = "The group does not exist")
-    public ResponseEntity<UserGroup> updateGroup(@PathVariable("groupUuid") UUID groupUuid,
-                                                 @RequestHeader("userId") String userId,
-                                                 @RequestBody UserGroup userGroup) {
+    public ResponseEntity<Void> updateGroup(@PathVariable("groupUuid") UUID groupUuid,
+                                            @RequestHeader("userId") String userId,
+                                            @RequestBody UserGroup userGroup) {
         service.updateGroup(groupUuid, userId, userGroup);
         return ResponseEntity.ok().build();
     }
@@ -76,6 +76,7 @@ public class UserGroupController {
     @PostMapping(value = "/{group}")
     @Operation(summary = "Create the group", description = "Access restricted to users of type: `admin`")
     @ApiResponse(responseCode = "201", description = "The group has been created")
+    @ApiResponse(responseCode = "400", description = "The group already exists")
     public ResponseEntity<Void> createGroup(@PathVariable("group") String group,
                                             @RequestHeader("userId") String userId) {
         service.createGroup(group, userId);

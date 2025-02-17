@@ -49,22 +49,20 @@ public class UserInfosEntity {
     @ManyToMany(mappedBy = "users")
     private Set<GroupInfosEntity> groups;
 
-    public static UserInfos toDto(@Nullable final UserInfosEntity entity, Predicate<String> isAdminFn) {
-        if (entity == null) {
-            return null;
-        }
-        String profileName = entity.getProfile() == null ? null : entity.getProfile().getName();
-        Set<String> groupNames = entity.getGroups() == null ? null : entity.getGroups().stream().map(GroupInfosEntity::getName).collect(Collectors.toSet());
-        return new UserInfos(entity.getSub(), isAdminFn.test(entity.getSub()), profileName, null, null, null, groupNames);
+    private UserInfos toUserInfos(Predicate<String> isAdminFn,
+                                  Integer maxAllowedCases,
+                                  Integer numberCasesUsed,
+                                  Integer maxAllowedBuilds) {
+        String profileName = getProfile() == null ? null : getProfile().getName();
+        Set<String> groupNames = getGroups() == null ? null : getGroups().stream().map(GroupInfosEntity::getName).collect(Collectors.toSet());
+        return new UserInfos(getSub(), isAdminFn.test(getSub()), profileName, maxAllowedCases, numberCasesUsed, maxAllowedBuilds, groupNames);
     }
 
-    public static UserInfos toDtoWithDetail(@Nullable final UserInfosEntity userInfosEntity, Predicate<String> isAdminFn, Integer maxAllowedCases, Integer numberCasesUsed, Integer maxAllowedBuilds) {
-        if (userInfosEntity == null) {
-            return null;
-        }
-        UserProfileEntity userProfileEntity = userInfosEntity.getProfile();
-        String profileName = userProfileEntity != null ? userProfileEntity.getName() : null;
-        Set<String> groupNames = userInfosEntity.getGroups() == null ? null : userInfosEntity.getGroups().stream().map(GroupInfosEntity::getName).collect(Collectors.toSet());
-        return new UserInfos(userInfosEntity.getSub(), isAdminFn.test(userInfosEntity.getSub()), profileName, maxAllowedCases, numberCasesUsed, maxAllowedBuilds, groupNames);
+    public static UserInfos toDto(@Nullable final UserInfosEntity entity, Predicate<String> isAdminFn) {
+        return entity == null ? null : entity.toUserInfos(isAdminFn, null, null, null);
+    }
+
+    public static UserInfos toDtoWithDetail(@Nullable final UserInfosEntity entity, Predicate<String> isAdminFn, Integer maxAllowedCases, Integer numberCasesUsed, Integer maxAllowedBuilds) {
+        return entity == null ? null : entity.toUserInfos(isAdminFn, maxAllowedCases, numberCasesUsed, maxAllowedBuilds);
     }
 }
