@@ -170,7 +170,7 @@ class UserProfileTest {
     @Test
     void testGetProfileMaxAllowedCases() throws Exception {
         UserProfileEntity userProfileEntity = new UserProfileEntity(UUID.randomUUID(), "profileName", null, null, null, null, null, 15, null);
-        UserInfosEntity userInfosEntity = new UserInfosEntity(UUID.randomUUID(), ADMIN_USER, userProfileEntity);
+        UserInfosEntity userInfosEntity = new UserInfosEntity(UUID.randomUUID(), ADMIN_USER, userProfileEntity, null);
         userProfileRepository.save(userProfileEntity);
         userInfosRepository.save(userInfosEntity);
 
@@ -185,7 +185,7 @@ class UserProfileTest {
     @Test
     void testGetProfileMaxAllowedBuilds() throws Exception {
         UserProfileEntity userProfileEntity = new UserProfileEntity(UUID.randomUUID(), "profileName", null, null, null, null, null, null, 15);
-        UserInfosEntity userInfosEntity = new UserInfosEntity(UUID.randomUUID(), ADMIN_USER, userProfileEntity);
+        UserInfosEntity userInfosEntity = new UserInfosEntity(UUID.randomUUID(), ADMIN_USER, userProfileEntity, null);
         userProfileRepository.save(userProfileEntity);
         userInfosRepository.save(userInfosEntity);
 
@@ -199,7 +199,7 @@ class UserProfileTest {
 
     @Test
     void testGetProfileMaxAllowedCasesWithNoProfileSet() throws Exception {
-        UserInfosEntity userInfosEntity = new UserInfosEntity(UUID.randomUUID(), ADMIN_USER, null);
+        UserInfosEntity userInfosEntity = new UserInfosEntity(UUID.randomUUID(), ADMIN_USER, null, null);
         userInfosRepository.save(userInfosEntity);
 
         MvcResult result = mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users/{sub}/profile/max-cases", ADMIN_USER)
@@ -213,7 +213,7 @@ class UserProfileTest {
 
     @Test
     void testGetProfileMaxAllowedBuildsWithNoProfileSet() throws Exception {
-        UserInfosEntity userInfosEntity = new UserInfosEntity(UUID.randomUUID(), ADMIN_USER, null);
+        UserInfosEntity userInfosEntity = new UserInfosEntity(UUID.randomUUID(), ADMIN_USER, null, null);
         userInfosRepository.save(userInfosEntity);
 
         MvcResult result = mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users/{sub}/profile/max-builds", ADMIN_USER)
