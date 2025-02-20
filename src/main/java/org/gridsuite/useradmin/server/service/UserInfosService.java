@@ -5,7 +5,6 @@ import org.gridsuite.useradmin.server.dto.UserInfos;
 import org.gridsuite.useradmin.server.entity.UserInfosEntity;
 import org.gridsuite.useradmin.server.entity.UserProfileEntity;
 import org.gridsuite.useradmin.server.repository.UserInfosRepository;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,18 +14,15 @@ import java.util.Optional;
 @Service
 public class UserInfosService {
 
-    private final UserInfosService self;
     private final UserInfosRepository userInfosRepository;
     private final DirectoryService directoryService;
     private final UserAdminApplicationProps applicationProps;
     private final AdminRightService adminRightService;
 
-    public UserInfosService(@Lazy final UserInfosService self,
-                            final UserInfosRepository userInfosRepository,
+    public UserInfosService(final UserInfosRepository userInfosRepository,
                             final DirectoryService directoryService,
                             final UserAdminApplicationProps applicationProps,
                             final AdminRightService adminRightService) {
-        this.self = Objects.requireNonNull(self);
         this.userInfosRepository = Objects.requireNonNull(userInfosRepository);
         this.directoryService = Objects.requireNonNull(directoryService);
         this.applicationProps = Objects.requireNonNull(applicationProps);
@@ -47,7 +43,7 @@ public class UserInfosService {
 
     @Transactional(readOnly = true)
     public Optional<UserInfos> getUserInfo(String sub) {
-        Optional<UserInfosEntity> userInfosEntity = self.getUserInfosEntity(sub);
+        Optional<UserInfosEntity> userInfosEntity = getUserInfosEntity(sub);
         if (userInfosEntity.isPresent()) {
             // get number of cases used
             Integer casesUsed = directoryService.getCasesCount(userInfosEntity.get().getSub());
@@ -57,8 +53,7 @@ public class UserInfosService {
         return Optional.empty();
     }
 
-    @Transactional(readOnly = true)
-    public Optional<UserInfosEntity> getUserInfosEntity(String sub) {
+    private Optional<UserInfosEntity> getUserInfosEntity(String sub) {
         return userInfosRepository.findBySub(sub);
     }
 }

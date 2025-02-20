@@ -17,17 +17,11 @@ import org.gridsuite.useradmin.server.entity.UserProfileEntity;
 import org.gridsuite.useradmin.server.repository.UserGroupRepository;
 import org.gridsuite.useradmin.server.repository.UserInfosRepository;
 import org.gridsuite.useradmin.server.repository.UserProfileRepository;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.gridsuite.useradmin.server.UserAdminException.Type.FORBIDDEN;
@@ -45,7 +39,6 @@ public class UserAdminService {
     private final AdminRightService adminRightService;
     private final UserProfileService userProfileService;
     private final UserGroupService userGroupService;
-    private final UserAdminService self;
 
     private final UserAdminApplicationProps applicationProps;
     private final UserGroupRepository userGroupRepository;
@@ -58,7 +51,7 @@ public class UserAdminService {
                             final UserProfileService userProfileService,
                             final UserGroupService userGroupService,
                             final UserAdminApplicationProps applicationProps,
-                            @Lazy final UserAdminService userAdminService, UserGroupRepository userGroupRepository) {
+                            final UserGroupRepository userGroupRepository) {
         this.userInfosRepository = Objects.requireNonNull(userInfosRepository);
         this.userProfileRepository = Objects.requireNonNull(userProfileRepository);
         this.connectionsService = Objects.requireNonNull(connectionsService);
@@ -67,7 +60,6 @@ public class UserAdminService {
         this.userProfileService = Objects.requireNonNull(userProfileService);
         this.userGroupService = Objects.requireNonNull(userGroupService);
         this.applicationProps = Objects.requireNonNull(applicationProps);
-        this.self = Objects.requireNonNull(userAdminService);
         this.userGroupRepository = userGroupRepository;
     }
 
@@ -165,6 +157,10 @@ public class UserAdminService {
 
     @Transactional(readOnly = true)
     public Optional<UserProfile> getUserProfile(String sub) {
+        return doGetUserProfile(sub);
+    }
+
+    private Optional<UserProfile> doGetUserProfile(String sub) {
         // this method is not restricted to Admin because it is called by any user to retrieve its own profile
         UserInfosEntity user = userInfosRepository.findBySub(sub).orElseThrow(() -> new UserAdminException(NOT_FOUND));
         return user.getProfile() == null ? Optional.empty() : userProfileService.getProfile(user.getProfile().getId());
@@ -183,7 +179,7 @@ public class UserAdminService {
 
     @Transactional(readOnly = true)
     public Integer getUserProfileMaxAllowedCases(String sub) {
-        return self.getUserProfile(sub)
+        return doGetUserProfile(sub)
                 .map(UserProfile::maxAllowedCases)
                 .orElse(applicationProps.getDefaultMaxAllowedCases());
     }
@@ -194,7 +190,7 @@ public class UserAdminService {
 
     @Transactional(readOnly = true)
     public Integer getUserProfileMaxAllowedBuilds(String sub) {
-        return self.getUserProfile(sub)
+        return doGetUserProfile(sub)
                 .map(UserProfile::maxAllowedBuilds)
                 .orElse(applicationProps.getDefaultMaxAllowedBuilds());
     }
