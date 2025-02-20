@@ -45,6 +45,7 @@ public class UserInfosService {
         return UserInfosEntity.toDtoWithDetail(userInfosEntity, adminRightService::isAdmin, maxAllowedCases, casesUsed, maxAllowedBuilds);
     }
 
+    @Transactional(readOnly = true)
     public Optional<UserInfos> getUserInfo(String sub) {
         Optional<UserInfosEntity> userInfosEntity = self.getUserInfosEntity(sub);
         if (userInfosEntity.isPresent()) {
