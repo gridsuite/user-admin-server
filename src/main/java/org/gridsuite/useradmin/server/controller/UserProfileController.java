@@ -42,7 +42,7 @@ public class UserProfileController {
     @Operation(summary = "get all the user profiles")
     @ApiResponse(responseCode = "200", description = "The profiles list")
     public ResponseEntity<List<UserProfile>> getProfiles(@RequestHeader("userId") String userId,
-                                                         @Parameter(description = "To check if parameters links are still valid") @RequestParam(name = "checkLinksValidity", required = false, defaultValue = "true") boolean checkLinksValidity) {
+                                                         @Parameter(description = "To check if parameters and spreadsheet config collection links are still valid") @RequestParam(name = "checkLinksValidity", required = false, defaultValue = "true") boolean checkLinksValidity) {
         return ResponseEntity.ok().body(service.getProfiles(userId, checkLinksValidity));
     }
 

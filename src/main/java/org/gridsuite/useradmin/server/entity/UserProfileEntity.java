@@ -52,5 +52,8 @@ public class UserProfileEntity {
 
     @Column(name = "maxAllowedBuilds")
     private Integer maxAllowedBuilds;
+
+    @Column(name = "spreadsheetConfigCollectionId")
+    private UUID spreadsheetConfigCollectionId;
 }
 
