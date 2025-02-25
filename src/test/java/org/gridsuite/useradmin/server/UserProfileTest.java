@@ -102,14 +102,14 @@ class UserProfileTest {
     @Test
     void testEmptyProfileList() throws Exception {
         // no existing profile in empty db
-        assertEquals(0, getProfileList().size());
+        assertEquals(0, getProfileList(false).size());
     }
 
     @Test
     void testCreateProfile() throws Exception {
         createProfile(PROFILE_1, ADMIN_USER, 10, 15, HttpStatus.CREATED);
 
-        List<UserProfile> userProfiles = getProfileList();
+        List<UserProfile> userProfiles = getProfileList(false);
         assertEquals(1, userProfiles.size());
         assertEquals(PROFILE_1, userProfiles.get(0).name());
         assertNull(userProfiles.get(0).loadFlowParameterId());
@@ -117,9 +117,10 @@ class UserProfileTest {
         assertNull(userProfiles.get(0).sensitivityAnalysisParameterId());
         assertNull(userProfiles.get(0).shortcircuitParameterId());
         assertNull(userProfiles.get(0).voltageInitParameterId());
-        assertNull(userProfiles.get(0).allParametersLinksValid());
+        assertNull(userProfiles.get(0).allLinksValid());
         assertEquals(10, userProfiles.get(0).maxAllowedCases());
         assertEquals(15, userProfiles.get(0).maxAllowedBuilds());
+        assertNull(userProfiles.get(0).spreadsheetConfigCollectionId());
 
         createProfile(PROFILE_2, ADMIN_USER, null, null, HttpStatus.CREATED);
     }
@@ -132,9 +133,9 @@ class UserProfileTest {
     @Test
     void testDeleteExistingProfile() throws Exception {
         createProfile(PROFILE_1, ADMIN_USER, null, null, HttpStatus.CREATED);
-        assertEquals(1, getProfileList().size());
+        assertEquals(1, getProfileList(false).size());
         removeProfile(PROFILE_1, ADMIN_USER, HttpStatus.NO_CONTENT);
-        assertEquals(0, getProfileList().size());
+        assertEquals(0, getProfileList(false).size());
     }
 
     @Test
@@ -149,12 +150,12 @@ class UserProfileTest {
 
     @Test
     void testProfileUpdateNotFound() throws Exception {
-        updateProfile(new UserProfile(UUID.randomUUID(), PROFILE_2, null, null, null, null, null, null, null, null), ADMIN_USER, HttpStatus.NOT_FOUND);
+        updateProfile(new UserProfile(UUID.randomUUID(), PROFILE_2, null, null, null, null, null, null, null, null, null), ADMIN_USER, HttpStatus.NOT_FOUND);
     }
 
     @Test
     void testProfileUpdateForbidden() throws Exception {
-        updateProfile(new UserProfile(UUID.randomUUID(), PROFILE_2, null, null, null, null, null, null, null, null), NOT_ADMIN, HttpStatus.FORBIDDEN);
+        updateProfile(new UserProfile(UUID.randomUUID(), PROFILE_2, null, null, null, null, null, null, null, null, null), NOT_ADMIN, HttpStatus.FORBIDDEN);
     }
 
     @Test
@@ -169,7 +170,7 @@ class UserProfileTest {
 
     @Test
     void testGetProfileMaxAllowedCases() throws Exception {
-        UserProfileEntity userProfileEntity = new UserProfileEntity(UUID.randomUUID(), "profileName", null, null, null, null, null, 15, null);
+        UserProfileEntity userProfileEntity = new UserProfileEntity(UUID.randomUUID(), "profileName", null, null, null, null, null, 15, null, null);
         UserInfosEntity userInfosEntity = new UserInfosEntity(UUID.randomUUID(), ADMIN_USER, userProfileEntity, null);
         userProfileRepository.save(userProfileEntity);
         userInfosRepository.save(userInfosEntity);
@@ -184,7 +185,7 @@ class UserProfileTest {
 
     @Test
     void testGetProfileMaxAllowedBuilds() throws Exception {
-        UserProfileEntity userProfileEntity = new UserProfileEntity(UUID.randomUUID(), "profileName", null, null, null, null, null, null, 15);
+        UserProfileEntity userProfileEntity = new UserProfileEntity(UUID.randomUUID(), "profileName", null, null, null, null, null, null, 15, null);
         UserInfosEntity userInfosEntity = new UserInfosEntity(UUID.randomUUID(), ADMIN_USER, userProfileEntity, null);
         userProfileRepository.save(userProfileEntity);
         userInfosRepository.save(userInfosEntity);
@@ -231,42 +232,50 @@ class UserProfileTest {
         UUID sensitivityAnalysisParametersUuid = UUID.fromString("33333333-9594-4e55-8ec7-07ea965d24eb");
         UUID shortcircuitParametersUuid = UUID.fromString("44444444-9594-4e55-8ec7-07ea965d24eb");
         UUID voltageInitParametersUuid = UUID.fromString("55555555-9594-4e55-8ec7-07ea965d24eb");
-        List<UUID> parametersUuids = List.of(loadFlowParametersUuid, securityAnalysisParametersUuid,
-            sensitivityAnalysisParametersUuid, shortcircuitParametersUuid, voltageInitParametersUuid);
+        UUID spreadsheetConfigCollectionUuid = UUID.fromString("66666666-9594-4e55-8ec7-07ea965d24eb");
+        List<UUID> elementsUuids = List.of(loadFlowParametersUuid, securityAnalysisParametersUuid,
+            sensitivityAnalysisParametersUuid, shortcircuitParametersUuid, voltageInitParametersUuid, spreadsheetConfigCollectionUuid);
 
-        // stub for parameters elements existence check
+        // stub for parameters and spreadsheet config collection elements existence check
         final String urlPath = "/v1/elements";
         List<ElementAttributes> existingElements = validParameters ? List.of(
             new ElementAttributes(loadFlowParametersUuid, "loadFlowParams", "LOADFLOW_PARAMETERS"),
             new ElementAttributes(securityAnalysisParametersUuid, "securityAnalysisParams", "SECURITY_ANALYSIS_PARAMETERS"),
             new ElementAttributes(sensitivityAnalysisParametersUuid, "sensitivityAnalysisParams", "SENSITIVITY_PARAMETERS"),
             new ElementAttributes(shortcircuitParametersUuid, "shortcircuitParams", "SHORT_CIRCUIT_PARAMETERS"),
-            new ElementAttributes(voltageInitParametersUuid, "voltageInitParams", "VOLTAGE_INIT_PARAMETERS")
+            new ElementAttributes(voltageInitParametersUuid, "voltageInitParams", "VOLTAGE_INIT_PARAMETERS"),
+            new ElementAttributes(spreadsheetConfigCollectionUuid, "spreadsheetConfigCollection", "SPREADSHEET_CONFIG_COLLECTION")
             ) : List.of();
-        UUID stubId = wireMockServer.stubFor(WireMock.get(WireMock.urlMatching(urlPath + "\\?strictMode=false&ids=" + parametersUuids.stream().map(UUID::toString).collect(Collectors.joining(","))))
+        UUID stubId = wireMockServer.stubFor(WireMock.get(WireMock.urlMatching(urlPath + "\\?strictMode=false&ids=" + elementsUuids.stream().map(UUID::toString).collect(Collectors.joining(","))))
                 .willReturn(WireMock.ok()
                         .withBody(objectMapper.writeValueAsString(existingElements))
                         .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE))).getId();
 
         UUID profileUuid = createProfile(PROFILE_1, ADMIN_USER, null, 0, HttpStatus.CREATED);
 
-        // udpate the profile: change name and set its parameters and maxAllowedCases
+        // udpate the profile: change name and set its parameters, maxAllowedCases, maxAllowedBuilds and spreadsheet config collection
         UserProfile userProfile = new UserProfile(profileUuid, PROFILE_2, loadFlowParametersUuid, securityAnalysisParametersUuid,
-            sensitivityAnalysisParametersUuid, shortcircuitParametersUuid, voltageInitParametersUuid, null, 10, 11);
+            sensitivityAnalysisParametersUuid, shortcircuitParametersUuid, voltageInitParametersUuid, null, 10, 11, spreadsheetConfigCollectionUuid);
         updateProfile(userProfile, ADMIN_USER, HttpStatus.OK);
 
         // profiles list (with validity flag)
-        List<UserProfile> userProfiles = getProfileList();
-        wireMockUtils.verifyGetRequest(stubId, urlPath, handleQueryParams(parametersUuids), false);
+        List<UserProfile> userProfiles = getProfileList(true);
+        wireMockUtils.verifyGetRequest(stubId, urlPath, handleQueryParams(elementsUuids), false, 1);
         assertEquals(1, userProfiles.size());
         assertEquals(loadFlowParametersUuid, userProfiles.get(0).loadFlowParameterId());
         assertEquals(securityAnalysisParametersUuid, userProfiles.get(0).securityAnalysisParameterId());
         assertEquals(sensitivityAnalysisParametersUuid, userProfiles.get(0).sensitivityAnalysisParameterId());
         assertEquals(shortcircuitParametersUuid, userProfiles.get(0).shortcircuitParameterId());
         assertEquals(voltageInitParametersUuid, userProfiles.get(0).voltageInitParameterId());
-        assertEquals(validParameters, userProfiles.get(0).allParametersLinksValid());
+        assertEquals(validParameters, userProfiles.get(0).allLinksValid());
         assertEquals(10, userProfiles.get(0).maxAllowedCases());
         assertEquals(11, userProfiles.get(0).maxAllowedBuilds());
+        assertEquals(spreadsheetConfigCollectionUuid, userProfiles.get(0).spreadsheetConfigCollectionId());
+
+        // profiles list (without validity flag)
+        userProfiles = getProfileList(false);
+        wireMockUtils.verifyGetRequest(stubId, urlPath, handleQueryParams(elementsUuids), false, 0);
+        assertNull(userProfiles.get(0).allLinksValid());
     }
 
     private static Map<String, StringValuePattern> handleQueryParams(List<UUID> paramIds) {
@@ -274,7 +283,7 @@ class UserProfileTest {
     }
 
     private UUID createProfile(String profileName, String userName, Integer maxAllowedCases, Integer maxAllowedBuilds, HttpStatusCode status) throws Exception {
-        UserProfile profileInfo = new UserProfile(null, profileName, null, null, null, null, null, false, maxAllowedCases, maxAllowedBuilds);
+        UserProfile profileInfo = new UserProfile(null, profileName, null, null, null, null, null, false, maxAllowedCases, maxAllowedBuilds, null);
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/profiles")
                         .content(objectWriter.writeValueAsString(profileInfo))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -299,14 +308,15 @@ class UserProfileTest {
             assertNull(profile1.get().getSensitivityAnalysisParameterId()); // no sensitivity analysis params by dft
             assertNull(profile1.get().getShortcircuitParameterId()); // no shortcircuit params by dft
             assertNull(profile1.get().getVoltageInitParameterId()); // no voltage init params by dft
+            assertNull(profile1.get().getSpreadsheetConfigCollectionId()); // no spreadsheet config collection by dft
             return profile1.get().getId();
         }
         return null;
     }
 
-    private List<UserProfile> getProfileList() throws Exception {
+    private List<UserProfile> getProfileList(boolean checkLinksValidity) throws Exception {
         return objectMapper.readValue(
-                mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/profiles")
+                mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/profiles?checkLinksValidity=" + checkLinksValidity)
                                 .header("userId", ADMIN_USER)
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
@@ -348,7 +358,8 @@ class UserProfileTest {
             assertEquals(newData.shortcircuitParameterId(), updatedProfile.shortcircuitParameterId());
             assertEquals(newData.voltageInitParameterId(), updatedProfile.voltageInitParameterId());
             assertEquals(newData.maxAllowedCases(), updatedProfile.maxAllowedCases());
-            assertNull(updatedProfile.allParametersLinksValid()); // validity not set in this case
+            assertNull(updatedProfile.allLinksValid()); // validity not set in this case
+            assertEquals(newData.spreadsheetConfigCollectionId(), updatedProfile.spreadsheetConfigCollectionId());
         }
     }
 }
