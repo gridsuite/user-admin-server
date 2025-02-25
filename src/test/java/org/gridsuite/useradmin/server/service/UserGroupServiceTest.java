@@ -54,7 +54,7 @@ class UserGroupServiceTest {
         UserInfosEntity user = new UserInfosEntity(UUID.randomUUID(), "user_A", null, Set.of(group));
         group.setUsers(Set.of(user));
 
-        when(userGroupServiceSelfMock.getGroupInfosEntity("group_A")).thenReturn(Optional.of(group));
+        when(userGroupRepositoryMock.findByName("group_A")).thenReturn(Optional.of(group));
         Optional<UserGroup> userGroup = userGroupService.getGroup("group_A");
         assertTrue(userGroup.isPresent());
         assertEquals("group_A", userGroup.get().name());

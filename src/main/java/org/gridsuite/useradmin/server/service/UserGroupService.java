@@ -13,16 +13,10 @@ import org.gridsuite.useradmin.server.entity.GroupInfosEntity;
 import org.gridsuite.useradmin.server.entity.UserInfosEntity;
 import org.gridsuite.useradmin.server.repository.UserGroupRepository;
 import org.gridsuite.useradmin.server.repository.UserInfosRepository;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.gridsuite.useradmin.server.UserAdminException.Type.GROUP_ALREADY_EXISTS;
@@ -33,16 +27,13 @@ import static org.gridsuite.useradmin.server.UserAdminException.Type.NOT_FOUND;
  */
 @Service
 public class UserGroupService {
-    private final UserGroupService self;
     private final UserGroupRepository userGroupRepository;
     private final AdminRightService adminRightService;
     private final UserInfosRepository userInfosRepository;
 
-    public UserGroupService(@Lazy final UserGroupService self,
-                            final UserGroupRepository userGroupRepository,
+    public UserGroupService(final UserGroupRepository userGroupRepository,
                             final AdminRightService adminRightService,
                             UserInfosRepository userInfosRepository) {
-        this.self = Objects.requireNonNull(self);
         this.userGroupRepository = Objects.requireNonNull(userGroupRepository);
         this.adminRightService = Objects.requireNonNull(adminRightService);
         this.userInfosRepository = userInfosRepository;
@@ -129,12 +120,11 @@ public class UserGroupService {
     }
 
     Optional<UserGroup> getGroup(String groupName) {
-        Optional<GroupInfosEntity> groupInfosEntity = self.getGroupInfosEntity(groupName);
+        Optional<GroupInfosEntity> groupInfosEntity = getGroupInfosEntity(groupName);
         return groupInfosEntity.map(this::toDto);
     }
 
-    @Transactional(readOnly = true)
-    public Optional<GroupInfosEntity> getGroupInfosEntity(String name) {
+    private Optional<GroupInfosEntity> getGroupInfosEntity(String name) {
         return userGroupRepository.findByName(name);
     }
 }

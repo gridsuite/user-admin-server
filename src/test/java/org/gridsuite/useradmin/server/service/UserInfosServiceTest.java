@@ -61,7 +61,7 @@ class UserInfosServiceTest {
         UserProfileEntity profile = new UserProfileEntity(UUID.randomUUID(), "profile_A", null, null, null, null, null, 5, 6, null);
         UserInfosEntity user = new UserInfosEntity(UUID.randomUUID(), "user_A", profile, null);
 
-        when(userInfosServiceSelfMock.getUserInfosEntity("user_A")).thenReturn(Optional.of(user));
+        when(userInfosRepositoryMock.findBySub("user_A")).thenReturn(Optional.of(user));
         Optional<UserInfos> userInfos = userInfosService.getUserInfo("user_A");
         assertTrue(userInfos.isPresent());
         assertEquals("user_A", userInfos.get().sub());
