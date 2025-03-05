@@ -63,7 +63,7 @@ class UserInfosControllerTest {
     @Test
     void getUserDetail() throws Exception {
         // Create a profile
-        UserProfileEntity profileEntity = new UserProfileEntity(UUID.randomUUID(), PROFILE_A, null, null, null, null, null, 10, 20, null);
+        UserProfileEntity profileEntity = new UserProfileEntity(UUID.randomUUID(), PROFILE_A, null, null, null, null, null, 10, 20, null, null);
         userProfileRepository.save(profileEntity);
         // Create a user
         UserInfosEntity userInfosEntity = new UserInfosEntity(UUID.randomUUID(), USER_A, profileEntity, null);

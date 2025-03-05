@@ -19,5 +19,6 @@ public record UserProfile(
     Boolean allLinksValid,
     Integer maxAllowedCases,
     Integer maxAllowedBuilds,
-    UUID spreadsheetConfigCollectionId
+    UUID spreadsheetConfigCollectionId,
+    UUID networkVisualizationParameterId
 ) { }
