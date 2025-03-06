@@ -55,5 +55,8 @@ public class UserProfileEntity {
 
     @Column(name = "spreadsheetConfigCollectionId")
     private UUID spreadsheetConfigCollectionId;
+
+    @Column(name = "networkVisualizationParameterId")
+    private UUID networkVisualizationParameterId;
 }
 
