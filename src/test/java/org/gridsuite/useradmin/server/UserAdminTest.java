@@ -397,6 +397,11 @@ class UserAdminTest {
         assertNotNull(userInfos);
         assertNull(userInfos.profileName());
         assertEquals(userName, userInfos.sub());
+
+        // user already exists
+        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/users/{sub}", userName)
+            .header("userId", ADMIN_USER))
+            .andExpect(status().isBadRequest());
     }
 
     private void createProfile(String profileName) throws Exception {

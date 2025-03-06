@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.gridsuite.useradmin.server.UserAdminException.Type.NOT_FOUND;
+import static org.gridsuite.useradmin.server.UserAdminException.Type.PROFILE_ALREADY_EXISTS;
 
 /**
  * @author David Braquart <david.braquart at rte-france.com>
@@ -123,6 +124,9 @@ public class UserProfileService {
     @Transactional
     public void createProfile(UserProfile userProfile, String userId) {
         adminRightService.assertIsAdmin(userId);
+        if (userProfileRepository.findByName(userProfile.name()).isPresent()) {
+            throw new UserAdminException(PROFILE_ALREADY_EXISTS);
+        }
         UserProfileEntity userProfileEntity = toEntity(userProfile);
         userProfileRepository.save(userProfileEntity);
     }
