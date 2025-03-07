@@ -70,7 +70,7 @@ public class UserProfileService {
                 e.getNetworkVisualizationParameterId()))
             .filter(Objects::nonNull)
             .collect(Collectors.toSet());
-        Set<UUID> existingUuids = directoryService.getExistingElements(allUuidsInAllProfiles);
+        Set<UUID> existingUuids = directoryService.getExistingElements(allUuidsInAllProfiles, userId);
         // relative complement will be used to check the elements validity (the missing set should be very small)
         Set<UUID> missingUuids = Sets.difference(allUuidsInAllProfiles, existingUuids);
 
