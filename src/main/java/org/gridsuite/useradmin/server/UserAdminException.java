@@ -15,7 +15,9 @@ public class UserAdminException extends RuntimeException {
     public enum Type {
         FORBIDDEN,
         NOT_FOUND,
-        GROUP_ALREADY_EXISTS
+        GROUP_ALREADY_EXISTS,
+        USER_ALREADY_EXISTS,
+        PROFILE_ALREADY_EXISTS
     }
 
     private final Type type;
@@ -28,5 +30,4 @@ public class UserAdminException extends RuntimeException {
     Type getType() {
         return type;
     }
-
 }

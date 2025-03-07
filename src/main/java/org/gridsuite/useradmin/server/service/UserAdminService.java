@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 import static org.gridsuite.useradmin.server.UserAdminException.Type.FORBIDDEN;
 import static org.gridsuite.useradmin.server.UserAdminException.Type.NOT_FOUND;
+import static org.gridsuite.useradmin.server.UserAdminException.Type.USER_ALREADY_EXISTS;
 
 /**
  * @author Etienne Homer <etienne.homer at rte-france.com>
@@ -82,6 +83,9 @@ public class UserAdminService {
     @Transactional
     public void createUser(String sub, String userId) {
         adminRightService.assertIsAdmin(userId);
+        if (userInfosRepository.existsBySub(sub)) {
+            throw new UserAdminException(USER_ALREADY_EXISTS);
+        }
         userInfosRepository.save(new UserInfosEntity(sub));
     }
 

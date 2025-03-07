@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import static org.gridsuite.useradmin.server.UserAdminException.Type.FORBIDDEN;
 import static org.gridsuite.useradmin.server.UserAdminException.Type.GROUP_ALREADY_EXISTS;
 import static org.gridsuite.useradmin.server.UserAdminException.Type.NOT_FOUND;
+import static org.gridsuite.useradmin.server.UserAdminException.Type.PROFILE_ALREADY_EXISTS;
+import static org.gridsuite.useradmin.server.UserAdminException.Type.USER_ALREADY_EXISTS;
 
 /**
  * @author Etienne Homer <etienne.homer at rte-france.com>
@@ -28,7 +30,9 @@ public class RestResponseEntityExceptionHandler {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(userAdminException.getType());
             } else if (userAdminException.getType().equals(NOT_FOUND)) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(userAdminException.getType());
-            } else if (userAdminException.getType().equals(GROUP_ALREADY_EXISTS)) {
+            } else if (userAdminException.getType().equals(GROUP_ALREADY_EXISTS) ||
+                       userAdminException.getType().equals(USER_ALREADY_EXISTS) ||
+                       userAdminException.getType().equals(PROFILE_ALREADY_EXISTS)) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(userAdminException.getType());
             }
         }

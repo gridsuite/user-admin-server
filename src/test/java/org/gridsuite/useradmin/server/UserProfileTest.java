@@ -124,6 +124,7 @@ class UserProfileTest {
         assertNull(userProfiles.get(0).networkVisualizationParameterId());
 
         createProfile(PROFILE_2, ADMIN_USER, null, null, HttpStatus.CREATED);
+        createProfile(PROFILE_1, ADMIN_USER, null, null, HttpStatus.BAD_REQUEST);  // profile already exists
     }
 
     @Test
