@@ -66,7 +66,8 @@ public class UserProfileService {
                 e.getSensitivityAnalysisParameterId(),
                 e.getShortcircuitParameterId(),
                 e.getVoltageInitParameterId(),
-                e.getSpreadsheetConfigCollectionId()))
+                e.getSpreadsheetConfigCollectionId(),
+                e.getNetworkVisualizationParameterId()))
             .filter(Objects::nonNull)
             .collect(Collectors.toSet());
         Set<UUID> existingUuids = directoryService.getExistingElements(allUuidsInAllProfiles);
@@ -95,6 +96,9 @@ public class UserProfileService {
                     if (BooleanUtils.toBooleanDefaultIfNull(allLinksValid, true) && p.getSpreadsheetConfigCollectionId() != null) {
                         allLinksValid = !missingUuids.contains(p.getSpreadsheetConfigCollectionId());
                     }
+                    if (BooleanUtils.toBooleanDefaultIfNull(allLinksValid, true) && p.getNetworkVisualizationParameterId() != null) {
+                        allLinksValid = !missingUuids.contains(p.getNetworkVisualizationParameterId());
+                    }
                     return toDto(p, allLinksValid);
                 })
                 .toList();
@@ -119,6 +123,7 @@ public class UserProfileService {
         profile.setMaxAllowedCases(userProfile.maxAllowedCases());
         profile.setMaxAllowedBuilds(userProfile.maxAllowedBuilds());
         profile.setSpreadsheetConfigCollectionId(userProfile.spreadsheetConfigCollectionId());
+        profile.setNetworkVisualizationParameterId(userProfile.networkVisualizationParameterId());
     }
 
     @Transactional
@@ -152,7 +157,8 @@ public class UserProfileService {
         return new UserProfile(entity.getId(), entity.getName(), entity.getLoadFlowParameterId(),
                                entity.getSecurityAnalysisParameterId(), entity.getSensitivityAnalysisParameterId(),
                                entity.getShortcircuitParameterId(), entity.getVoltageInitParameterId(),
-                               allLinksValid, entity.getMaxAllowedCases(), entity.getMaxAllowedBuilds(), entity.getSpreadsheetConfigCollectionId());
+                               allLinksValid, entity.getMaxAllowedCases(), entity.getMaxAllowedBuilds(), entity.getSpreadsheetConfigCollectionId(),
+                               entity.getNetworkVisualizationParameterId());
     }
 
     private UserProfileEntity toEntity(final UserProfile userProfile) {
@@ -167,7 +173,8 @@ public class UserProfileService {
             userProfile.voltageInitParameterId(),
             Optional.ofNullable(userProfile.maxAllowedCases()).orElse(applicationProps.getDefaultMaxAllowedCases()),
             Optional.ofNullable(userProfile.maxAllowedBuilds()).orElse(applicationProps.getDefaultMaxAllowedBuilds()),
-            userProfile.spreadsheetConfigCollectionId()
+            userProfile.spreadsheetConfigCollectionId(),
+            userProfile.networkVisualizationParameterId()
         );
     }
 }
