@@ -16,7 +16,9 @@ public record UserProfile(
     UUID sensitivityAnalysisParameterId,
     UUID shortcircuitParameterId,
     UUID voltageInitParameterId,
-    Boolean allParametersLinksValid,
+    Boolean allLinksValid,
     Integer maxAllowedCases,
-    Integer maxAllowedBuilds
+    Integer maxAllowedBuilds,
+    UUID spreadsheetConfigCollectionId,
+    UUID networkVisualizationParameterId
 ) { }

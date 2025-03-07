@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.gridsuite.useradmin.server.UserAdminException.Type.NOT_FOUND;
+import static org.gridsuite.useradmin.server.UserAdminException.Type.PROFILE_ALREADY_EXISTS;
 
 /**
  * @author David Braquart <david.braquart at rte-france.com>
@@ -57,40 +58,48 @@ public class UserProfileService {
                 .toList();
         }
 
-        Set<UUID> allParametersUuidInAllProfiles = profiles
+        Set<UUID> allUuidsInAllProfiles = profiles
             .stream()
             .flatMap(e -> Stream.of(
                 e.getLoadFlowParameterId(),
                 e.getSecurityAnalysisParameterId(),
                 e.getSensitivityAnalysisParameterId(),
                 e.getShortcircuitParameterId(),
-                e.getVoltageInitParameterId()))
+                e.getVoltageInitParameterId(),
+                e.getSpreadsheetConfigCollectionId(),
+                e.getNetworkVisualizationParameterId()))
             .filter(Objects::nonNull)
             .collect(Collectors.toSet());
-        Set<UUID> existingParametersUuids = directoryService.getExistingElements(allParametersUuidInAllProfiles, userId);
+        Set<UUID> existingUuids = directoryService.getExistingElements(allUuidsInAllProfiles, userId);
         // relative complement will be used to check the elements validity (the missing set should be very small)
-        Set<UUID> missingParametersUuids = Sets.difference(allParametersUuidInAllProfiles, existingParametersUuids);
+        Set<UUID> missingUuids = Sets.difference(allUuidsInAllProfiles, existingUuids);
 
         return profiles
                 .stream()
                 .map(p -> {
-                    Boolean allParametersLinksValid = null;
+                    Boolean allLinksValid = null;
                     if (p.getLoadFlowParameterId() != null) {
-                        allParametersLinksValid = !missingParametersUuids.contains(p.getLoadFlowParameterId());
+                        allLinksValid = !missingUuids.contains(p.getLoadFlowParameterId());
                     }
-                    if (BooleanUtils.toBooleanDefaultIfNull(allParametersLinksValid, true) && p.getSecurityAnalysisParameterId() != null) {
-                        allParametersLinksValid = !missingParametersUuids.contains(p.getSecurityAnalysisParameterId());
+                    if (BooleanUtils.toBooleanDefaultIfNull(allLinksValid, true) && p.getSecurityAnalysisParameterId() != null) {
+                        allLinksValid = !missingUuids.contains(p.getSecurityAnalysisParameterId());
                     }
-                    if (BooleanUtils.toBooleanDefaultIfNull(allParametersLinksValid, true) && p.getSensitivityAnalysisParameterId() != null) {
-                        allParametersLinksValid = !missingParametersUuids.contains(p.getSensitivityAnalysisParameterId());
+                    if (BooleanUtils.toBooleanDefaultIfNull(allLinksValid, true) && p.getSensitivityAnalysisParameterId() != null) {
+                        allLinksValid = !missingUuids.contains(p.getSensitivityAnalysisParameterId());
                     }
-                    if (BooleanUtils.toBooleanDefaultIfNull(allParametersLinksValid, true) && p.getShortcircuitParameterId() != null) {
-                        allParametersLinksValid = !missingParametersUuids.contains(p.getShortcircuitParameterId());
+                    if (BooleanUtils.toBooleanDefaultIfNull(allLinksValid, true) && p.getShortcircuitParameterId() != null) {
+                        allLinksValid = !missingUuids.contains(p.getShortcircuitParameterId());
                     }
-                    if (BooleanUtils.toBooleanDefaultIfNull(allParametersLinksValid, true) && p.getVoltageInitParameterId() != null) {
-                        allParametersLinksValid = !missingParametersUuids.contains(p.getVoltageInitParameterId());
+                    if (BooleanUtils.toBooleanDefaultIfNull(allLinksValid, true) && p.getVoltageInitParameterId() != null) {
+                        allLinksValid = !missingUuids.contains(p.getVoltageInitParameterId());
                     }
-                    return toDto(p, allParametersLinksValid);
+                    if (BooleanUtils.toBooleanDefaultIfNull(allLinksValid, true) && p.getSpreadsheetConfigCollectionId() != null) {
+                        allLinksValid = !missingUuids.contains(p.getSpreadsheetConfigCollectionId());
+                    }
+                    if (BooleanUtils.toBooleanDefaultIfNull(allLinksValid, true) && p.getNetworkVisualizationParameterId() != null) {
+                        allLinksValid = !missingUuids.contains(p.getNetworkVisualizationParameterId());
+                    }
+                    return toDto(p, allLinksValid);
                 })
                 .toList();
     }
@@ -113,11 +122,16 @@ public class UserProfileService {
         profile.setVoltageInitParameterId(userProfile.voltageInitParameterId());
         profile.setMaxAllowedCases(userProfile.maxAllowedCases());
         profile.setMaxAllowedBuilds(userProfile.maxAllowedBuilds());
+        profile.setSpreadsheetConfigCollectionId(userProfile.spreadsheetConfigCollectionId());
+        profile.setNetworkVisualizationParameterId(userProfile.networkVisualizationParameterId());
     }
 
     @Transactional
     public void createProfile(UserProfile userProfile, String userId) {
         adminRightService.assertIsAdmin(userId);
+        if (userProfileRepository.findByName(userProfile.name()).isPresent()) {
+            throw new UserAdminException(PROFILE_ALREADY_EXISTS);
+        }
         UserProfileEntity userProfileEntity = toEntity(userProfile);
         userProfileRepository.save(userProfileEntity);
     }
@@ -136,14 +150,15 @@ public class UserProfileService {
         return toDto(entity, null);
     }
 
-    private UserProfile toDto(final UserProfileEntity entity, Boolean allParametersLinksValid) {
+    private UserProfile toDto(final UserProfileEntity entity, Boolean allLinksValid) {
         if (entity == null) {
             return null;
         }
         return new UserProfile(entity.getId(), entity.getName(), entity.getLoadFlowParameterId(),
                                entity.getSecurityAnalysisParameterId(), entity.getSensitivityAnalysisParameterId(),
                                entity.getShortcircuitParameterId(), entity.getVoltageInitParameterId(),
-                               allParametersLinksValid, entity.getMaxAllowedCases(), entity.getMaxAllowedBuilds());
+                               allLinksValid, entity.getMaxAllowedCases(), entity.getMaxAllowedBuilds(), entity.getSpreadsheetConfigCollectionId(),
+                               entity.getNetworkVisualizationParameterId());
     }
 
     private UserProfileEntity toEntity(final UserProfile userProfile) {
@@ -157,7 +172,9 @@ public class UserProfileService {
             userProfile.shortcircuitParameterId(),
             userProfile.voltageInitParameterId(),
             Optional.ofNullable(userProfile.maxAllowedCases()).orElse(applicationProps.getDefaultMaxAllowedCases()),
-            Optional.ofNullable(userProfile.maxAllowedBuilds()).orElse(applicationProps.getDefaultMaxAllowedBuilds())
+            Optional.ofNullable(userProfile.maxAllowedBuilds()).orElse(applicationProps.getDefaultMaxAllowedBuilds()),
+            userProfile.spreadsheetConfigCollectionId(),
+            userProfile.networkVisualizationParameterId()
         );
     }
 }

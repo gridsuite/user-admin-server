@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotEmpty;
 import org.gridsuite.useradmin.server.UserAdminApi;
 import org.gridsuite.useradmin.server.dto.UserConnection;
+import org.gridsuite.useradmin.server.dto.UserGroup;
 import org.gridsuite.useradmin.server.dto.UserInfos;
 import org.gridsuite.useradmin.server.dto.UserProfile;
 import org.gridsuite.useradmin.server.service.UserAdminService;
@@ -132,6 +133,14 @@ public class UserAdminController {
         return ResponseEntity.of(service.getUserProfile(sub));
     }
 
+    @GetMapping(value = "/users/{sub}/groups")
+    @Operation(summary = "Get the user's groups")
+    @ApiResponse(responseCode = "200", description = "The user groups")
+    @ApiResponse(responseCode = "404", description = "The user doesn't exist")
+    public ResponseEntity<List<UserGroup>> getUserGroups(@PathVariable("sub") String sub) {
+        return ResponseEntity.of(service.getUserGroups(sub));
+    }
+
     @GetMapping(value = "/users/{sub}/profile/max-cases")
     @Operation(summary = "Get the user's max allowed cases")
     @ApiResponse(responseCode = "200", description = "The user max allowed cases created")
@@ -183,18 +192,6 @@ public class UserAdminController {
     })
     public ResponseEntity<Void> sendCancelMaintenanceMessage(@RequestHeader("userId") String userId) {
         service.sendCancelMaintenanceMessage(userId);
-        return ResponseEntity.ok().build();
-    }
-
-    @PostMapping(value = "/messages/{sub}/user-message")
-    @Operation(summary = "send a message to a specific user")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "message sent"),
-    })
-    public ResponseEntity<Void> sendUserMessage(@PathVariable("sub") String sub,
-                                                       @Parameter(description = "the message id to be displayed to the user") @RequestParam(value = "messageId") String messageId,
-                                                       @Parameter(description = "the message values attached to the message") @RequestBody(required = false) String messageValues) {
-        service.sendUserMessage(sub, messageId, messageValues);
         return ResponseEntity.ok().build();
     }
 }

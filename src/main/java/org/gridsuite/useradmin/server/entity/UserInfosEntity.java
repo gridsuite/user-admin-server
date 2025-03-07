@@ -14,8 +14,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.gridsuite.useradmin.server.dto.UserInfos;
 
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * @author Etienne Homer <etienne.homer at rte-france.com>
@@ -29,7 +31,7 @@ import java.util.function.Predicate;
 public class UserInfosEntity {
 
     public UserInfosEntity(String sub) {
-        this(UUID.randomUUID(), sub, null);
+        this(UUID.randomUUID(), sub, null, null);
     }
 
     @Id
@@ -44,20 +46,23 @@ public class UserInfosEntity {
     @JoinColumn(name = "profile_id", foreignKey = @ForeignKey(name = "profile_id_fk_constraint"))
     private UserProfileEntity profile;
 
-    public static UserInfos toDto(@Nullable final UserInfosEntity entity, Predicate<String> isAdminFn) {
-        if (entity == null) {
-            return null;
-        }
-        String profileName = entity.getProfile() == null ? null : entity.getProfile().getName();
-        return new UserInfos(entity.getSub(), isAdminFn.test(entity.getSub()), profileName, null, null, null);
+    @ManyToMany(mappedBy = "users")
+    private Set<GroupInfosEntity> groups;
+
+    private UserInfos toUserInfos(Predicate<String> isAdminFn,
+                                  Integer maxAllowedCases,
+                                  Integer numberCasesUsed,
+                                  Integer maxAllowedBuilds) {
+        String profileName = getProfile() == null ? null : getProfile().getName();
+        Set<String> groupNames = getGroups() == null ? null : getGroups().stream().map(GroupInfosEntity::getName).collect(Collectors.toSet());
+        return new UserInfos(getSub(), isAdminFn.test(getSub()), profileName, maxAllowedCases, numberCasesUsed, maxAllowedBuilds, groupNames);
     }
 
-    public static UserInfos toDtoWithDetail(@Nullable final UserInfosEntity userInfosEntity, Predicate<String> isAdminFn, Integer maxAllowedCases, Integer numberCasesUsed, Integer maxAllowedBuilds) {
-        if (userInfosEntity == null) {
-            return null;
-        }
-        UserProfileEntity userProfileEntity = userInfosEntity.getProfile();
-        String profileName = userProfileEntity != null ? userProfileEntity.getName() : null;
-        return new UserInfos(userInfosEntity.getSub(), isAdminFn.test(userInfosEntity.getSub()), profileName, maxAllowedCases, numberCasesUsed, maxAllowedBuilds);
+    public static UserInfos toDto(@Nullable final UserInfosEntity entity, Predicate<String> isAdminFn) {
+        return entity == null ? null : entity.toUserInfos(isAdminFn, null, null, null);
+    }
+
+    public static UserInfos toDtoWithDetail(@Nullable final UserInfosEntity entity, Predicate<String> isAdminFn, Integer maxAllowedCases, Integer numberCasesUsed, Integer maxAllowedBuilds) {
+        return entity == null ? null : entity.toUserInfos(isAdminFn, maxAllowedCases, numberCasesUsed, maxAllowedBuilds);
     }
 }

@@ -27,11 +27,13 @@ public class WireMockUtils {
         this.wireMockServer = wireMockServer;
     }
 
-    public void verifyGetRequest(UUID stubId, String urlPath, Map<String, StringValuePattern> queryParams, boolean regexMatching) {
+    public void verifyGetRequest(UUID stubId, String urlPath, Map<String, StringValuePattern> queryParams, boolean regexMatching, int count) {
         RequestPatternBuilder requestBuilder = regexMatching ? WireMock.getRequestedFor(WireMock.urlPathMatching(urlPath)) : WireMock.getRequestedFor(WireMock.urlPathEqualTo(urlPath));
         queryParams.forEach(requestBuilder::withQueryParam);
-        wireMockServer.verify(1, requestBuilder);
-        removeRequestForStub(stubId, 1);
+        wireMockServer.verify(count, requestBuilder);
+        if (count > 0) {
+            removeRequestForStub(stubId, 1);
+        }
     }
 
     private void removeRequestForStub(UUID stubId, int nbRequests) {
