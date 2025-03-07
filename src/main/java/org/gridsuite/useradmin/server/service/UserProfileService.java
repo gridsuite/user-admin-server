@@ -67,7 +67,7 @@ public class UserProfileService {
                 e.getVoltageInitParameterId()))
             .filter(Objects::nonNull)
             .collect(Collectors.toSet());
-        Set<UUID> existingParametersUuids = directoryService.getExistingElements(allParametersUuidInAllProfiles);
+        Set<UUID> existingParametersUuids = directoryService.getExistingElements(allParametersUuidInAllProfiles, userId);
         // relative complement will be used to check the elements validity (the missing set should be very small)
         Set<UUID> missingParametersUuids = Sets.difference(allParametersUuidInAllProfiles, existingParametersUuids);
 

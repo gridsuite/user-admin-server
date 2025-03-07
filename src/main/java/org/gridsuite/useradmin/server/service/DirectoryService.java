@@ -8,7 +8,10 @@ package org.gridsuite.useradmin.server.service;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
@@ -49,7 +52,7 @@ public class DirectoryService {
         DirectoryService.directoryServerBaseUri = serverBaseUri;
     }
 
-    public Set<UUID> getExistingElements(Set<UUID> elementsUuids) {
+    public Set<UUID> getExistingElements(Set<UUID> elementsUuids, String userId) {
         if (CollectionUtils.isEmpty(elementsUuids)) {
             return Set.of();
         }
@@ -57,7 +60,12 @@ public class DirectoryService {
                 .queryParam("strictMode", false) // no strict mode, to retrieve all elementsUuids, even if some of them don't exist
                 .queryParam("ids", elementsUuids.stream().map(UUID::toString).collect(Collectors.joining(",")))
                 .toUriString();
-        List<ElementAttributes> existingElementList = restTemplate.exchange(directoryServerBaseUri + path, HttpMethod.GET, null,
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("userId", userId);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        List<ElementAttributes> existingElementList = restTemplate.exchange(directoryServerBaseUri + path, HttpMethod.GET, new HttpEntity<>(headers),
                 new ParameterizedTypeReference<List<ElementAttributes>>() {
                 }).getBody();
         return existingElementList == null ? Set.of() : existingElementList.stream().map(ElementAttributes::getElementUuid).collect(Collectors.toSet());
