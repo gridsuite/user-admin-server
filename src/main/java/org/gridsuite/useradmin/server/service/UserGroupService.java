@@ -49,8 +49,7 @@ public class UserGroupService {
     }
 
     @Transactional(readOnly = true)
-    public Set<UserGroup> getGroups(String userId) {
-        adminRightService.assertIsAdmin(userId);
+    public Set<UserGroup> getGroups() {
         List<GroupInfosEntity> groups = userGroupRepository.findAll().stream().toList();
         return groups.stream().map(this::toDto).collect(Collectors.toSet());
     }
