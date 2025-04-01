@@ -13,8 +13,10 @@ import org.gridsuite.useradmin.server.entity.GroupInfosEntity;
 import org.gridsuite.useradmin.server.entity.UserInfosEntity;
 import org.gridsuite.useradmin.server.repository.UserGroupRepository;
 import org.gridsuite.useradmin.server.repository.UserInfosRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -104,11 +106,11 @@ public class UserGroupService {
     public long deleteGroups(List<String> names, String userId) {
         adminRightService.assertIsAdmin(userId);
 
-        // remove group in the group's users
+        // check if group contains users
         names.forEach(name -> {
             GroupInfosEntity group = userGroupRepository.findByName(name).orElseThrow(() -> new UserAdminException(NOT_FOUND));
-            if (group.getUsers() != null) {
-                group.getUsers().forEach(user -> user.getGroups().removeIf(group2 -> group2.getName().equals(name)));
+            if (!CollectionUtils.isEmpty(group.getUsers())) {
+                throw new DataIntegrityViolationException("Group " + name + " contains users !");
             }
         });
         return userGroupRepository.deleteAllByNameIn(names);
