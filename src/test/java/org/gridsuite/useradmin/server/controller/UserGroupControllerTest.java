@@ -23,6 +23,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultMatcher;
 
 import java.util.List;
 import java.util.Set;
@@ -133,13 +134,13 @@ class UserGroupControllerTest {
             new TypeReference<>() { });
     }
 
-    private void deleteGroups(List<String> groupNames) throws Exception {
+    private void deleteGroups(List<String> groupNames, ResultMatcher resultExpected) throws Exception {
         mockMvc.perform(delete(API_BASE_PATH + "/groups")
                 .content(objectMapper.writeValueAsString(groupNames))
                 .contentType(APPLICATION_JSON)
                 .header("userId", ADMIN_USER)
             )
-            .andExpect(status().isNoContent())
+            .andExpect(resultExpected)
             .andReturn();
     }
 
@@ -208,8 +209,14 @@ class UserGroupControllerTest {
         Set<UserGroup> userGroups = getUserGroups(USER_E);
         assertEquals(Set.of(GROUP_NEW_NAME), userGroups.stream().map(UserGroup::name).collect(Collectors.toSet()));
 
-        // delete group
-        deleteGroups(List.of(GROUP_NEW_NAME));
+        // delete group : error because of users still referencing it
+        deleteGroups(List.of(GROUP_NEW_NAME), status().isUnprocessableEntity());
+
+        updateGroup(group.id(), GROUP_NEW_NAME, Set.of()); // this removes all users from group
+
+        // delete group : ok because no more users are referencing it
+        deleteGroups(List.of(GROUP_NEW_NAME), status().isNoContent());
+
         groups = getAllGroups();
         assertTrue(groups.isEmpty());
 
