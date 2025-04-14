@@ -309,51 +309,6 @@ class UserAdminTest {
                 .andExpect(status().isForbidden());
     }
 
-//    @Test
-//    void testSendMaintenanceMessage() throws Exception {
-//        //Send a maintenance message and expect everything to be ok
-//        String requestBody = objectMapper.writeValueAsString("The application will be on maintenance until the end of the maintenance");
-//        Integer duration = 300;
-//        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/messages/maintenance", USER_SUB)
-//                .queryParam("durationInSeconds", duration.toString())
-//                .header("userId", ADMIN_USER)
-//                .contentType(MediaType.APPLICATION_JSON)
-//                .content(requestBody))
-//                .andExpect(status().isOk());
-//        assertMaintenanceMessageSent(requestBody, duration);
-//
-//        //Send a maintenance message without duration and expect everything to be ok
-//        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/messages/maintenance")
-//                        .header("userId", ADMIN_USER)
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(requestBody))
-//                .andExpect(status().isOk());
-//        assertMaintenanceMessageSent(requestBody, null);
-//
-//        //Send a maintenance message with a user that's not an admin and expect 403 FORBIDDEN
-//        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/messages/maintenance")
-//                        .queryParam("durationInSeconds", String.valueOf(duration))
-//                        .header("userId", NOT_ADMIN)
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(requestBody))
-//                .andExpect(status().isForbidden());
-//
-//    }
-//
-//    @Test
-//    void testCancelMaintenanceMessage() throws Exception {
-//        //Send a cancel maintenance message and expect everything to be ok
-//        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/messages/cancel-maintenance")
-//                        .header("userId", ADMIN_USER))
-//                .andExpect(status().isOk());
-//        assertCancelMaintenanceMessageSent();
-//
-//        //Send a cancel maintenance message with a user that's not an admin and expect 403 FORBIDDEN
-//        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/messages/cancel-maintenance")
-//                        .header("userId", NOT_ADMIN))
-//                .andExpect(status().isForbidden());
-//    }
-
     private void createUser(String userName) throws Exception {
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/users/{sub}", userName)
                         .header("userId", ADMIN_USER)

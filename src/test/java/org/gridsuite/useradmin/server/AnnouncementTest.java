@@ -60,7 +60,6 @@ class AnnouncementTest {
 
     private static final String ANNOUNCEMENT_DESTINATION = "config.message";
     private static final String DIRECTORY_UPDATE_DESTINATION = "directory.update";
-
     private static final long TIMEOUT = 1000;
 
     private static final String ADMIN_USER = "admin1";
