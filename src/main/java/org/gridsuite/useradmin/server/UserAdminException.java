@@ -17,7 +17,11 @@ public class UserAdminException extends RuntimeException {
         NOT_FOUND,
         GROUP_ALREADY_EXISTS,
         USER_ALREADY_EXISTS,
-        PROFILE_ALREADY_EXISTS
+        PROFILE_ALREADY_EXISTS,
+        SEVERITY_DOES_NOT_EXIST,
+        OVERLAPPING_ANNOUNCEMENTS,
+        SAME_START_END_DATE,
+        START_DATE_AFTER_END_DATE
     }
 
     private final Type type;

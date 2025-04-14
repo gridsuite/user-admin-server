@@ -11,11 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import static org.gridsuite.useradmin.server.UserAdminException.Type.FORBIDDEN;
-import static org.gridsuite.useradmin.server.UserAdminException.Type.GROUP_ALREADY_EXISTS;
-import static org.gridsuite.useradmin.server.UserAdminException.Type.NOT_FOUND;
-import static org.gridsuite.useradmin.server.UserAdminException.Type.PROFILE_ALREADY_EXISTS;
-import static org.gridsuite.useradmin.server.UserAdminException.Type.USER_ALREADY_EXISTS;
+import static org.gridsuite.useradmin.server.UserAdminException.Type.*;
 
 /**
  * @author Etienne Homer <etienne.homer at rte-france.com>
@@ -32,7 +28,11 @@ public class RestResponseEntityExceptionHandler {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(userAdminException.getType());
             } else if (userAdminException.getType().equals(GROUP_ALREADY_EXISTS) ||
                        userAdminException.getType().equals(USER_ALREADY_EXISTS) ||
-                       userAdminException.getType().equals(PROFILE_ALREADY_EXISTS)) {
+                       userAdminException.getType().equals(PROFILE_ALREADY_EXISTS) ||
+                       userAdminException.getType().equals(SEVERITY_DOES_NOT_EXIST) ||
+                       userAdminException.getType().equals(OVERLAPPING_ANNOUNCEMENTS) ||
+                       userAdminException.getType().equals(SAME_START_END_DATE) ||
+                       userAdminException.getType().equals(START_DATE_AFTER_END_DATE)) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(userAdminException.getType());
             }
         }

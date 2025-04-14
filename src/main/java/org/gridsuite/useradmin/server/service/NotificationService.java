@@ -6,6 +6,7 @@
  */
 package org.gridsuite.useradmin.server.service;
 
+import org.gridsuite.useradmin.server.entity.AnnouncementSeverity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,8 @@ import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
+
+import java.util.UUID;
 
 /**
  * @author Abdelsalem Hedhili <abdelsalem.hedhili at rte-france.com
@@ -24,13 +27,15 @@ public class NotificationService {
 
     public static final String HEADER_MESSAGE_TYPE = "messageType";
 
-    public static final String MESSAGE_TYPE_MAINTENANCE = "maintenance";
+    public static final String MESSAGE_TYPE_ANNOUNCEMENT = "announcement";
 
-    public static final String MESSAGE_TYPE_CANCEL_MAINTENANCE = "cancelMaintenance";
+    public static final String MESSAGE_TYPE_CANCEL_ANNOUNCEMENT = "cancelAnnouncement";
 
     public static final String HEADER_DURATION = "duration";
 
-    public static final String HEADER_USER_MESSAGE = "userMessage";
+    public static final String HEADER_ANNOUNCEMENT_ID = "announcementId";
+
+    public static final String HEADER_SEVERITY = "severity";
 
     public static final String MESSAGE_LOG = "Sending message : {}";
 
@@ -46,22 +51,18 @@ public class NotificationService {
         updatePublisher.send(bindingName, message);
     }
 
-    public void emitMaintenanceMessage(String message, int duration) {
+    public void emitAnnouncementMessage(UUID announcementId, String message, long durationInMs, AnnouncementSeverity severity) {
         sendMessage(MessageBuilder.withPayload(message)
-            .setHeader(HEADER_MESSAGE_TYPE, MESSAGE_TYPE_MAINTENANCE)
-            .setHeader(HEADER_DURATION, duration)
+            .setHeader(HEADER_MESSAGE_TYPE, MESSAGE_TYPE_ANNOUNCEMENT)
+            .setHeader(HEADER_ANNOUNCEMENT_ID, announcementId)
+            .setHeader(HEADER_DURATION, durationInMs)
+            .setHeader(HEADER_SEVERITY, severity)
             .build(), GLOBAL_CONFIG_BINDING);
     }
 
-    public void emitMaintenanceMessage(String message) {
-        sendMessage(MessageBuilder.withPayload(message)
-            .setHeader(HEADER_MESSAGE_TYPE, MESSAGE_TYPE_MAINTENANCE)
-            .build(), GLOBAL_CONFIG_BINDING);
-    }
-
-    public void emitCancelMaintenanceMessage() {
+    public void emitCancelAnnouncementMessage() {
         sendMessage(MessageBuilder.withPayload("")
-            .setHeader(HEADER_MESSAGE_TYPE, MESSAGE_TYPE_CANCEL_MAINTENANCE)
+            .setHeader(HEADER_MESSAGE_TYPE, MESSAGE_TYPE_CANCEL_ANNOUNCEMENT)
             .build(), GLOBAL_CONFIG_BINDING);
     }
 }

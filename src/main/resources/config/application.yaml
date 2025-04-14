@@ -14,6 +14,8 @@ powsybl-ws:
   database:
     name: useradmin
 
+check-announcement-cron: 0 */1 * * * *
+
 useradmin:
   admins:
 #    - admin1

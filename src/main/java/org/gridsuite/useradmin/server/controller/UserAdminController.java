@@ -7,9 +7,7 @@
 package org.gridsuite.useradmin.server.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotEmpty;
 import org.gridsuite.useradmin.server.UserAdminApi;
@@ -30,7 +28,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -169,29 +166,5 @@ public class UserAdminController {
     @ApiResponse(responseCode = "200", description = "The connections list")
     public ResponseEntity<List<UserConnection>> getConnections(@RequestHeader("userId") String userId) {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getConnections(userId));
-    }
-
-    @PostMapping(value = "/messages/maintenance")
-    @Operation(summary = "send a message to all users connected")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "message sent"),
-        @ApiResponse(responseCode = "403", description = "user is not an admin")
-    })
-    public ResponseEntity<Void> sendMaintenanceMessage(@RequestHeader("userId") String userId,
-                                                       @Parameter(description = "the display time of the message in seconds") @RequestParam(value = "durationInSeconds", required = false) Integer duration,
-                                                       @Parameter(description = "the message to display") @RequestBody String message) {
-        service.sendMaintenanceMessage(userId, duration, message);
-        return ResponseEntity.ok().build();
-    }
-
-    @PostMapping(value = "/messages/cancel-maintenance")
-    @Operation(summary = "send a message to all users connected")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "message sent"),
-        @ApiResponse(responseCode = "403", description = "user is not an admin")
-    })
-    public ResponseEntity<Void> sendCancelMaintenanceMessage(@RequestHeader("userId") String userId) {
-        service.sendCancelMaintenanceMessage(userId);
-        return ResponseEntity.ok().build();
     }
 }
