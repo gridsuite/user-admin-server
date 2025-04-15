@@ -24,4 +24,7 @@ public interface AnnouncementRepository extends JpaRepository<AnnouncementEntity
     @Query(nativeQuery = true, value = "SELECT * from announcement where start_date <= :endDate and end_date >= :startDate")
     List<AnnouncementEntity> findOverlappingAnnouncements(Instant startDate, Instant endDate);
 
+    @Query(nativeQuery = true, value = "SELECT * from announcement where start_date < :now and end_date < :now")
+    List<AnnouncementEntity> findExpiredAnnouncements(Instant now);
+
 }

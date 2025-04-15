@@ -16,6 +16,9 @@ powsybl-ws:
 
 check-announcement-cron: 0 */1 * * * *
 
+clean-announcement-cron: 0 0 2 * * ?
+
+
 useradmin:
   admins:
 #    - admin1
