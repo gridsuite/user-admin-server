@@ -6,15 +6,11 @@
  */
 package org.gridsuite.useradmin.server.service;
 
-import org.gridsuite.useradmin.server.entity.AnnouncementEntity;
 import org.gridsuite.useradmin.server.repository.AnnouncementRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-
-import java.time.Instant;
-import java.util.List;
 
 /**
  * @author Abdelsalem Hedhili <abdelsalem.hedhili at rte-france.com>
@@ -30,16 +26,9 @@ public class ScheduledAnnouncementCleaner {
         this.announcementRepository = announcementRepository;
     }
 
-    @Scheduled(cron = "${clean-announcement-cron}", zone = "UTC")
+    @Scheduled(cron = "${clean-announcement-cron:0 0 2 * * ?}", zone = "UTC")
     public void deleteExpiredAnnouncements() {
-        Instant now = Instant.now();
-        LOGGER.info("delete expired announcement cron starting execution at {}", now);
-
-        List<AnnouncementEntity> announcementsList = announcementRepository.findExpiredAnnouncements(now);
-
-        // Done with deleteById to ignore the fails and keep going
-        announcementsList.forEach(announcementEntity -> {
-            announcementRepository.deleteById(announcementEntity.getId());
-        });
+        LOGGER.info("delete expired announcement cron starting");
+        announcementRepository.deleteExpiredAnnouncements();
     }
 }

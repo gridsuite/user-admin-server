@@ -8,11 +8,13 @@ package org.gridsuite.useradmin.server.repository;
 
 import org.gridsuite.useradmin.server.entity.AnnouncementEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -21,10 +23,11 @@ import java.util.UUID;
 @Repository
 public interface AnnouncementRepository extends JpaRepository<AnnouncementEntity, UUID> {
 
-    @Query(nativeQuery = true, value = "SELECT * from announcement where start_date <= :endDate and end_date >= :startDate")
-    List<AnnouncementEntity> findOverlappingAnnouncements(Instant startDate, Instant endDate);
+    boolean existsByStartDateLessThanEqualAndEndDateGreaterThanEqual(@NonNull Instant endDate, @NonNull Instant startDate);
 
-    @Query(nativeQuery = true, value = "SELECT * from announcement where start_date < :now and end_date < :now")
-    List<AnnouncementEntity> findExpiredAnnouncements(Instant now);
+    @Transactional
+    @Modifying
+    @Query("delete from AnnouncementEntity a where a.startDate < now() and a.endDate < now()")
+    int deleteExpiredAnnouncements();
 
 }

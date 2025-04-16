@@ -55,8 +55,7 @@ public class AnnouncementService {
             throw new UserAdminException(START_DATE_AFTER_END_DATE);
         }
 
-        List<AnnouncementEntity> overlappingAnnouncements = announcementRepository.findOverlappingAnnouncements(startDate, endDate);
-        if (!overlappingAnnouncements.isEmpty()) {
+        if (announcementRepository.existsByStartDateLessThanEqualAndEndDateGreaterThanEqual(endDate, startDate)) {
             throw new UserAdminException(OVERLAPPING_ANNOUNCEMENTS);
         }
 
@@ -84,9 +83,7 @@ public class AnnouncementService {
     }
 
     public List<Announcement> getAnnouncements(String userId) {
-        if (!adminRightService.isAdmin(userId)) {
-            throw new UserAdminException(FORBIDDEN);
-        }
+        adminRightService.assertIsAdmin(userId);
         return announcementRepository.findAll().stream().map(AnnouncementEntity::toDto).toList();
     }
 

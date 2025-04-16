@@ -34,10 +34,10 @@ public class ScheduledAnnouncementChecker {
         this.notificationService = notificationService;
     }
 
-    @Scheduled(cron = "${check-announcement-cron}", zone = "UTC")
+    @Scheduled(cron = "${check-announcement-cron:0 */1 * * * *}", zone = "UTC")
     public void sendNotificationIfAnnouncements() {
         Instant now = Instant.now();
-        LOGGER.info("check announcement cron starting execution at {}", now);
+        LOGGER.info("check announcement cron starting execution");
 
         List<AnnouncementEntity> announcementsList = announcementRepository.findAll().stream()
                 .filter(announcement -> announcement.getStartDate().isBefore(now) && announcement.getEndDate().isAfter(now)).toList();
