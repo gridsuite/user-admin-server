@@ -7,7 +7,6 @@
 package org.gridsuite.useradmin.server.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -19,7 +18,6 @@ import java.util.UUID;
  * @author Abdelsalem Hedhili <abdelsalem.hedhili at rte-france.com>
  */
 @NoArgsConstructor
-@AllArgsConstructor
 @Getter
 @Setter
 @Entity
@@ -42,4 +40,15 @@ public class AnnouncementEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "severity", nullable = false)
     private AnnouncementSeverity severity;
+
+    @Column(name = "notified")
+    private boolean notified = false;
+
+    public AnnouncementEntity(UUID id, Instant startDate, Instant endDate, String message, AnnouncementSeverity severity) {
+        this.id = id;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.message = message;
+        this.severity = severity;
+    }
 }

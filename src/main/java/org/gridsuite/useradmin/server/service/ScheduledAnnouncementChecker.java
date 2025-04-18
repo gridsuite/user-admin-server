@@ -14,7 +14,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.UUID;
 
 /**
  * @author Abdelsalem Hedhili <abdelsalem.hedhili at rte-france.com>
@@ -28,8 +27,6 @@ public class ScheduledAnnouncementChecker {
 
     private final NotificationService notificationService;
 
-    private UUID lastAnnouncementId;
-
     public ScheduledAnnouncementChecker(AnnouncementRepository announcementRepository, NotificationService notificationService) {
         this.announcementRepository = announcementRepository;
         this.notificationService = notificationService;
@@ -40,12 +37,12 @@ public class ScheduledAnnouncementChecker {
         LOGGER.debug("check announcement cron starting execution");
         announcementRepository
             .findCurrentAnnouncement(Instant.now())
-            .map(AnnouncementMapper::fromEntity)
             .ifPresent(announcement -> {
-                if (!announcement.id().equals(lastAnnouncementId)) {
-                    LOGGER.info("new announcement ({}) to notify", announcement.id());
-                    notificationService.emitAnnouncementMessage(announcement);
-                    lastAnnouncementId = announcement.id();
+                if (!announcement.isNotified()) {
+                    LOGGER.info("new announcement ({}) to notify", announcement.getId());
+                    notificationService.emitAnnouncementMessage(AnnouncementMapper.fromEntity(announcement));
+                    announcement.setNotified(true);
+                    announcementRepository.save(announcement);
                 } else {
                     LOGGER.debug("No new announcement to notify");
                 }

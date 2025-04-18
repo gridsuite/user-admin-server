@@ -74,6 +74,23 @@ class ScheduledAnnouncementCheckerTest {
     }
 
     @Test
+    void testSendScheduledAnnouncementShouldNotSendNotificationTwice() {
+        Instant now = Instant.now();
+        Instant yesterday = now.minus(1, ChronoUnit.DAYS);
+        Instant tomorrow = now.plus(1, ChronoUnit.DAYS);
+        String payload = "Test message";
+        AnnouncementEntity announcement1 = new AnnouncementEntity(UUID.randomUUID(), yesterday, tomorrow, payload, AnnouncementSeverity.WARN);
+
+        announcementRepository.save(announcement1);
+
+        scheduledAnnouncementChecker.sendNotificationIfAnnouncements();
+        assertAnnouncementMessageSent(payload, announcement1.getId(), Duration.between(announcement1.getStartDate(), announcement1.getEndDate()).toMillis(), announcement1.getSeverity());
+
+        scheduledAnnouncementChecker.sendNotificationIfAnnouncements();
+        assertNull(output.receive(TIMEOUT, ANNOUNCEMENT_DESTINATION));
+    }
+
+    @Test
     void testSendScheduledAnnouncementShouldDoNothing() {
         Instant now = Instant.now();
         Instant tomorrow = now.plus(1, ChronoUnit.DAYS);
