@@ -34,7 +34,7 @@ public class ScheduledAnnouncementChecker {
     }
 
     @Scheduled(cron = "${check-announcement-cron:0 */1 * * * *}", zone = "UTC")
-    @SchedulerLock(name = "checkAnnouncement", lockAtLeastFor = "30s", lockAtMostFor = "59s")
+    @SchedulerLock(name = "checkAnnouncement", lockAtLeastFor = "1s", lockAtMostFor = "59s")
     public void sendNotificationIfAnnouncements() {
         LOGGER.debug("check announcement cron starting execution");
         announcementRepository

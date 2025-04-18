@@ -46,7 +46,7 @@ class ScheduledAnnouncementCheckerTest {
 
     private static final String ANNOUNCEMENT_DESTINATION = "config.message";
     private static final String DIRECTORY_UPDATE_DESTINATION = "directory.update";
-    private static final long TIMEOUT = 1000;
+    private static final long TIMEOUT = 2000;
 
     @AfterEach
     void cleanDB() {
