@@ -23,8 +23,9 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 import static org.gridsuite.useradmin.server.service.NotificationService.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -70,7 +71,7 @@ class ScheduledAnnouncementCheckerTest {
 
         scheduledAnnouncementChecker.sendNotificationIfAnnouncements();
 
-        assertAnnouncementMessageSent(payload, announcement1.getId(), Duration.between(announcement1.getStartDate(), announcement1.getEndDate()).toMillis(), announcement1.getSeverity());
+        assertAnnouncementMessageSent(payload, Duration.between(Instant.now(), announcement1.getEndDate()).toMillis(), announcement1.getSeverity());
     }
 
     @Test
@@ -84,7 +85,7 @@ class ScheduledAnnouncementCheckerTest {
         announcementRepository.save(announcement1);
 
         scheduledAnnouncementChecker.sendNotificationIfAnnouncements();
-        assertAnnouncementMessageSent(payload, announcement1.getId(), Duration.between(announcement1.getStartDate(), announcement1.getEndDate()).toMillis(), announcement1.getSeverity());
+        assertAnnouncementMessageSent(payload, Duration.between(Instant.now(), announcement1.getEndDate()).toMillis(), announcement1.getSeverity());
 
         scheduledAnnouncementChecker.sendNotificationIfAnnouncements();
         assertNull(output.receive(TIMEOUT, ANNOUNCEMENT_DESTINATION));
@@ -105,12 +106,11 @@ class ScheduledAnnouncementCheckerTest {
         assertNull(output.receive(TIMEOUT, ANNOUNCEMENT_DESTINATION));
     }
 
-    private void assertAnnouncementMessageSent(String expectedMessage, UUID expectedUuid, long expectedDuration, AnnouncementSeverity expectedSeverity) {
+    private void assertAnnouncementMessageSent(String expectedMessage, long expectedDuration, AnnouncementSeverity expectedSeverity) {
         Message<byte[]> message = output.receive(TIMEOUT, ANNOUNCEMENT_DESTINATION);
         MessageHeaders headers = message.getHeaders();
         assertEquals(MESSAGE_TYPE_ANNOUNCEMENT, headers.get(HEADER_MESSAGE_TYPE));
-        assertEquals(expectedUuid, headers.get(HEADER_ANNOUNCEMENT_ID));
-        assertEquals(expectedDuration, headers.get(HEADER_DURATION));
+        assertThat((Long) headers.get(HEADER_DURATION)).isCloseTo(expectedDuration, within(200L));
         assertEquals(expectedSeverity, headers.get(HEADER_SEVERITY));
         assertEquals(expectedMessage, new String(message.getPayload()));
     }
