@@ -6,6 +6,7 @@
  */
 package org.gridsuite.useradmin.server.service;
 
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.gridsuite.useradmin.server.dto.AnnouncementMapper;
 import org.gridsuite.useradmin.server.repository.AnnouncementRepository;
 import org.slf4j.Logger;
@@ -33,6 +34,7 @@ public class ScheduledAnnouncementChecker {
     }
 
     @Scheduled(cron = "${check-announcement-cron:0 */1 * * * *}", zone = "UTC")
+    @SchedulerLock(name = "checkAnnouncement", lockAtLeastFor = "30s", lockAtMostFor = "59s")
     public void sendNotificationIfAnnouncements() {
         LOGGER.debug("check announcement cron starting execution");
         announcementRepository

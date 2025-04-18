@@ -44,6 +44,7 @@
     <properties>
         <gridsuite-dependencies.version>38.0.0</gridsuite-dependencies.version>
         <liquibase-hibernate-package>org.gridsuite.useradmin.server</liquibase-hibernate-package>
+        <shedlock.version>6.3.1</shedlock.version>
         <sonar.organization>gridsuite</sonar.organization>
         <sonar.projectKey>org.gridsuite:user-admin-server</sonar.projectKey>
     </properties>
@@ -79,6 +80,16 @@
             </dependency>
 
             <!-- project specific dependencies -->
+            <dependency>
+                <groupId>net.javacrumbs.shedlock</groupId>
+                <artifactId>shedlock-provider-jdbc-template</artifactId>
+                <version>${shedlock.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.javacrumbs.shedlock</groupId>
+                <artifactId>shedlock-spring</artifactId>
+                <version>${shedlock.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -91,6 +102,14 @@
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-ws-commons</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-provider-jdbc-template</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-spring</artifactId>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
