@@ -12,6 +12,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+
 /**
  * @author Abdelsalem Hedhili <abdelsalem.hedhili at rte-france.com>
  */
@@ -29,6 +31,6 @@ public class ScheduledAnnouncementCleaner {
     @Scheduled(cron = "${clean-announcement-cron:0 0 2 * * ?}", zone = "UTC")
     public void deleteExpiredAnnouncements() {
         LOGGER.info("delete expired announcement cron starting");
-        announcementRepository.deleteExpiredAnnouncements();
+        announcementRepository.deleteExpiredAnnouncements(Instant.now());
     }
 }

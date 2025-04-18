@@ -6,16 +6,15 @@
  */
 package org.gridsuite.useradmin.server.service;
 
-import org.gridsuite.useradmin.server.entity.AnnouncementEntity;
+import org.gridsuite.useradmin.server.dto.AnnouncementMapper;
 import org.gridsuite.useradmin.server.repository.AnnouncementRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
+import java.util.UUID;
 
 /**
  * @author Abdelsalem Hedhili <abdelsalem.hedhili at rte-france.com>
@@ -29,6 +28,8 @@ public class ScheduledAnnouncementChecker {
 
     private final NotificationService notificationService;
 
+    private UUID lastAnnouncementId;
+
     public ScheduledAnnouncementChecker(AnnouncementRepository announcementRepository, NotificationService notificationService) {
         this.announcementRepository = announcementRepository;
         this.notificationService = notificationService;
@@ -36,17 +37,18 @@ public class ScheduledAnnouncementChecker {
 
     @Scheduled(cron = "${check-announcement-cron:0 */1 * * * *}", zone = "UTC")
     public void sendNotificationIfAnnouncements() {
-        Instant now = Instant.now();
-        LOGGER.info("check announcement cron starting execution");
-
-        List<AnnouncementEntity> announcementsList = announcementRepository.findAll().stream()
-                .filter(announcement -> announcement.getStartDate().isBefore(now) && announcement.getEndDate().isAfter(now)).toList();
-
-        if (!announcementsList.isEmpty()) {
-            //We shouldn't have more than 1 announcement covering the same time interval
-            AnnouncementEntity announcement = announcementsList.getFirst();
-            long duration = Duration.between(announcement.getStartDate(), announcement.getEndDate()).toMillis();
-            notificationService.emitAnnouncementMessage(announcement.getId(), announcement.getMessage(), duration, announcement.getSeverity());
-        }
+        LOGGER.debug("check announcement cron starting execution");
+        announcementRepository
+            .findCurrentAnnouncement(Instant.now())
+            .map(AnnouncementMapper::fromEntity)
+            .ifPresent(announcement -> {
+                if (!announcement.id().equals(lastAnnouncementId)) {
+                    LOGGER.info("new announcement ({}) to notify", announcement.id());
+                    notificationService.emitAnnouncementMessage(announcement);
+                    lastAnnouncementId = announcement.id();
+                } else {
+                    LOGGER.debug("No new announcement to notify");
+                }
+            });
     }
 }

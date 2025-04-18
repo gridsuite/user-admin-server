@@ -15,6 +15,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -25,9 +26,12 @@ public interface AnnouncementRepository extends JpaRepository<AnnouncementEntity
 
     boolean existsByStartDateLessThanEqualAndEndDateGreaterThanEqual(@NonNull Instant endDate, @NonNull Instant startDate);
 
+    @Query("SELECT e FROM AnnouncementEntity e WHERE e.startDate < :now AND e.endDate > :now")
+    Optional<AnnouncementEntity> findCurrentAnnouncement(@NonNull Instant now);
+
     @Transactional
     @Modifying
-    @Query("delete from AnnouncementEntity a where a.startDate < now() and a.endDate < now()")
-    int deleteExpiredAnnouncements();
+    @Query("delete from AnnouncementEntity a where a.startDate < :now and a.endDate < :now")
+    int deleteExpiredAnnouncements(Instant now);
 
 }

@@ -8,6 +8,7 @@ package org.gridsuite.useradmin.server;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.gridsuite.useradmin.server.dto.Announcement;
+import org.gridsuite.useradmin.server.dto.AnnouncementMapper;
 import org.gridsuite.useradmin.server.entity.AnnouncementEntity;
 import org.gridsuite.useradmin.server.entity.AnnouncementSeverity;
 import org.gridsuite.useradmin.server.repository.AnnouncementRepository;
@@ -32,7 +33,6 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.gridsuite.useradmin.server.UserAdminException.Type.*;
-import static org.gridsuite.useradmin.server.entity.AnnouncementEntity.toDto;
 import static org.gridsuite.useradmin.server.service.NotificationService.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -76,7 +76,7 @@ class AnnouncementTest {
 
         Instant now = Instant.now().truncatedTo(ChronoUnit.SECONDS);
 
-        Announcement announcementToBeCreated = new Announcement(UUID.randomUUID(), now, now.plus(2, ChronoUnit.DAYS), "Test message", AnnouncementSeverity.INFO);
+        Announcement announcementToBeCreated = new Announcement(UUID.randomUUID(), now, now.plus(2, ChronoUnit.DAYS), "Test message", AnnouncementSeverity.INFO, 2);
         assertEquals(0, announcementRepository.findAll().size());
 
         // Not allowed because not admin
@@ -141,10 +141,16 @@ class AnnouncementTest {
                 .andReturn();
 
         Announcement createdAnnouncement = objectMapper.readValue(result.getResponse().getContentAsString(), Announcement.class);
-        assertEquals(createdAnnouncement, announcementToBeCreated);
+        assertThat(createdAnnouncement)
+            .usingRecursiveComparison()
+            .ignoringFields("remainingDuration")
+            .isEqualTo(announcementToBeCreated);
         List<AnnouncementEntity> all = announcementRepository.findAll();
         assertEquals(1, all.size());
-        assertEquals(announcementToBeCreated, toDto(all.getFirst()));
+        assertThat(AnnouncementMapper.fromEntity(all.getFirst()))
+            .usingRecursiveComparison()
+            .ignoringFields("remainingDuration")
+            .isEqualTo(announcementToBeCreated);
 
         // Should NOT be ok because the date of announcement overlaps with another registered announcement
         result = mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/announcements/{id}", announcementToBeCreated.id())
@@ -157,7 +163,10 @@ class AnnouncementTest {
                 .andExpect(status().isBadRequest())
                 .andReturn();
         assertEquals(1, all.size());
-        assertEquals(announcementToBeCreated, toDto(all.getFirst()));
+        assertThat(AnnouncementMapper.fromEntity(all.getFirst()))
+            .usingRecursiveComparison()
+            .ignoringFields("remainingDuration")
+            .isEqualTo(announcementToBeCreated);
         assertTrue(result.getResponse().getContentAsString().contains(OVERLAPPING_ANNOUNCEMENTS.name()));
     }
 
@@ -167,7 +176,7 @@ class AnnouncementTest {
         AnnouncementEntity announcementToBeCreated = new AnnouncementEntity(UUID.randomUUID(), now, now.plus(2, ChronoUnit.DAYS), "Test message", AnnouncementSeverity.INFO);
         announcementRepository.save(announcementToBeCreated);
         assertEquals(1, announcementRepository.findAll().size());
-        assertEquals(toDto(announcementToBeCreated), toDto(announcementRepository.findAll().getFirst()));
+        assertEquals(AnnouncementMapper.fromEntity(announcementToBeCreated), AnnouncementMapper.fromEntity(announcementRepository.findAll().getFirst()));
 
         // Should be ok even if the id doesn't exist (it just doesn't do anything)
         mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/announcements/{id}", UUID.randomUUID())
@@ -201,7 +210,7 @@ class AnnouncementTest {
     }
 
     @Test
-    void testGetAnnouncement() throws Exception {
+    void testGetAnnouncements() throws Exception {
 
         Instant now = Instant.now().truncatedTo(ChronoUnit.SECONDS);
         assertEquals(0, announcementRepository.findAll().size());
@@ -239,8 +248,52 @@ class AnnouncementTest {
                 .andReturn();
         List<Announcement> announcements = Arrays.stream(objectMapper.readValue(result.getResponse().getContentAsString(), Announcement[].class)).toList();
         assertEquals(3, announcements.size());
-        assertThat(announcements).containsExactlyInAnyOrder(toDto(announcementToBeCreated1), toDto(announcementToBeCreated2), toDto(announcementToBeCreated3));
+        assertThat(announcements).containsExactlyInAnyOrder(AnnouncementMapper.fromEntity(announcementToBeCreated1), AnnouncementMapper.fromEntity(announcementToBeCreated2), AnnouncementMapper.fromEntity(announcementToBeCreated3));
+    }
 
+    @Test
+    void testGetCurrentAnnouncement() throws Exception {
+        Instant now = Instant.now().truncatedTo(ChronoUnit.SECONDS);
+        assertEquals(0, announcementRepository.findAll().size());
+
+        // insert a list of announcement
+        AnnouncementEntity announcementToBeCreated1 = new AnnouncementEntity(UUID.randomUUID(), now.minus(1, ChronoUnit.HOURS), now.minus(1, ChronoUnit.MINUTES), "Test message 1", AnnouncementSeverity.INFO);
+        AnnouncementEntity announcementToBeCreated2 = new AnnouncementEntity(UUID.randomUUID(), now, now.plus(1, ChronoUnit.HOURS), "Test message 2", AnnouncementSeverity.INFO);
+        AnnouncementEntity announcementToBeCreated3 = new AnnouncementEntity(UUID.randomUUID(), now.plus(2, ChronoUnit.HOURS), now.plus(1, ChronoUnit.DAYS), "Test message 3", AnnouncementSeverity.INFO);
+
+        announcementRepository.save(announcementToBeCreated1);
+        announcementRepository.save(announcementToBeCreated2);
+        announcementRepository.save(announcementToBeCreated3);
+
+        var result = mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/announcements/current")
+                .header("userId", ADMIN_USER)
+            )
+            .andExpect(status().isOk())
+            .andReturn();
+        Announcement announcement = objectMapper.readValue(result.getResponse().getContentAsString(), Announcement.class);
+        assertThat(announcement)
+            .usingRecursiveComparison()
+            .ignoringFields("remainingDuration")
+            .isEqualTo(AnnouncementMapper.fromEntity(announcementToBeCreated2));
+    }
+
+    @Test
+    void testGetCurrentAnnouncementWithNoResult() throws Exception {
+        Instant now = Instant.now().truncatedTo(ChronoUnit.SECONDS);
+        assertEquals(0, announcementRepository.findAll().size());
+
+        // insert a list of announcement
+        AnnouncementEntity announcementToBeCreated1 = new AnnouncementEntity(UUID.randomUUID(), now.minus(1, ChronoUnit.HOURS), now.minus(1, ChronoUnit.MINUTES), "Test message 1", AnnouncementSeverity.INFO);
+        AnnouncementEntity announcementToBeCreated2 = new AnnouncementEntity(UUID.randomUUID(), now.plus(2, ChronoUnit.HOURS), now.plus(1, ChronoUnit.DAYS), "Test message 3", AnnouncementSeverity.INFO);
+
+        announcementRepository.save(announcementToBeCreated1);
+        announcementRepository.save(announcementToBeCreated2);
+
+        mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/announcements/current")
+                .header("userId", ADMIN_USER)
+            )
+            .andExpect(status().isNoContent())
+            .andReturn();
     }
 
     private void assertCancelAnnouncementMessageSent() {

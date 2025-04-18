@@ -11,7 +11,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.gridsuite.useradmin.server.dto.Announcement;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -43,15 +42,4 @@ public class AnnouncementEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "severity", nullable = false)
     private AnnouncementSeverity severity;
-
-    public static Announcement toDto(AnnouncementEntity entity) {
-        return entity == null ? null :
-                new Announcement(
-                        entity.getId(),
-                        entity.getStartDate(),
-                        entity.getEndDate(),
-                        entity.getMessage(),
-                        entity.getSeverity()
-                );
-    }
 }

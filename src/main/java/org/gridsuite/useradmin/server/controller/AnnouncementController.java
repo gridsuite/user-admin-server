@@ -45,6 +45,17 @@ public class AnnouncementController {
         return ResponseEntity.ok().body(service.getAnnouncements(userId));
     }
 
+    @GetMapping("/current")
+    @Operation(summary = "get current announcement if it exists")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "the current announcement"),
+        @ApiResponse(responseCode = "204", description = "there is no current announcement"),
+        @ApiResponse(responseCode = "403", description = "User is not an admin")
+    })
+    public ResponseEntity<Announcement> getCurrentAnnouncement(@RequestHeader("userId") String userId) {
+        return service.getCurrentAnnouncement(userId).map(ResponseEntity::ok).orElse(ResponseEntity.noContent().build());
+    }
+
     @PostMapping(value = "/{announcementId}")
     @Operation(summary = "Create an announcement")
     @ApiResponses(value = {

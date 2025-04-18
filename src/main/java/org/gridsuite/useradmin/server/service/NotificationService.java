@@ -6,7 +6,7 @@
  */
 package org.gridsuite.useradmin.server.service;
 
-import org.gridsuite.useradmin.server.entity.AnnouncementSeverity;
+import org.gridsuite.useradmin.server.dto.Announcement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,8 +14,6 @@ import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
-
-import java.util.UUID;
 
 /**
  * @author Abdelsalem Hedhili <abdelsalem.hedhili at rte-france.com
@@ -51,12 +49,12 @@ public class NotificationService {
         updatePublisher.send(bindingName, message);
     }
 
-    public void emitAnnouncementMessage(UUID announcementId, String message, long durationInMs, AnnouncementSeverity severity) {
-        sendMessage(MessageBuilder.withPayload(message)
+    public void emitAnnouncementMessage(Announcement announcement) {
+        sendMessage(MessageBuilder.withPayload(announcement.message())
             .setHeader(HEADER_MESSAGE_TYPE, MESSAGE_TYPE_ANNOUNCEMENT)
-            .setHeader(HEADER_ANNOUNCEMENT_ID, announcementId)
-            .setHeader(HEADER_DURATION, durationInMs)
-            .setHeader(HEADER_SEVERITY, severity)
+            .setHeader(HEADER_ANNOUNCEMENT_ID, announcement.id())
+            .setHeader(HEADER_DURATION, announcement.remainingDuration())
+            .setHeader(HEADER_SEVERITY, announcement.severity())
             .build(), GLOBAL_CONFIG_BINDING);
     }
 

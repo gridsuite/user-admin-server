@@ -14,5 +14,5 @@ import java.util.UUID;
 /**
  * @author Abdelsalem Hedhili <abdelsalem.hedhili at rte-france.com>
  */
-public record Announcement(UUID id, Instant startDate, Instant endDate, String message, AnnouncementSeverity severity) {
+public record Announcement(UUID id, Instant startDate, Instant endDate, String message, AnnouncementSeverity severity, long remainingDuration) {
 }

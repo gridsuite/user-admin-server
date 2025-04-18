@@ -6,6 +6,7 @@
  */
 package org.gridsuite.useradmin.server;
 
+import org.gridsuite.useradmin.server.dto.AnnouncementMapper;
 import org.gridsuite.useradmin.server.entity.AnnouncementEntity;
 import org.gridsuite.useradmin.server.entity.AnnouncementSeverity;
 import org.gridsuite.useradmin.server.repository.AnnouncementRepository;
@@ -22,7 +23,6 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.gridsuite.useradmin.server.entity.AnnouncementEntity.toDto;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
@@ -72,6 +72,6 @@ class ScheduledAnnouncementCleanerTest {
         scheduledAnnouncementCleaner.deleteExpiredAnnouncements();
         assertEquals(2, announcementRepository.findAll().size());
 
-        assertThat(announcementRepository.findAll().stream().map(AnnouncementEntity::toDto)).containsExactlyElementsOf(List.of(toDto(announcement3), toDto(announcement4)));
+        assertThat(announcementRepository.findAll().stream().map(AnnouncementMapper::fromEntity)).containsExactlyElementsOf(List.of(AnnouncementMapper.fromEntity(announcement3), AnnouncementMapper.fromEntity(announcement4)));
     }
 }
