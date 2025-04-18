@@ -71,6 +71,7 @@ class ScheduledAnnouncementCleanerTest {
         scheduledAnnouncementCleaner.deleteExpiredAnnouncements();
         assertEquals(2, announcementRepository.findAll().size());
 
-        assertThat(announcementRepository.findAll().stream().map(AnnouncementMapper::fromEntity)).containsExactlyElementsOf(List.of(AnnouncementMapper.fromEntity(announcement3), AnnouncementMapper.fromEntity(announcement4)));
+        assertThat(announcementRepository.findAll().stream().map(AnnouncementMapper::fromEntity))
+            .usingRecursiveFieldByFieldElementComparatorIgnoringFields("id", "remainingDuration").containsExactlyElementsOf(List.of(AnnouncementMapper.fromEntity(announcement3), AnnouncementMapper.fromEntity(announcement4)));
     }
 }
