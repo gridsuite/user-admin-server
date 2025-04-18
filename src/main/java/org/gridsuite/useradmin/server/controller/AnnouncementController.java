@@ -56,7 +56,7 @@ public class AnnouncementController {
         return service.getCurrentAnnouncement(userId).map(ResponseEntity::ok).orElse(ResponseEntity.noContent().build());
     }
 
-    @PostMapping(value = "/{announcementId}")
+    @PostMapping()
     @Operation(summary = "Create an announcement")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "the created announcement"),
@@ -64,12 +64,11 @@ public class AnnouncementController {
         @ApiResponse(responseCode = "409", description = "There is a conflict in display time")
     })
     public ResponseEntity<Announcement> createAnnouncement(@RequestHeader("userId") String userId,
-                                                   @PathVariable("announcementId") UUID announcementId,
-                                                   @RequestParam("startDate") Instant startDate,
-                                                   @RequestParam("endDate") Instant endDate,
-                                                   @RequestParam("severity") String severity,
-                                                   @RequestBody String message) {
-        return ResponseEntity.ok().body(service.createAnnouncement(announcementId, startDate, endDate, message, severity, userId));
+                                                           @RequestParam("startDate") Instant startDate,
+                                                           @RequestParam("endDate") Instant endDate,
+                                                           @RequestParam("severity") String severity,
+                                                           @RequestBody String message) {
+        return ResponseEntity.ok().body(service.createAnnouncement(startDate, endDate, message, severity, userId));
     }
 
     @DeleteMapping(value = "/{announcementId}")

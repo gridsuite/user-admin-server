@@ -61,8 +61,8 @@ class ScheduledAnnouncementCheckerTest {
         Instant tomorrow = now.plus(1, ChronoUnit.DAYS);
         String payload = "Test message";
         String payload2 = "Test message 2";
-        AnnouncementEntity announcement1 = new AnnouncementEntity(UUID.randomUUID(), yesterday, tomorrow, payload, AnnouncementSeverity.WARN);
-        AnnouncementEntity announcement2 = new AnnouncementEntity(UUID.randomUUID(), yesterday.minus(5, ChronoUnit.DAYS), yesterday.minus(4, ChronoUnit.DAYS), payload2, AnnouncementSeverity.WARN);
+        AnnouncementEntity announcement1 = new AnnouncementEntity(yesterday, tomorrow, payload, AnnouncementSeverity.WARN);
+        AnnouncementEntity announcement2 = new AnnouncementEntity(yesterday.minus(5, ChronoUnit.DAYS), yesterday.minus(4, ChronoUnit.DAYS), payload2, AnnouncementSeverity.WARN);
 
         announcementRepository.save(announcement1);
         announcementRepository.save(announcement2);
@@ -79,7 +79,7 @@ class ScheduledAnnouncementCheckerTest {
         Instant yesterday = now.minus(1, ChronoUnit.DAYS);
         Instant tomorrow = now.plus(1, ChronoUnit.DAYS);
         String payload = "Test message";
-        AnnouncementEntity announcement1 = new AnnouncementEntity(UUID.randomUUID(), yesterday, tomorrow, payload, AnnouncementSeverity.WARN);
+        AnnouncementEntity announcement1 = new AnnouncementEntity(yesterday, tomorrow, payload, AnnouncementSeverity.WARN);
 
         announcementRepository.save(announcement1);
 
@@ -95,7 +95,7 @@ class ScheduledAnnouncementCheckerTest {
         Instant now = Instant.now();
         Instant tomorrow = now.plus(1, ChronoUnit.DAYS);
         String payload = "Test message";
-        AnnouncementEntity announcement1 = new AnnouncementEntity(UUID.randomUUID(), tomorrow, tomorrow.plus(1, ChronoUnit.DAYS), payload, AnnouncementSeverity.WARN);
+        AnnouncementEntity announcement1 = new AnnouncementEntity(tomorrow, tomorrow.plus(1, ChronoUnit.DAYS), payload, AnnouncementSeverity.WARN);
 
         announcementRepository.save(announcement1);
         assertEquals(1, announcementRepository.findAll().size());

@@ -173,7 +173,7 @@ class AnnouncementTest {
     @Test
     void testDeleteAnnouncement() throws Exception {
         Instant now = Instant.now().truncatedTo(ChronoUnit.SECONDS);
-        AnnouncementEntity announcementToBeCreated = new AnnouncementEntity(UUID.randomUUID(), now, now.plus(2, ChronoUnit.DAYS), "Test message", AnnouncementSeverity.INFO);
+        AnnouncementEntity announcementToBeCreated = new AnnouncementEntity(now, now.plus(2, ChronoUnit.DAYS), "Test message", AnnouncementSeverity.INFO);
         announcementRepository.save(announcementToBeCreated);
         assertEquals(1, announcementRepository.findAll().size());
         assertEquals(AnnouncementMapper.fromEntity(announcementToBeCreated), AnnouncementMapper.fromEntity(announcementRepository.findAll().getFirst()));
@@ -198,7 +198,7 @@ class AnnouncementTest {
         assertCancelAnnouncementMessageSent();
 
         // Add an announcement 5 days in the future
-        AnnouncementEntity futureAnnouncement = new AnnouncementEntity(UUID.randomUUID(), now.plus(5, ChronoUnit.DAYS), now.plus(7, ChronoUnit.DAYS), "Test message", AnnouncementSeverity.WARN);
+        AnnouncementEntity futureAnnouncement = new AnnouncementEntity(now.plus(5, ChronoUnit.DAYS), now.plus(7, ChronoUnit.DAYS), "Test message", AnnouncementSeverity.WARN);
         announcementRepository.save(futureAnnouncement);
         assertEquals(1, announcementRepository.findAll().size());
         // Delete the announcement that was just added, it should not trigger a message in the broker because the announcement was not sent
@@ -230,9 +230,9 @@ class AnnouncementTest {
         assertEquals("[]", result.getResponse().getContentAsString());
 
         // insert a list of announcement
-        AnnouncementEntity announcementToBeCreated1 = new AnnouncementEntity(UUID.randomUUID(), now, now.plus(1, ChronoUnit.DAYS), "Test message 1", AnnouncementSeverity.INFO);
-        AnnouncementEntity announcementToBeCreated2 = new AnnouncementEntity(UUID.randomUUID(), now.plus(2, ChronoUnit.DAYS), now.plus(1, ChronoUnit.DAYS), "Test message 2", AnnouncementSeverity.INFO);
-        AnnouncementEntity announcementToBeCreated3 = new AnnouncementEntity(UUID.randomUUID(), now.plus(4, ChronoUnit.DAYS), now.plus(1, ChronoUnit.DAYS), "Test message 3", AnnouncementSeverity.INFO);
+        AnnouncementEntity announcementToBeCreated1 = new AnnouncementEntity(now, now.plus(1, ChronoUnit.DAYS), "Test message 1", AnnouncementSeverity.INFO);
+        AnnouncementEntity announcementToBeCreated2 = new AnnouncementEntity(now.plus(2, ChronoUnit.DAYS), now.plus(1, ChronoUnit.DAYS), "Test message 2", AnnouncementSeverity.INFO);
+        AnnouncementEntity announcementToBeCreated3 = new AnnouncementEntity(now.plus(4, ChronoUnit.DAYS), now.plus(1, ChronoUnit.DAYS), "Test message 3", AnnouncementSeverity.INFO);
 
         announcementRepository.save(announcementToBeCreated1);
         announcementRepository.save(announcementToBeCreated2);
@@ -257,9 +257,9 @@ class AnnouncementTest {
         assertEquals(0, announcementRepository.findAll().size());
 
         // insert a list of announcement
-        AnnouncementEntity announcementToBeCreated1 = new AnnouncementEntity(UUID.randomUUID(), now.minus(1, ChronoUnit.HOURS), now.minus(1, ChronoUnit.MINUTES), "Test message 1", AnnouncementSeverity.INFO);
-        AnnouncementEntity announcementToBeCreated2 = new AnnouncementEntity(UUID.randomUUID(), now, now.plus(1, ChronoUnit.HOURS), "Test message 2", AnnouncementSeverity.INFO);
-        AnnouncementEntity announcementToBeCreated3 = new AnnouncementEntity(UUID.randomUUID(), now.plus(2, ChronoUnit.HOURS), now.plus(1, ChronoUnit.DAYS), "Test message 3", AnnouncementSeverity.INFO);
+        AnnouncementEntity announcementToBeCreated1 = new AnnouncementEntity(now.minus(1, ChronoUnit.HOURS), now.minus(1, ChronoUnit.MINUTES), "Test message 1", AnnouncementSeverity.INFO);
+        AnnouncementEntity announcementToBeCreated2 = new AnnouncementEntity(now, now.plus(1, ChronoUnit.HOURS), "Test message 2", AnnouncementSeverity.INFO);
+        AnnouncementEntity announcementToBeCreated3 = new AnnouncementEntity(now.plus(2, ChronoUnit.HOURS), now.plus(1, ChronoUnit.DAYS), "Test message 3", AnnouncementSeverity.INFO);
 
         announcementRepository.save(announcementToBeCreated1);
         announcementRepository.save(announcementToBeCreated2);
@@ -283,8 +283,8 @@ class AnnouncementTest {
         assertEquals(0, announcementRepository.findAll().size());
 
         // insert a list of announcement
-        AnnouncementEntity announcementToBeCreated1 = new AnnouncementEntity(UUID.randomUUID(), now.minus(1, ChronoUnit.HOURS), now.minus(1, ChronoUnit.MINUTES), "Test message 1", AnnouncementSeverity.INFO);
-        AnnouncementEntity announcementToBeCreated2 = new AnnouncementEntity(UUID.randomUUID(), now.plus(2, ChronoUnit.HOURS), now.plus(1, ChronoUnit.DAYS), "Test message 3", AnnouncementSeverity.INFO);
+        AnnouncementEntity announcementToBeCreated1 = new AnnouncementEntity(now.minus(1, ChronoUnit.HOURS), now.minus(1, ChronoUnit.MINUTES), "Test message 1", AnnouncementSeverity.INFO);
+        AnnouncementEntity announcementToBeCreated2 = new AnnouncementEntity(now.plus(2, ChronoUnit.HOURS), now.plus(1, ChronoUnit.DAYS), "Test message 3", AnnouncementSeverity.INFO);
 
         announcementRepository.save(announcementToBeCreated1);
         announcementRepository.save(announcementToBeCreated2);

@@ -20,7 +20,6 @@ import org.springframework.cloud.stream.binder.test.TestChannelBinderConfigurati
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -58,10 +57,10 @@ class ScheduledAnnouncementCleanerTest {
         String msg3 = "Test message 3";
         String msg4 = "Test message 4";
 
-        AnnouncementEntity announcement1ShouldBeDeleted = new AnnouncementEntity(UUID.randomUUID(), nowMinus6Days, nowMinus4Days, msg1, AnnouncementSeverity.WARN);
-        AnnouncementEntity announcement2ShouldBeDeleted = new AnnouncementEntity(UUID.randomUUID(), nowMinus3Days, nowMinus2Days, msg2, AnnouncementSeverity.INFO);
-        AnnouncementEntity announcement3 = new AnnouncementEntity(UUID.randomUUID(), yesterday, tomorrow, msg3, AnnouncementSeverity.WARN);
-        AnnouncementEntity announcement4 = new AnnouncementEntity(UUID.randomUUID(), nowPlus2Days, nowPlus3Days, msg4, AnnouncementSeverity.INFO);
+        AnnouncementEntity announcement1ShouldBeDeleted = new AnnouncementEntity(nowMinus6Days, nowMinus4Days, msg1, AnnouncementSeverity.WARN);
+        AnnouncementEntity announcement2ShouldBeDeleted = new AnnouncementEntity(nowMinus3Days, nowMinus2Days, msg2, AnnouncementSeverity.INFO);
+        AnnouncementEntity announcement3 = new AnnouncementEntity(yesterday, tomorrow, msg3, AnnouncementSeverity.WARN);
+        AnnouncementEntity announcement4 = new AnnouncementEntity(nowPlus2Days, nowPlus3Days, msg4, AnnouncementSeverity.INFO);
 
         announcementRepository.save(announcement1ShouldBeDeleted);
         announcementRepository.save(announcement2ShouldBeDeleted);

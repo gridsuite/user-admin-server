@@ -39,12 +39,11 @@ public class AnnouncementService {
         this.notificationService = notificationService;
     }
 
-    public Announcement createAnnouncement(UUID announcementId,
-                                   Instant startDate,
-                                   Instant endDate,
-                                   String message,
-                                   String stringSeverity,
-                                   String userId) {
+    public Announcement createAnnouncement(Instant startDate,
+                                           Instant endDate,
+                                           String message,
+                                           String stringSeverity,
+                                           String userId) {
         if (!adminRightService.isAdmin(userId)) {
             throw new UserAdminException(FORBIDDEN);
         }
@@ -67,7 +66,7 @@ public class AnnouncementService {
         } catch (IllegalArgumentException e) {
             throw new UserAdminException(SEVERITY_DOES_NOT_EXIST);
         }
-        return AnnouncementMapper.fromEntity(announcementRepository.save(new AnnouncementEntity(announcementId, startDate, endDate, message, severity)));
+        return AnnouncementMapper.fromEntity(announcementRepository.save(new AnnouncementEntity(startDate, endDate, message, severity)));
     }
 
     public void deleteAnnouncement(UUID announcementId, String userId) {

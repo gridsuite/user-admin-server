@@ -25,6 +25,7 @@ import java.util.UUID;
 public class AnnouncementEntity {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id")
     private UUID id;
 
@@ -44,8 +45,7 @@ public class AnnouncementEntity {
     @Column(name = "notified")
     private boolean notified = false;
 
-    public AnnouncementEntity(UUID id, Instant startDate, Instant endDate, String message, AnnouncementSeverity severity) {
-        this.id = id;
+    public AnnouncementEntity(Instant startDate, Instant endDate, String message, AnnouncementSeverity severity) {
         this.startDate = startDate;
         this.endDate = endDate;
         this.message = message;
