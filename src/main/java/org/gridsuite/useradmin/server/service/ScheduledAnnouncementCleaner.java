@@ -6,6 +6,7 @@
  */
 package org.gridsuite.useradmin.server.service;
 
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.gridsuite.useradmin.server.repository.AnnouncementRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +30,7 @@ public class ScheduledAnnouncementCleaner {
     }
 
     @Scheduled(cron = "${clean-announcement-cron:0 0 2 * * ?}", zone = "UTC")
+    @SchedulerLock(name = "deleteExpiredAnnouncements", lockAtLeastFor = "30s")
     public void deleteExpiredAnnouncements() {
         LOGGER.info("delete expired announcement cron starting");
         announcementRepository.deleteExpiredAnnouncements(Instant.now());
