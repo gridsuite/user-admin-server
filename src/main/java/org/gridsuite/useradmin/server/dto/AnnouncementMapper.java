@@ -9,6 +9,7 @@ package org.gridsuite.useradmin.server.dto;
 import org.gridsuite.useradmin.server.entity.AnnouncementEntity;
 
 import java.time.Duration;
+import java.time.Instant;
 
 public final class AnnouncementMapper {
 
@@ -24,7 +25,7 @@ public final class AnnouncementMapper {
                 entity.getEndDate(),
                 entity.getMessage(),
                 entity.getSeverity(),
-                Duration.between(entity.getStartDate(), entity.getEndDate()).toMillis()
+                Duration.between(Instant.now(), entity.getEndDate()).toMillis()
             );
     }
 }
