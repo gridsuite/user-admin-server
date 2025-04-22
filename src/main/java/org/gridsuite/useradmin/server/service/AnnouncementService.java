@@ -88,8 +88,7 @@ public class AnnouncementService {
         return announcementRepository.findAll().stream().map(AnnouncementMapper::fromEntity).toList();
     }
 
-    public Optional<Announcement> getCurrentAnnouncement(String userId) {
-        adminRightService.assertIsAdmin(userId);
+    public Optional<Announcement> getCurrentAnnouncement() {
         return announcementRepository.findCurrentAnnouncement(Instant.now()).map(AnnouncementMapper::fromEntity);
     }
 }
