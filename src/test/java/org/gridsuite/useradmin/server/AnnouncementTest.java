@@ -7,6 +7,7 @@
 package org.gridsuite.useradmin.server;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.assertj.core.api.WithAssertions;
 import org.gridsuite.useradmin.server.dto.Announcement;
 import org.gridsuite.useradmin.server.entity.AnnouncementEntity;
 import org.gridsuite.useradmin.server.entity.AnnouncementSeverity;
@@ -30,7 +31,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.gridsuite.useradmin.server.UserAdminException.Type.*;
 import static org.gridsuite.useradmin.server.service.NotificationService.HEADER_MESSAGE_TYPE;
 import static org.gridsuite.useradmin.server.service.NotificationService.MESSAGE_TYPE_CANCEL_ANNOUNCEMENT;
@@ -44,7 +44,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @SpringBootTest(classes = {UserAdminApplication.class, TestChannelBinderConfiguration.class})
 @ActiveProfiles({"default"})
-class AnnouncementTest {
+class AnnouncementTest implements WithAssertions {
 
     private static final String ANNOUNCEMENT_DESTINATION = "config.message";
     private static final String DIRECTORY_UPDATE_DESTINATION = "directory.update";

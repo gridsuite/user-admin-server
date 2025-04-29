@@ -6,6 +6,7 @@
  */
 package org.gridsuite.useradmin.server.service;
 
+import lombok.AllArgsConstructor;
 import org.gridsuite.useradmin.server.UserAdminException;
 import org.gridsuite.useradmin.server.dto.Announcement;
 import org.gridsuite.useradmin.server.entity.AnnouncementEntity;
@@ -24,19 +25,11 @@ import static org.gridsuite.useradmin.server.UserAdminException.Type.*;
  * @author Abdelsalem Hedhili <abdelsalem.hedhili at rte-france.com>
  */
 @Service
+@AllArgsConstructor
 public class AnnouncementService {
-
     private final AdminRightService adminRightService;
-
     private final AnnouncementRepository announcementRepository;
-
     private final NotificationService notificationService;
-
-    public AnnouncementService(AdminRightService adminRightService, AnnouncementRepository announcementRepository, NotificationService notificationService) {
-        this.adminRightService = adminRightService;
-        this.announcementRepository = announcementRepository;
-        this.notificationService = notificationService;
-    }
 
     public Announcement createAnnouncement(Instant startDate,
                                            Instant endDate,
@@ -73,7 +66,7 @@ public class AnnouncementService {
             throw new UserAdminException(FORBIDDEN);
         }
         announcementRepository.findById(announcementId).ifPresent(announcement -> {
-            Instant now = Instant.now();
+            final Instant now = Instant.now();
             announcementRepository.deleteById(announcement.getId());
             //it means that we are currently in the announcement time window
             if (announcement.getStartDate().isBefore(now) && announcement.getEndDate().isAfter(now)) {

@@ -6,10 +6,10 @@
  */
 package org.gridsuite.useradmin.server.service;
 
+import lombok.AllArgsConstructor;
 import org.gridsuite.useradmin.server.dto.Announcement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
@@ -19,33 +19,24 @@ import org.springframework.stereotype.Service;
  * @author Abdelsalem Hedhili <abdelsalem.hedhili at rte-france.com
  */
 @Service
+@AllArgsConstructor
 public class NotificationService {
-
-    public static final String GLOBAL_CONFIG_BINDING = "publishMessage-out-0";
-
-    public static final String HEADER_MESSAGE_TYPE = "messageType";
-
     public static final String MESSAGE_TYPE_ANNOUNCEMENT = "announcement";
-
     public static final String MESSAGE_TYPE_CANCEL_ANNOUNCEMENT = "cancelAnnouncement";
 
+    public static final String HEADER_MESSAGE_TYPE = "messageType";
     public static final String HEADER_DURATION = "duration";
-
     public static final String HEADER_ANNOUNCEMENT_ID = "announcementId";
-
     public static final String HEADER_SEVERITY = "severity";
 
-    public static final String MESSAGE_LOG = "Sending message : {}";
-
+    public static final String GLOBAL_CONFIG_BINDING = "publishMessage-out-0";
     private static final String CATEGORY_BROKER_OUTPUT = UserAdminService.class.getName() + ".output-broker-messages";
-
     private static final Logger MESSAGE_OUTPUT_LOGGER = LoggerFactory.getLogger(CATEGORY_BROKER_OUTPUT);
 
-    @Autowired
-    private StreamBridge updatePublisher;
+    private final StreamBridge updatePublisher;
 
     private void sendMessage(Message<String> message, String bindingName) {
-        MESSAGE_OUTPUT_LOGGER.debug(MESSAGE_LOG, message);
+        MESSAGE_OUTPUT_LOGGER.debug("Sending message: {}", message);
         updatePublisher.send(bindingName, message);
     }
 

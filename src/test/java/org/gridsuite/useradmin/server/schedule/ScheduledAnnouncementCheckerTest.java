@@ -6,6 +6,7 @@
  */
 package org.gridsuite.useradmin.server.schedule;
 
+import org.assertj.core.api.WithAssertions;
 import org.gridsuite.useradmin.server.UserAdminApplication;
 import org.gridsuite.useradmin.server.entity.AnnouncementEntity;
 import org.gridsuite.useradmin.server.entity.AnnouncementSeverity;
@@ -24,8 +25,6 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.within;
 import static org.gridsuite.useradmin.server.service.NotificationService.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -34,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
  * @author Abdelsalem Hedhili <abdelsalem.hedhili at rte-france.com>
  */
 @SpringBootTest(classes = {UserAdminApplication.class, TestChannelBinderConfiguration.class})
-class ScheduledAnnouncementCheckerTest {
+class ScheduledAnnouncementCheckerTest implements WithAssertions {
 
     @Autowired
     private ScheduledAnnouncement scheduledAnnouncement;
@@ -58,12 +57,9 @@ class ScheduledAnnouncementCheckerTest {
     @Test
     void testSendScheduledAnnouncement() {
         Instant now = Instant.now();
-        Instant yesterday = now.minus(1, ChronoUnit.DAYS);
-        Instant tomorrow = now.plus(1, ChronoUnit.DAYS);
         String payload = "Test message";
-        String payload2 = "Test message 2";
-        AnnouncementEntity announcement1 = new AnnouncementEntity(yesterday, tomorrow, payload, AnnouncementSeverity.WARN);
-        AnnouncementEntity announcement2 = new AnnouncementEntity(yesterday.minus(5, ChronoUnit.DAYS), yesterday.minus(4, ChronoUnit.DAYS), payload2, AnnouncementSeverity.WARN);
+        AnnouncementEntity announcement1 = new AnnouncementEntity(now.minus(1, ChronoUnit.DAYS), now.plus(1, ChronoUnit.DAYS), payload, AnnouncementSeverity.WARN);
+        AnnouncementEntity announcement2 = new AnnouncementEntity(now.minus(6, ChronoUnit.DAYS), now.minus(5, ChronoUnit.DAYS), "Test message 2", AnnouncementSeverity.WARN);
 
         announcementRepository.save(announcement1);
         announcementRepository.save(announcement2);
@@ -77,10 +73,8 @@ class ScheduledAnnouncementCheckerTest {
     @Test
     void testSendScheduledAnnouncementShouldNotSendNotificationTwice() {
         Instant now = Instant.now();
-        Instant yesterday = now.minus(1, ChronoUnit.DAYS);
-        Instant tomorrow = now.plus(1, ChronoUnit.DAYS);
         String payload = "Test message";
-        AnnouncementEntity announcement1 = new AnnouncementEntity(yesterday, tomorrow, payload, AnnouncementSeverity.WARN);
+        AnnouncementEntity announcement1 = new AnnouncementEntity(now.minus(1, ChronoUnit.DAYS), now.plus(1, ChronoUnit.DAYS), payload, AnnouncementSeverity.WARN);
 
         announcementRepository.save(announcement1);
 
@@ -94,9 +88,7 @@ class ScheduledAnnouncementCheckerTest {
     @Test
     void testSendScheduledAnnouncementShouldDoNothing() {
         Instant now = Instant.now();
-        Instant tomorrow = now.plus(1, ChronoUnit.DAYS);
-        String payload = "Test message";
-        AnnouncementEntity announcement1 = new AnnouncementEntity(tomorrow, tomorrow.plus(1, ChronoUnit.DAYS), payload, AnnouncementSeverity.WARN);
+        AnnouncementEntity announcement1 = new AnnouncementEntity(now.plus(1, ChronoUnit.DAYS), now.plus(2, ChronoUnit.DAYS), "Test message", AnnouncementSeverity.WARN);
 
         announcementRepository.save(announcement1);
         assertEquals(1, announcementRepository.findAll().size());
@@ -115,7 +107,7 @@ class ScheduledAnnouncementCheckerTest {
         assertEquals(expectedMessage, new String(message.getPayload()));
     }
 
-    private void assertQueuesEmptyThenClear(List<String> destinations, OutputDestination output) {
+    private static void assertQueuesEmptyThenClear(List<String> destinations, OutputDestination output) {
         try {
             destinations.forEach(destination -> assertNull(output.receive(TIMEOUT, destination), "Should not be any messages in queue " + destination + " : "));
         } catch (NullPointerException e) {

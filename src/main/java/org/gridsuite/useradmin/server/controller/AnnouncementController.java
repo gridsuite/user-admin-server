@@ -8,8 +8,8 @@ package org.gridsuite.useradmin.server.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.AllArgsConstructor;
 import org.gridsuite.useradmin.server.UserAdminApi;
 import org.gridsuite.useradmin.server.dto.Announcement;
 import org.gridsuite.useradmin.server.service.AnnouncementService;
@@ -27,56 +27,44 @@ import java.util.UUID;
 @RequestMapping(value = "/" + UserAdminApi.API_VERSION + "/announcements")
 @Tag(name = "AnnouncementController")
 @ApiResponse(responseCode = "403", description = "The current user does not have right to ask these data")
+@AllArgsConstructor
 public class AnnouncementController {
-
     private final AnnouncementService service;
-
-    public AnnouncementController(AnnouncementService announcementService) {
-        this.service = announcementService;
-    }
 
     @GetMapping
     @Operation(summary = "get the list of announcements")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "the list of announcements"),
-        @ApiResponse(responseCode = "403", description = "User is not an admin")
-    })
+    @ApiResponse(responseCode = "200", description = "the list of announcements")
+    @ApiResponse(responseCode = "403", description = "User is not an admin")
     public ResponseEntity<List<Announcement>> getAnnouncements(@RequestHeader("userId") String userId) {
-        return ResponseEntity.ok().body(service.getAnnouncements(userId));
+        return ResponseEntity.ok(service.getAnnouncements(userId));
     }
 
     @GetMapping("/current")
     @Operation(summary = "get current announcement if it exists")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "the current announcement"),
-        @ApiResponse(responseCode = "204", description = "there is no current announcement"),
-        @ApiResponse(responseCode = "403", description = "User is not an admin")
-    })
+    @ApiResponse(responseCode = "200", description = "the current announcement")
+    @ApiResponse(responseCode = "204", description = "there is no current announcement")
+    @ApiResponse(responseCode = "403", description = "User is not an admin")
     public ResponseEntity<Announcement> getCurrentAnnouncement() {
         return service.getCurrentAnnouncement().map(ResponseEntity::ok).orElse(ResponseEntity.noContent().build());
     }
 
     @PostMapping()
     @Operation(summary = "Create an announcement")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "the created announcement"),
-        @ApiResponse(responseCode = "403", description = "User is not an admin"),
-        @ApiResponse(responseCode = "409", description = "There is a conflict in display time")
-    })
+    @ApiResponse(responseCode = "200", description = "the created announcement")
+    @ApiResponse(responseCode = "403", description = "User is not an admin")
+    @ApiResponse(responseCode = "409", description = "There is a conflict in display time")
     public ResponseEntity<Announcement> createAnnouncement(@RequestHeader("userId") String userId,
                                                            @RequestParam("startDate") Instant startDate,
                                                            @RequestParam("endDate") Instant endDate,
                                                            @RequestParam("severity") String severity,
                                                            @RequestBody String message) {
-        return ResponseEntity.ok().body(service.createAnnouncement(startDate, endDate, message, severity, userId));
+        return ResponseEntity.ok(service.createAnnouncement(startDate, endDate, message, severity, userId));
     }
 
     @DeleteMapping(value = "/{announcementId}")
     @Operation(summary = "Delete an announcement")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Announcement deleted"),
-        @ApiResponse(responseCode = "403", description = "User is not an admin"),
-    })
+    @ApiResponse(responseCode = "200", description = "Announcement deleted")
+    @ApiResponse(responseCode = "403", description = "User is not an admin")
     public ResponseEntity<Void> deleteAnnouncement(@RequestHeader("userId") String userId,
                                                    @PathVariable("announcementId") UUID announcementId) {
         service.deleteAnnouncement(announcementId, userId);
