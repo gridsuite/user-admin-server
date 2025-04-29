@@ -14,12 +14,12 @@ powsybl-ws:
   database:
     name: useradmin
 
-check-announcement-cron: 0 */1 * * * *
-
-clean-announcement-cron: 0 0 2 * * ?
 
 
 useradmin:
+  cron:
+    announcement-check: 0 */1 * * * *
+    announcement-clean: 0 0 2 * * ?
   admins:
 #    - admin1
 #    - admin2

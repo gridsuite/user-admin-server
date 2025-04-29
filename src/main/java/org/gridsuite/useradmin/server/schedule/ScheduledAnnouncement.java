@@ -27,7 +27,7 @@ public class ScheduledAnnouncement {
     private final AnnouncementRepository announcementRepository;
     private final NotificationService notificationService;
 
-    @Scheduled(cron = "${check-announcement-cron:0 */1 * * * *}", zone = "UTC")
+    @Scheduled(cron = "${useradmin.cron.announcement-check:-}", zone = "UTC")
     @SchedulerLock(name = "checkAnnouncement", lockAtLeastFor = "1s", lockAtMostFor = "59s")
     public void sendNotificationIfAnnouncements() {
         LOGGER.debug("check announcement cron starting execution");
@@ -45,7 +45,7 @@ public class ScheduledAnnouncement {
             });
     }
 
-    @Scheduled(cron = "${clean-announcement-cron:0 0 2 * * ?}", zone = "UTC")
+    @Scheduled(cron = "${useradmin.cron.announcement-clean:-}", zone = "UTC")
     @SchedulerLock(name = "deleteExpiredAnnouncements", lockAtLeastFor = "30s")
     public void deleteExpiredAnnouncements() {
         LOGGER.debug("Delete expired announcement cron starting");

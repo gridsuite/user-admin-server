@@ -6,17 +6,19 @@
  */
 package org.gridsuite.useradmin.server;
 
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.validation.constraints.AssertTrue;
+import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.scheduling.support.CronExpression;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 
 /**
  * @author Etienne Homer <etienne.homer at rte-france.com>
  */
-@Getter
-@Setter
+@Data
+@Validated
 @ConfigurationProperties(prefix = "useradmin")
 public class UserAdminApplicationProps {
 
@@ -27,4 +29,22 @@ public class UserAdminApplicationProps {
     private Integer casesAlertThreshold;
 
     private Integer defaultMaxAllowedBuilds;
+
+    private Cron cron = new Cron();
+
+    @Data
+    public static class Cron {
+        private String announcementCheck;
+        private String announcementClean;
+
+        @AssertTrue(message = "Invalide cron expression for \"announcementCheck\"")
+        public boolean isValidAnnouncementCheck() {
+            return this.announcementCheck == null || CronExpression.isValidExpression(this.announcementCheck);
+        }
+
+        @AssertTrue(message = "Invalide cron expression for \"announcementClean\"")
+        public boolean isValidAnnouncementClean() {
+            return this.announcementClean == null || CronExpression.isValidExpression(this.announcementClean);
+        }
+    }
 }
