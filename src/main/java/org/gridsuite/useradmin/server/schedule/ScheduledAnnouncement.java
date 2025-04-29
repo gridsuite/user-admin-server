@@ -7,6 +7,7 @@
 package org.gridsuite.useradmin.server.schedule;
 
 import lombok.AllArgsConstructor;
+import net.javacrumbs.shedlock.core.LockAssert;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.gridsuite.useradmin.server.repository.AnnouncementRepository;
 import org.gridsuite.useradmin.server.service.NotificationService;
@@ -31,6 +32,7 @@ public class ScheduledAnnouncement {
     @SchedulerLock(name = "checkAnnouncement", lockAtLeastFor = "1s", lockAtMostFor = "59s")
     public void sendNotificationIfAnnouncements() {
         LOGGER.debug("check announcement cron starting execution");
+        LockAssert.assertLocked();
         announcementRepository
             .findCurrentAnnouncement()
             .ifPresent(announcement -> {
@@ -49,6 +51,7 @@ public class ScheduledAnnouncement {
     @SchedulerLock(name = "deleteExpiredAnnouncements", lockAtLeastFor = "30s")
     public void deleteExpiredAnnouncements() {
         LOGGER.debug("Delete expired announcement cron starting");
+        LockAssert.assertLocked();
         final long count = announcementRepository.deleteExpiredAnnouncements();
         LOGGER.atLevel(count > 0L ? Level.DEBUG : Level.INFO).log("{} expired announcement(s) deleted.", count);
     }
