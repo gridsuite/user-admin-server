@@ -7,8 +7,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
 public final class Utils {
-    private Utils() throws IllegalAccessException {
-        throw new IllegalAccessException("Utility class can not be initialize.");
+    private Utils() {
+        throw new IllegalCallerException("Utility class can not be initialize.");
     }
 
     public static Instant convert(@Nullable final LocalDateTime dateTime) {
