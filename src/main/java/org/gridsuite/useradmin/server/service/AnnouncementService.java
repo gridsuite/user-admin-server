@@ -56,7 +56,7 @@ public class AnnouncementService {
             throw new UserAdminException(START_DATE_AFTER_END_DATE);
         }
 
-        if (announcementRepository.existsByStartDateLessThanEqualAndEndDateGreaterThanEqual(endDate, startDate)) {
+        if (announcementRepository.existsByStartDateLessThanEqualAndEndDateGreaterThanEqual(startDate, endDate)) {
             throw new UserAdminException(OVERLAPPING_ANNOUNCEMENTS);
         }
 
@@ -89,6 +89,6 @@ public class AnnouncementService {
     }
 
     public Optional<Announcement> getCurrentAnnouncement() {
-        return announcementRepository.findCurrentAnnouncement(Instant.now()).map(AnnouncementMapper::fromEntity);
+        return announcementRepository.findCurrentAnnouncement().map(AnnouncementMapper::fromEntity);
     }
 }

@@ -10,10 +10,9 @@ import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.gridsuite.useradmin.server.repository.AnnouncementRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.event.Level;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-
-import java.time.Instant;
 
 /**
  * @author Abdelsalem Hedhili <abdelsalem.hedhili at rte-france.com>
@@ -32,7 +31,8 @@ public class ScheduledAnnouncementCleaner {
     @Scheduled(cron = "${clean-announcement-cron:0 0 2 * * ?}", zone = "UTC")
     @SchedulerLock(name = "deleteExpiredAnnouncements", lockAtLeastFor = "30s")
     public void deleteExpiredAnnouncements() {
-        LOGGER.info("delete expired announcement cron starting");
-        announcementRepository.deleteExpiredAnnouncements(Instant.now());
+        LOGGER.debug("Delete expired announcement cron starting");
+        final long count = announcementRepository.deleteExpiredAnnouncements();
+        LOGGER.atLevel(count > 0L ? Level.DEBUG : Level.INFO).log("{} expired announcement(s) deleted.", count);
     }
 }

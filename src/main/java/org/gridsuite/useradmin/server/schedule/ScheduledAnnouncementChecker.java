@@ -15,8 +15,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
-
 /**
  * @author Abdelsalem Hedhili <abdelsalem.hedhili at rte-france.com>
  */
@@ -39,10 +37,10 @@ public class ScheduledAnnouncementChecker {
     public void sendNotificationIfAnnouncements() {
         LOGGER.debug("check announcement cron starting execution");
         announcementRepository
-            .findCurrentAnnouncement(Instant.now())
+            .findCurrentAnnouncement()
             .ifPresent(announcement -> {
                 if (!announcement.isNotified()) {
-                    LOGGER.info("new announcement ({}) to notify", announcement.getId());
+                    LOGGER.info("New announcement ({}) to notify", announcement.getId());
                     notificationService.emitAnnouncementMessage(AnnouncementMapper.fromEntity(announcement));
                     announcement.setNotified(true);
                     announcementRepository.save(announcement);

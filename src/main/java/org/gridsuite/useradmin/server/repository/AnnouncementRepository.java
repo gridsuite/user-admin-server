@@ -24,14 +24,13 @@ import java.util.UUID;
 @Repository
 public interface AnnouncementRepository extends JpaRepository<AnnouncementEntity, UUID> {
 
-    boolean existsByStartDateLessThanEqualAndEndDateGreaterThanEqual(@NonNull Instant endDate, @NonNull Instant startDate);
+    boolean existsByStartDateLessThanEqualAndEndDateGreaterThanEqual(@NonNull Instant startDate, @NonNull Instant endDate);
 
-    @Query("SELECT e FROM AnnouncementEntity e WHERE e.startDate < :now AND e.endDate > :now")
-    Optional<AnnouncementEntity> findCurrentAnnouncement(@NonNull Instant now);
+    @Query("SELECT e FROM AnnouncementEntity e WHERE e.startDate <= CURRENT_TIMESTAMP AND CURRENT_TIMESTAMP <= e.endDate ORDER BY e.startDate ASC, e.endDate ASC LIMIT 1")
+    Optional<AnnouncementEntity> findCurrentAnnouncement();
 
     @Transactional
     @Modifying
-    @Query("delete from AnnouncementEntity a where a.startDate < :now and a.endDate < :now")
-    int deleteExpiredAnnouncements(Instant now);
-
+    @Query("DELETE FROM AnnouncementEntity e WHERE e.endDate < CURRENT_TIMESTAMP")
+    long deleteExpiredAnnouncements();
 }

@@ -42,7 +42,7 @@ public class AnnouncementEntity {
     @Column(name = "severity", nullable = false)
     private AnnouncementSeverity severity;
 
-    @Column(name = "notified")
+    @Column(name = "notified", nullable = false)
     private boolean notified = false;
 
     public AnnouncementEntity(Instant startDate, Instant endDate, String message, AnnouncementSeverity severity) {
