@@ -8,7 +8,6 @@ package org.gridsuite.useradmin.server;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.gridsuite.useradmin.server.dto.Announcement;
-import org.gridsuite.useradmin.server.dto.AnnouncementMapper;
 import org.gridsuite.useradmin.server.entity.AnnouncementEntity;
 import org.gridsuite.useradmin.server.entity.AnnouncementSeverity;
 import org.gridsuite.useradmin.server.repository.AnnouncementRepository;
@@ -82,7 +81,7 @@ class AnnouncementTest {
 
         Instant now = Instant.now().truncatedTo(ChronoUnit.SECONDS);
 
-        Announcement announcementToBeCreated = new Announcement(UUID.randomUUID(), now, now.plus(2, ChronoUnit.DAYS), "Test message", AnnouncementSeverity.INFO, 2);
+        Announcement announcementToBeCreated = new Announcement(UUID.randomUUID(), now, now.plus(2, ChronoUnit.DAYS), "Test message", AnnouncementSeverity.INFO);
         assertEquals(0, announcementRepository.findAll().size());
 
         // Not allowed because not admin
@@ -153,7 +152,7 @@ class AnnouncementTest {
             .isEqualTo(announcementToBeCreated);
         List<AnnouncementEntity> all = announcementRepository.findAll();
         assertEquals(1, all.size());
-        assertThat(AnnouncementMapper.fromEntity(all.getFirst()))
+        assertThat(all.getFirst().toDto())
             .usingRecursiveComparison()
             .ignoringFields("id", "remainingDuration")
             .isEqualTo(announcementToBeCreated);
@@ -169,7 +168,7 @@ class AnnouncementTest {
             .andExpect(status().isBadRequest())
             .andReturn();
         assertEquals(1, all.size());
-        assertThat(AnnouncementMapper.fromEntity(all.getFirst()))
+        assertThat(all.getFirst().toDto())
             .usingRecursiveComparison()
             .ignoringFields("id", "remainingDuration")
             .isEqualTo(announcementToBeCreated);
@@ -182,10 +181,10 @@ class AnnouncementTest {
         AnnouncementEntity announcementToBeCreated = new AnnouncementEntity(now, now.plus(2, ChronoUnit.DAYS), "Test message", AnnouncementSeverity.INFO);
         announcementRepository.save(announcementToBeCreated);
         assertEquals(1, announcementRepository.findAll().size());
-        assertThat(AnnouncementMapper.fromEntity(announcementRepository.findAll().getFirst()))
+        assertThat(announcementRepository.findAll().getFirst().toDto())
             .usingRecursiveComparison()
             .ignoringFields("id", "remainingDuration")
-            .isEqualTo(AnnouncementMapper.fromEntity(announcementToBeCreated));
+            .isEqualTo(announcementToBeCreated.toDto());
 
         // Should be ok even if the id doesn't exist (it just doesn't do anything)
         mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/announcements/{id}", UUID.randomUUID())
@@ -265,7 +264,7 @@ class AnnouncementTest {
         assertEquals(3, announcements.size());
         assertThat(announcements)
             .usingRecursiveFieldByFieldElementComparatorIgnoringFields("remainingDuration")
-            .containsExactlyInAnyOrder(AnnouncementMapper.fromEntity(announcementToBeCreated1), AnnouncementMapper.fromEntity(announcementToBeCreated2), AnnouncementMapper.fromEntity(announcementToBeCreated3));
+            .containsExactlyInAnyOrder(announcementToBeCreated1.toDto(), announcementToBeCreated2.toDto(), announcementToBeCreated3.toDto());
     }
 
     @Test
@@ -291,7 +290,7 @@ class AnnouncementTest {
         assertThat(announcement)
             .usingRecursiveComparison()
             .ignoringFields("remainingDuration")
-            .isEqualTo(AnnouncementMapper.fromEntity(announcementToBeCreated2));
+            .isEqualTo(announcementToBeCreated2.toDto());
     }
 
     @Test

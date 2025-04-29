@@ -8,7 +8,6 @@ package org.gridsuite.useradmin.server.service;
 
 import org.gridsuite.useradmin.server.UserAdminException;
 import org.gridsuite.useradmin.server.dto.Announcement;
-import org.gridsuite.useradmin.server.dto.AnnouncementMapper;
 import org.gridsuite.useradmin.server.entity.AnnouncementEntity;
 import org.gridsuite.useradmin.server.entity.AnnouncementSeverity;
 import org.gridsuite.useradmin.server.repository.AnnouncementRepository;
@@ -66,7 +65,7 @@ public class AnnouncementService {
         } catch (IllegalArgumentException e) {
             throw new UserAdminException(SEVERITY_DOES_NOT_EXIST);
         }
-        return AnnouncementMapper.fromEntity(announcementRepository.save(new AnnouncementEntity(startDate, endDate, message, severity)));
+        return announcementRepository.save(new AnnouncementEntity(startDate, endDate, message, severity)).toDto();
     }
 
     public void deleteAnnouncement(UUID announcementId, String userId) {
@@ -85,10 +84,10 @@ public class AnnouncementService {
 
     public List<Announcement> getAnnouncements(String userId) {
         adminRightService.assertIsAdmin(userId);
-        return announcementRepository.findAll().stream().map(AnnouncementMapper::fromEntity).toList();
+        return announcementRepository.findAll().stream().map(AnnouncementEntity::toDto).toList();
     }
 
     public Optional<Announcement> getCurrentAnnouncement() {
-        return announcementRepository.findCurrentAnnouncement().map(AnnouncementMapper::fromEntity);
+        return announcementRepository.findCurrentAnnouncement().map(AnnouncementEntity::toDto);
     }
 }

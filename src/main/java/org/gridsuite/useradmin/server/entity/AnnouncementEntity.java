@@ -10,6 +10,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.gridsuite.useradmin.server.dto.Announcement;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -50,5 +51,15 @@ public class AnnouncementEntity {
         this.endDate = endDate;
         this.message = message;
         this.severity = severity;
+    }
+
+    public Announcement toDto() {
+        return new Announcement(
+                        this.getId(),
+                        this.getStartDate(),
+                        this.getEndDate(),
+                        this.getMessage(),
+                        this.getSeverity()
+                );
     }
 }

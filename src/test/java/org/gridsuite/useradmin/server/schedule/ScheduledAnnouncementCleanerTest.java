@@ -7,7 +7,6 @@
 package org.gridsuite.useradmin.server.schedule;
 
 import org.gridsuite.useradmin.server.UserAdminApplication;
-import org.gridsuite.useradmin.server.dto.AnnouncementMapper;
 import org.gridsuite.useradmin.server.entity.AnnouncementEntity;
 import org.gridsuite.useradmin.server.entity.AnnouncementSeverity;
 import org.gridsuite.useradmin.server.repository.AnnouncementRepository;
@@ -71,7 +70,8 @@ class ScheduledAnnouncementCleanerTest {
         scheduledAnnouncement.deleteExpiredAnnouncements();
         assertEquals(2, announcementRepository.findAll().size());
 
-        assertThat(announcementRepository.findAll().stream().map(AnnouncementMapper::fromEntity))
-            .usingRecursiveFieldByFieldElementComparatorIgnoringFields("id", "remainingDuration").containsExactlyElementsOf(List.of(AnnouncementMapper.fromEntity(announcement3), AnnouncementMapper.fromEntity(announcement4)));
+        assertThat(announcementRepository.findAll().stream().map(AnnouncementEntity::toDto))
+            .usingRecursiveFieldByFieldElementComparatorIgnoringFields("id")
+            .containsExactlyElementsOf(List.of(announcement3.toDto(), announcement4.toDto()));
     }
 }

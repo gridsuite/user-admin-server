@@ -8,11 +8,12 @@ package org.gridsuite.useradmin.server.dto;
 
 import org.gridsuite.useradmin.server.entity.AnnouncementSeverity;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
 
-/**
- * @author Abdelsalem Hedhili <abdelsalem.hedhili at rte-france.com>
- */
-public record Announcement(UUID id, Instant startDate, Instant endDate, String message, AnnouncementSeverity severity, long remainingDuration) {
+public record Announcement(UUID id, Instant startDate, Instant endDate, String message, AnnouncementSeverity severity) {
+    public long remainingTimeMs() {
+        return Duration.between(Instant.now(), this.endDate()).toMillis();
+    }
 }

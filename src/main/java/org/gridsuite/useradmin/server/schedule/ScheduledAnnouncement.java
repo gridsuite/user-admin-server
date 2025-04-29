@@ -8,7 +8,6 @@ package org.gridsuite.useradmin.server.schedule;
 
 import lombok.AllArgsConstructor;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
-import org.gridsuite.useradmin.server.dto.AnnouncementMapper;
 import org.gridsuite.useradmin.server.repository.AnnouncementRepository;
 import org.gridsuite.useradmin.server.service.NotificationService;
 import org.slf4j.Logger;
@@ -37,7 +36,7 @@ public class ScheduledAnnouncement {
             .ifPresent(announcement -> {
                 if (!announcement.isNotified()) {
                     LOGGER.info("New announcement ({}) to notify", announcement.getId());
-                    notificationService.emitAnnouncementMessage(AnnouncementMapper.fromEntity(announcement));
+                    notificationService.emitAnnouncementMessage(announcement.toDto());
                     announcement.setNotified(true);
                     announcementRepository.save(announcement);
                 } else {

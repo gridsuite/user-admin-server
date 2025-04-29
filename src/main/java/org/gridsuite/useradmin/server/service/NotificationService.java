@@ -53,7 +53,7 @@ public class NotificationService {
         sendMessage(MessageBuilder.withPayload(announcement.message())
             .setHeader(HEADER_MESSAGE_TYPE, MESSAGE_TYPE_ANNOUNCEMENT)
             .setHeader(HEADER_ANNOUNCEMENT_ID, announcement.id())
-            .setHeader(HEADER_DURATION, announcement.remainingDuration())
+            .setHeader(HEADER_DURATION, announcement.remainingTimeMs())
             .setHeader(HEADER_SEVERITY, announcement.severity())
             .build(), GLOBAL_CONFIG_BINDING);
     }
