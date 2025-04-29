@@ -4,13 +4,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package org.gridsuite.useradmin.server;
+package org.gridsuite.useradmin.server.schedule;
 
+import org.gridsuite.useradmin.server.UserAdminApplication;
 import org.gridsuite.useradmin.server.dto.AnnouncementMapper;
 import org.gridsuite.useradmin.server.entity.AnnouncementEntity;
 import org.gridsuite.useradmin.server.entity.AnnouncementSeverity;
 import org.gridsuite.useradmin.server.repository.AnnouncementRepository;
-import org.gridsuite.useradmin.server.service.ScheduledAnnouncementCleaner;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
