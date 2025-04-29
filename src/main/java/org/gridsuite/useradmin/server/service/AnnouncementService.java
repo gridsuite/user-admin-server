@@ -34,37 +34,21 @@ public class AnnouncementService {
     public Announcement createAnnouncement(Instant startDate,
                                            Instant endDate,
                                            String message,
-                                           String stringSeverity,
+                                           AnnouncementSeverity severity,
                                            String userId) {
-        if (!adminRightService.isAdmin(userId)) {
-            throw new UserAdminException(FORBIDDEN);
+        adminRightService.assertIsAdmin(userId);
+        if (!startDate.isBefore(endDate)) { // internally compare in seconds
+            throw new UserAdminException(START_DATE_SAME_OR_AFTER_END_DATE);
         }
-
-        if (startDate.equals(endDate)) {
-            throw new UserAdminException(SAME_START_END_DATE);
-        }
-
-        if (startDate.isAfter(endDate)) {
-            throw new UserAdminException(START_DATE_AFTER_END_DATE);
-        }
-
-        if (announcementRepository.existsByStartDateLessThanEqualAndEndDateGreaterThanEqual(startDate, endDate)) {
+        // Start is inclusive, End is exclusive — [start, end)
+        if (announcementRepository.existsByStartDateLessThanAndEndDateGreaterThan(endDate, startDate)) {
             throw new UserAdminException(OVERLAPPING_ANNOUNCEMENTS);
         }
-
-        AnnouncementSeverity severity;
-        try {
-            severity = AnnouncementSeverity.valueOf(stringSeverity);
-        } catch (IllegalArgumentException e) {
-            throw new UserAdminException(SEVERITY_DOES_NOT_EXIST);
-        }
-        return announcementRepository.save(new AnnouncementEntity(startDate, endDate, message, severity)).toDto();
+        return announcementRepository.save(new AnnouncementEntity(startDate, endDate, message.trim(), severity)).toDto();
     }
 
     public void deleteAnnouncement(UUID announcementId, String userId) {
-        if (!adminRightService.isAdmin(userId)) {
-            throw new UserAdminException(FORBIDDEN);
-        }
+        adminRightService.assertIsAdmin(userId);
         announcementRepository.findById(announcementId).ifPresent(announcement -> {
             final Instant now = Instant.now();
             announcementRepository.deleteById(announcement.getId());
@@ -77,7 +61,7 @@ public class AnnouncementService {
 
     public List<Announcement> getAnnouncements(String userId) {
         adminRightService.assertIsAdmin(userId);
-        return announcementRepository.findAll().stream().map(AnnouncementEntity::toDto).toList();
+        return announcementRepository.findAnnouncements().map(AnnouncementEntity::toDto).toList();
     }
 
     public Optional<Announcement> getCurrentAnnouncement() {

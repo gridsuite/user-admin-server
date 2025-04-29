@@ -17,14 +17,22 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
-/**
- * @author Abdelsalem Hedhili <abdelsalem.hedhili at rte-france.com>
- */
 @Repository
 public interface AnnouncementRepository extends JpaRepository<AnnouncementEntity, UUID> {
 
-    boolean existsByStartDateLessThanEqualAndEndDateGreaterThanEqual(@NonNull Instant startDate, @NonNull Instant endDate);
+    /**
+     * Check if an announcement overlap with the period asked.
+     * @implSpec Two periods {@code [start1, end1)} and {@code [start2, end2)} overlap if: {@code start1 < end2 AND end1 > start2}.
+     */
+    boolean existsByStartDateLessThanAndEndDateGreaterThan(@NonNull Instant endDate, @NonNull Instant startDate);
+
+    /**
+     * Find announcements that isn't <strike>expired</strike> finished (current and future ones).
+     */
+    @Query("SELECT e FROM AnnouncementEntity e WHERE CURRENT_TIMESTAMP <= e.endDate ORDER BY e.startDate ASC, e.endDate ASC")
+    Stream<AnnouncementEntity> findAnnouncements();
 
     @Query("SELECT e FROM AnnouncementEntity e WHERE e.startDate <= CURRENT_TIMESTAMP AND CURRENT_TIMESTAMP <= e.endDate ORDER BY e.startDate ASC, e.endDate ASC LIMIT 1")
     Optional<AnnouncementEntity> findCurrentAnnouncement();

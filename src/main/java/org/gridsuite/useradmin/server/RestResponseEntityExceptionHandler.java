@@ -18,24 +18,14 @@ import static org.gridsuite.useradmin.server.UserAdminException.Type.*;
  */
 @ControllerAdvice
 public class RestResponseEntityExceptionHandler {
-
-    @ExceptionHandler(value = { UserAdminException.class })
-    protected ResponseEntity<Object> handleException(RuntimeException exception) {
-        if (exception instanceof UserAdminException userAdminException) {
-            if (userAdminException.getType().equals(FORBIDDEN)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(userAdminException.getType());
-            } else if (userAdminException.getType().equals(NOT_FOUND)) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(userAdminException.getType());
-            } else if (userAdminException.getType().equals(GROUP_ALREADY_EXISTS) ||
-                       userAdminException.getType().equals(USER_ALREADY_EXISTS) ||
-                       userAdminException.getType().equals(PROFILE_ALREADY_EXISTS) ||
-                       userAdminException.getType().equals(SEVERITY_DOES_NOT_EXIST) ||
-                       userAdminException.getType().equals(OVERLAPPING_ANNOUNCEMENTS) ||
-                       userAdminException.getType().equals(SAME_START_END_DATE) ||
-                       userAdminException.getType().equals(START_DATE_AFTER_END_DATE)) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(userAdminException.getType());
-            }
-        }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    @ExceptionHandler(value = {UserAdminException.class})
+    protected ResponseEntity<UserAdminException.Type> handleException(UserAdminException userAdminException) {
+        return switch (userAdminException.getType()) {
+            case FORBIDDEN -> ResponseEntity.status(HttpStatus.FORBIDDEN).body(userAdminException.getType());
+            case NOT_FOUND -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(userAdminException.getType());
+            case GROUP_ALREADY_EXISTS, USER_ALREADY_EXISTS, PROFILE_ALREADY_EXISTS, SEVERITY_DOES_NOT_EXIST,
+                 OVERLAPPING_ANNOUNCEMENTS, START_DATE_SAME_OR_AFTER_END_DATE ->
+                    ResponseEntity.status(HttpStatus.BAD_REQUEST).body(userAdminException.getType());
+        };
     }
 }

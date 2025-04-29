@@ -20,8 +20,7 @@ public class UserAdminException extends RuntimeException {
         PROFILE_ALREADY_EXISTS,
         SEVERITY_DOES_NOT_EXIST,
         OVERLAPPING_ANNOUNCEMENTS,
-        SAME_START_END_DATE,
-        START_DATE_AFTER_END_DATE
+        START_DATE_SAME_OR_AFTER_END_DATE
     }
 
     private final Type type;

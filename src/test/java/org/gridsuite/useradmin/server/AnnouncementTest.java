@@ -105,7 +105,7 @@ class AnnouncementTest implements WithAssertions {
             )
             .andExpect(status().isBadRequest())
             .andReturn();
-        assertTrue(result.getResponse().getContentAsString().contains(START_DATE_AFTER_END_DATE.name()));
+        assertTrue(result.getResponse().getContentAsString().contains(START_DATE_SAME_OR_AFTER_END_DATE.name()));
         assertEquals(0, announcementRepository.findAll().size());
 
         // Should NOT be ok because severity doesn't exist
@@ -131,7 +131,7 @@ class AnnouncementTest implements WithAssertions {
             )
             .andExpect(status().isBadRequest())
             .andReturn();
-        assertTrue(result.getResponse().getContentAsString().contains(SAME_START_END_DATE.name()));
+        assertTrue(result.getResponse().getContentAsString().contains(START_DATE_SAME_OR_AFTER_END_DATE.name()));
         assertEquals(0, announcementRepository.findAll().size());
 
         // Should be ok because user is admin
