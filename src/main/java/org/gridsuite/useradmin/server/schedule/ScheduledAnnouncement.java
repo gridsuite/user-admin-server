@@ -6,31 +6,27 @@
  */
 package org.gridsuite.useradmin.server.schedule;
 
+import lombok.AllArgsConstructor;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.gridsuite.useradmin.server.dto.AnnouncementMapper;
 import org.gridsuite.useradmin.server.repository.AnnouncementRepository;
 import org.gridsuite.useradmin.server.service.NotificationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.event.Level;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 /**
  * @author Abdelsalem Hedhili <abdelsalem.hedhili at rte-france.com>
  */
-@Service
-public class ScheduledAnnouncementChecker {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ScheduledAnnouncementChecker.class);
+@Component
+@AllArgsConstructor
+public class ScheduledAnnouncement {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ScheduledAnnouncement.class);
 
     private final AnnouncementRepository announcementRepository;
-
     private final NotificationService notificationService;
-
-    public ScheduledAnnouncementChecker(AnnouncementRepository announcementRepository, NotificationService notificationService) {
-        this.announcementRepository = announcementRepository;
-        this.notificationService = notificationService;
-    }
 
     @Scheduled(cron = "${check-announcement-cron:0 */1 * * * *}", zone = "UTC")
     @SchedulerLock(name = "checkAnnouncement", lockAtLeastFor = "1s", lockAtMostFor = "59s")
@@ -48,5 +44,13 @@ public class ScheduledAnnouncementChecker {
                     LOGGER.debug("No new announcement to notify");
                 }
             });
+    }
+
+    @Scheduled(cron = "${clean-announcement-cron:0 0 2 * * ?}", zone = "UTC")
+    @SchedulerLock(name = "deleteExpiredAnnouncements", lockAtLeastFor = "30s")
+    public void deleteExpiredAnnouncements() {
+        LOGGER.debug("Delete expired announcement cron starting");
+        final long count = announcementRepository.deleteExpiredAnnouncements();
+        LOGGER.atLevel(count > 0L ? Level.DEBUG : Level.INFO).log("{} expired announcement(s) deleted.", count);
     }
 }

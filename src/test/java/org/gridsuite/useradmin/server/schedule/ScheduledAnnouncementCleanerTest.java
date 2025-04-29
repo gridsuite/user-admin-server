@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class ScheduledAnnouncementCleanerTest {
 
     @Autowired
-    private ScheduledAnnouncementCleaner scheduledAnnouncementCleaner;
+    private ScheduledAnnouncement scheduledAnnouncement;
 
     @Autowired
     private AnnouncementRepository announcementRepository;
@@ -68,7 +68,7 @@ class ScheduledAnnouncementCleanerTest {
         announcementRepository.save(announcement4);
 
         assertEquals(4, announcementRepository.findAll().size());
-        scheduledAnnouncementCleaner.deleteExpiredAnnouncements();
+        scheduledAnnouncement.deleteExpiredAnnouncements();
         assertEquals(2, announcementRepository.findAll().size());
 
         assertThat(announcementRepository.findAll().stream().map(AnnouncementMapper::fromEntity))

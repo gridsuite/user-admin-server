@@ -37,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 class ScheduledAnnouncementCheckerTest {
 
     @Autowired
-    private ScheduledAnnouncementChecker scheduledAnnouncementChecker;
+    private ScheduledAnnouncement scheduledAnnouncement;
 
     @Autowired
     private AnnouncementRepository announcementRepository;
@@ -69,7 +69,7 @@ class ScheduledAnnouncementCheckerTest {
         announcementRepository.save(announcement2);
         assertEquals(2, announcementRepository.findAll().size());
 
-        scheduledAnnouncementChecker.sendNotificationIfAnnouncements();
+        scheduledAnnouncement.sendNotificationIfAnnouncements();
 
         assertAnnouncementMessageSent(payload, Duration.between(Instant.now(), announcement1.getEndDate()).toMillis(), announcement1.getSeverity());
     }
@@ -84,10 +84,10 @@ class ScheduledAnnouncementCheckerTest {
 
         announcementRepository.save(announcement1);
 
-        scheduledAnnouncementChecker.sendNotificationIfAnnouncements();
+        scheduledAnnouncement.sendNotificationIfAnnouncements();
         assertAnnouncementMessageSent(payload, Duration.between(Instant.now(), announcement1.getEndDate()).toMillis(), announcement1.getSeverity());
 
-        scheduledAnnouncementChecker.sendNotificationIfAnnouncements();
+        scheduledAnnouncement.sendNotificationIfAnnouncements();
         assertNull(output.receive(TIMEOUT, ANNOUNCEMENT_DESTINATION));
     }
 
@@ -101,7 +101,7 @@ class ScheduledAnnouncementCheckerTest {
         announcementRepository.save(announcement1);
         assertEquals(1, announcementRepository.findAll().size());
 
-        scheduledAnnouncementChecker.sendNotificationIfAnnouncements();
+        scheduledAnnouncement.sendNotificationIfAnnouncements();
 
         assertNull(output.receive(TIMEOUT, ANNOUNCEMENT_DESTINATION));
     }
