@@ -8,6 +8,7 @@ package org.gridsuite.useradmin.server;
 
 import jakarta.validation.constraints.AssertTrue;
 import lombok.Data;
+import org.gridsuite.useradmin.server.controller.UserAdminController;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.scheduling.support.CronExpression;
 import org.springframework.validation.annotation.Validated;
@@ -22,14 +23,30 @@ import java.util.List;
 @ConfigurationProperties(prefix = "useradmin")
 public class UserAdminApplicationProps {
 
+    /**
+     * List of administrators users.
+     */
     private List<String> admins;
 
+    /**
+     * Default value of {@link org.gridsuite.useradmin.server.dto.UserInfos#maxAllowedCases()} if {@code null}.
+     */
     private Integer defaultMaxAllowedCases;
 
+    /**
+     * Value returned by {@link UserAdminController#getCasesAlertThreshold()}.
+     * Default: {@code 90}
+     */
     private Integer casesAlertThreshold;
 
+    /**
+     * Default value of {@link org.gridsuite.useradmin.server.dto.UserInfos#maxAllowedBuilds()} if {@code null}.
+     */
     private Integer defaultMaxAllowedBuilds;
 
+    /**
+     * Cron jobs expression in UTC.
+     */
     private Cron cron = new Cron();
 
     @Data
