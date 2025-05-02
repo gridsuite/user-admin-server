@@ -85,7 +85,7 @@ class AnnouncementTest implements WithAssertions {
         assertEquals(0, announcementRepository.findAll().size());
 
         // Not allowed because not admin
-        mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/announcements", announcementToBeCreated.id())
+        mockMvc.perform(put("/" + UserAdminApi.API_VERSION + "/announcements")
                 .header("userId", NOT_ADMIN)
                 .queryParam("severity", announcementToBeCreated.severity().name())
                 .queryParam("startDate", announcementToBeCreated.startDate().toString())
@@ -96,7 +96,7 @@ class AnnouncementTest implements WithAssertions {
         assertEquals(0, announcementRepository.findAll().size());
 
         // Should NOT be ok because startDate > endDate
-        MvcResult result = mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/announcements", announcementToBeCreated.id())
+        MvcResult result = mockMvc.perform(put("/" + UserAdminApi.API_VERSION + "/announcements")
                 .header("userId", ADMIN_USER)
                 .queryParam("severity", announcementToBeCreated.severity().name())
                 .queryParam("startDate", announcementToBeCreated.endDate().toString())
@@ -105,11 +105,11 @@ class AnnouncementTest implements WithAssertions {
             )
             .andExpect(status().isBadRequest())
             .andReturn();
-        assertTrue(result.getResponse().getContentAsString().contains(START_DATE_SAME_OR_AFTER_END_DATE.name()));
+        assertTrue(result.getResponse().getContentAsString().contains("endDate\":\"must be a future date\""));
         assertEquals(0, announcementRepository.findAll().size());
 
         // Should NOT be ok because severity doesn't exist
-        result = mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/announcements", announcementToBeCreated.id())
+        result = mockMvc.perform(put("/" + UserAdminApi.API_VERSION + "/announcements")
                 .header("userId", ADMIN_USER)
                 .queryParam("severity", "NOT A SEVERITY")
                 .queryParam("startDate", announcementToBeCreated.startDate().toString())
@@ -118,11 +118,11 @@ class AnnouncementTest implements WithAssertions {
             )
             .andExpect(status().isBadRequest())
             .andReturn();
-        assertTrue(result.getResponse().getContentAsString().contains(SEVERITY_DOES_NOT_EXIST.name()));
+        assertTrue(result.getResponse().getContentAsString().contains("\"Failed to convert 'severity' with value: 'NOT A SEVERITY'\""));
         assertEquals(0, announcementRepository.findAll().size());
 
         // Should NOT be ok because startDate = endDate
-        result = mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/announcements", announcementToBeCreated.id())
+        result = mockMvc.perform(put("/" + UserAdminApi.API_VERSION + "/announcements")
                 .header("userId", ADMIN_USER)
                 .queryParam("severity", announcementToBeCreated.severity().name())
                 .queryParam("startDate", announcementToBeCreated.startDate().toString())
@@ -131,11 +131,11 @@ class AnnouncementTest implements WithAssertions {
             )
             .andExpect(status().isBadRequest())
             .andReturn();
-        assertTrue(result.getResponse().getContentAsString().contains(START_DATE_SAME_OR_AFTER_END_DATE.name()));
+        assertTrue(result.getResponse().getContentAsString().contains("endDate\":\"must be a future date\""));
         assertEquals(0, announcementRepository.findAll().size());
 
         // Should be ok because user is admin
-        result = mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/announcements", announcementToBeCreated.id())
+        result = mockMvc.perform(put("/" + UserAdminApi.API_VERSION + "/announcements")
                 .header("userId", ADMIN_USER)
                 .queryParam("severity", announcementToBeCreated.severity().name())
                 .queryParam("startDate", announcementToBeCreated.startDate().toString())
@@ -158,7 +158,7 @@ class AnnouncementTest implements WithAssertions {
             .isEqualTo(announcementToBeCreated);
 
         // Should NOT be ok because the date of announcement overlaps with another registered announcement
-        result = mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/announcements", announcementToBeCreated.id())
+        result = mockMvc.perform(put("/" + UserAdminApi.API_VERSION + "/announcements")
                 .header("userId", ADMIN_USER)
                 .queryParam("severity", announcementToBeCreated.severity().name())
                 .queryParam("startDate", announcementToBeCreated.startDate().minus(1, ChronoUnit.DAYS).toString())
@@ -245,8 +245,8 @@ class AnnouncementTest implements WithAssertions {
 
         // insert a list of announcement
         AnnouncementEntity announcementToBeCreated1 = new AnnouncementEntity(now, now.plus(1, ChronoUnit.DAYS), "Test message 1", AnnouncementSeverity.INFO);
-        AnnouncementEntity announcementToBeCreated2 = new AnnouncementEntity(now.plus(2, ChronoUnit.DAYS), now.plus(1, ChronoUnit.DAYS), "Test message 2", AnnouncementSeverity.INFO);
-        AnnouncementEntity announcementToBeCreated3 = new AnnouncementEntity(now.plus(4, ChronoUnit.DAYS), now.plus(1, ChronoUnit.DAYS), "Test message 3", AnnouncementSeverity.INFO);
+        AnnouncementEntity announcementToBeCreated2 = new AnnouncementEntity(now.plus(2, ChronoUnit.DAYS), now.plus(3, ChronoUnit.DAYS), "Test message 2", AnnouncementSeverity.INFO);
+        AnnouncementEntity announcementToBeCreated3 = new AnnouncementEntity(now.plus(4, ChronoUnit.DAYS), now.plus(5, ChronoUnit.DAYS), "Test message 3", AnnouncementSeverity.INFO);
 
         announcementRepository.save(announcementToBeCreated1);
         announcementRepository.save(announcementToBeCreated2);

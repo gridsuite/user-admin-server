@@ -6,20 +6,28 @@
  */
 package org.gridsuite.useradmin.server;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import static org.gridsuite.useradmin.server.UserAdminException.Type.*;
+import java.net.URI;
+import java.time.Instant;
+import java.util.stream.Collectors;
 
 /**
- * @author Etienne Homer <etienne.homer at rte-france.com>
+ * Handle exceptions catch from the {@link org.gridsuite.useradmin.server.controller controllers}.
  */
-@ControllerAdvice
-public class RestResponseEntityExceptionHandler {
-    @ExceptionHandler(value = {UserAdminException.class})
-    protected ResponseEntity<UserAdminException.Type> handleException(UserAdminException userAdminException) {
+@RestControllerAdvice
+public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
+    @ExceptionHandler({UserAdminException.class})
+    protected ResponseEntity<Object> handleException(@NotNull final UserAdminException userAdminException) {
         return switch (userAdminException.getType()) {
             case FORBIDDEN -> ResponseEntity.status(HttpStatus.FORBIDDEN).body(userAdminException.getType());
             case NOT_FOUND -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(userAdminException.getType());
@@ -27,5 +35,17 @@ public class RestResponseEntityExceptionHandler {
                  OVERLAPPING_ANNOUNCEMENTS, START_DATE_SAME_OR_AFTER_END_DATE ->
                     ResponseEntity.status(HttpStatus.BAD_REQUEST).body(userAdminException.getType());
         };
+    }
+
+    /**
+     * {@link org.springframework.validation.annotation.Validated @Validated} errors handler.
+     */
+    @ExceptionHandler({ConstraintViolationException.class}) // @Validated errors
+    public ProblemDetail handleConstraintViolation(@NotNull final ConstraintViolationException exception, WebRequest request) {
+        final ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Entity validation error");
+        problemDetail.setType(URI.create("http://gridsuite.org/errors/constraint-violation"));
+        problemDetail.setProperty("violations", exception.getConstraintViolations().stream().collect(Collectors.toUnmodifiableMap(ConstraintViolation::getPropertyPath, ConstraintViolation::getMessage)));
+        problemDetail.setProperty("timestamp", Instant.now());
+        return problemDetail;
     }
 }

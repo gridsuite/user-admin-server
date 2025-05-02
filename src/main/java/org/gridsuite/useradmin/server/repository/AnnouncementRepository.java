@@ -15,9 +15,9 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 @Repository
 public interface AnnouncementRepository extends JpaRepository<AnnouncementEntity, UUID> {
@@ -32,7 +32,7 @@ public interface AnnouncementRepository extends JpaRepository<AnnouncementEntity
      * Find announcements that isn't <strike>expired</strike> finished (current and future ones).
      */
     @Query("SELECT e FROM AnnouncementEntity e WHERE CURRENT_TIMESTAMP <= e.endDate ORDER BY e.startDate ASC, e.endDate ASC")
-    Stream<AnnouncementEntity> findAnnouncements();
+    List<AnnouncementEntity> findAnnouncements();
 
     @Query("SELECT e FROM AnnouncementEntity e WHERE e.startDate <= CURRENT_TIMESTAMP AND CURRENT_TIMESTAMP <= e.endDate ORDER BY e.startDate ASC, e.endDate ASC LIMIT 1")
     Optional<AnnouncementEntity> findCurrentAnnouncement();
@@ -40,5 +40,5 @@ public interface AnnouncementRepository extends JpaRepository<AnnouncementEntity
     @Transactional
     @Modifying
     @Query("DELETE FROM AnnouncementEntity e WHERE e.endDate < CURRENT_TIMESTAMP")
-    long deleteExpiredAnnouncements();
+    int deleteExpiredAnnouncements();
 }

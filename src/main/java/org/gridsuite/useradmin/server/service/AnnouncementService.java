@@ -61,7 +61,7 @@ public class AnnouncementService {
 
     public List<Announcement> getAnnouncements(String userId) {
         adminRightService.assertIsAdmin(userId);
-        return announcementRepository.findAnnouncements().map(AnnouncementEntity::toDto).toList();
+        return announcementRepository.findAnnouncements().stream().map(AnnouncementEntity::toDto).toList();
     }
 
     public Optional<Announcement> getCurrentAnnouncement() {
