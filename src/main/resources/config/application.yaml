@@ -14,7 +14,12 @@ powsybl-ws:
   database:
     name: useradmin
 
+
+
 useradmin:
+  cron:
+    announcement-check: 0 */1 * * * *
+    announcement-clean: 0 0 2 * * ?
   admins:
 #    - admin1
 #    - admin2

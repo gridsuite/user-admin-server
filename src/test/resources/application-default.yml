@@ -5,6 +5,9 @@ spring:
       dialect: org.hibernate.dialect.H2Dialect
       hibernate.format_sql: true
       hibernate.generate_statistics: true
+    hibernate:
+      #to turn off schema validation that fails (because of clob types) and blocks tests even if the schema is compatible
+      ddl-auto: none
 
 logging:
   level:
