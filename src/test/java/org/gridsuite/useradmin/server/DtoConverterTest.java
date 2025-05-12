@@ -9,13 +9,10 @@ import org.gridsuite.useradmin.server.entity.UserInfosEntity;
 import org.gridsuite.useradmin.server.entity.UserProfileEntity;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 
 import java.time.*;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Predicate;
 
 class DtoConverterTest implements WithAssertions {
     @Nested

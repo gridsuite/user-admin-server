@@ -10,8 +10,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import java.util.List;
-
 /**
  * @author Etienne Homer <etienne.homer at rte-france.com>
  */

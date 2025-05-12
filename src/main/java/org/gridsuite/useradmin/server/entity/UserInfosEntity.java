@@ -16,7 +16,6 @@ import org.gridsuite.useradmin.server.dto.UserInfos;
 
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
