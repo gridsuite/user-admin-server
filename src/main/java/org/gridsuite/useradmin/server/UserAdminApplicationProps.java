@@ -20,8 +20,6 @@ import java.util.List;
 @ConfigurationProperties(prefix = "useradmin")
 public class UserAdminApplicationProps {
 
-    private List<String> admins;
-
     private Integer defaultMaxAllowedCases;
 
     private Integer casesAlertThreshold;

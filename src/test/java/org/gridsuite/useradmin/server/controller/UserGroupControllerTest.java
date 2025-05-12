@@ -9,12 +9,13 @@ package org.gridsuite.useradmin.server.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.gridsuite.useradmin.server.UserAdminApi;
 import org.gridsuite.useradmin.server.dto.UserGroup;
 import org.gridsuite.useradmin.server.dto.UserInfos;
 import org.gridsuite.useradmin.server.entity.UserInfosEntity;
 import org.gridsuite.useradmin.server.repository.UserGroupRepository;
 import org.gridsuite.useradmin.server.repository.UserInfosRepository;
+import org.gridsuite.useradmin.server.constants.ApplicationRoles;
+import org.gridsuite.useradmin.server.service.RoleService;
 import org.gridsuite.useradmin.server.service.DirectoryService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -40,6 +41,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.gridsuite.useradmin.server.utils.TestConstants.*;
 
 /**
  * @author Franck Lecuyer <franck.lecuyer at rte-france.com>
@@ -56,8 +58,6 @@ class UserGroupControllerTest {
     private static final String GROUP_NEW_NAME = "group_new_name";
 
     private static final String ADMIN_USER = "admin1";
-
-    private static final String API_BASE_PATH = "/" + UserAdminApi.API_VERSION;
 
     @Autowired
     private UserGroupRepository userGroupRepository;
@@ -81,7 +81,10 @@ class UserGroupControllerTest {
     }
 
     private void createGroup(String groupName) throws Exception {
-        mockMvc.perform(post(API_BASE_PATH + "/groups/{group}", groupName).header("userId", ADMIN_USER))
+        mockMvc.perform(post(API_BASE_PATH + "/groups/{group}", groupName)
+                        .header("userId", ADMIN_USER)
+                        .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
+                )
                 .andExpect(status().isCreated())
                 .andReturn();
     }
@@ -90,6 +93,7 @@ class UserGroupControllerTest {
         return objectMapper.readValue(
             mockMvc.perform(get(API_BASE_PATH + "/groups/" + groupName)
                     .header("userId", ADMIN_USER)
+                    .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
                     .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString(),
@@ -101,6 +105,7 @@ class UserGroupControllerTest {
                 .content(objectMapper.writeValueAsString(new UserGroup(uuidGroupe, groupName, users)))
                 .contentType(APPLICATION_JSON)
                 .header("userId", ADMIN_USER)
+                .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
             )
             .andExpect(status().isOk())
             .andReturn();
@@ -110,6 +115,7 @@ class UserGroupControllerTest {
         return objectMapper.readValue(
             mockMvc.perform(get(API_BASE_PATH + "/groups")
                     .header("userId", ADMIN_USER)
+                    .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
                     .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString(),
@@ -139,6 +145,7 @@ class UserGroupControllerTest {
                 .content(objectMapper.writeValueAsString(groupNames))
                 .contentType(APPLICATION_JSON)
                 .header("userId", ADMIN_USER)
+                .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
             )
             .andExpect(resultExpected)
             .andReturn();

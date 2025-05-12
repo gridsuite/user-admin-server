@@ -78,7 +78,6 @@ class UserInfosControllerTest {
                         .andReturn().getResponse().getContentAsString(), UserInfos.class);
         assertNotNull(userInfos);
         assertEquals(USER_A, userInfos.sub());
-        assertFalse(userInfos.isAdmin());
         assertEquals(PROFILE_A, userInfos.profileName());
         assertEquals(10, userInfos.maxAllowedCases());
         assertEquals(5, userInfos.numberCasesUsed());

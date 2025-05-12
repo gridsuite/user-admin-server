@@ -17,14 +17,12 @@ import org.gridsuite.useradmin.server.entity.UserProfileEntity;
 import org.gridsuite.useradmin.server.repository.UserGroupRepository;
 import org.gridsuite.useradmin.server.repository.UserInfosRepository;
 import org.gridsuite.useradmin.server.repository.UserProfileRepository;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.gridsuite.useradmin.server.UserAdminException.Type.FORBIDDEN;
 import static org.gridsuite.useradmin.server.UserAdminException.Type.NOT_FOUND;
 import static org.gridsuite.useradmin.server.UserAdminException.Type.USER_ALREADY_EXISTS;
 
@@ -65,24 +63,24 @@ public class UserAdminService {
     }
 
     private UserInfos toDtoUserInfo(final UserInfosEntity entity) {
-        return UserInfosEntity.toDto(entity, adminRightService::isAdmin);
+        return UserInfosEntity.toDto(entity);
     }
 
     @Transactional(readOnly = true)
-    public List<UserInfos> getUsers(String userId) {
-        adminRightService.assertIsAdmin(userId);
+    public List<UserInfos> getUsers() {
+        adminRightService.assertIsAdmin();
         return userInfosRepository.findAll().stream().map(this::toDtoUserInfo).toList();
     }
 
     @Transactional(readOnly = true)
-    public List<UserConnection> getConnections(String userId) {
-        adminRightService.assertIsAdmin(userId);
+    public List<UserConnection> getConnections() {
+        adminRightService.assertIsAdmin();
         return connectionsService.removeDuplicates();
     }
 
     @Transactional
-    public void createUser(String sub, String userId) {
-        adminRightService.assertIsAdmin(userId);
+    public void createUser(String sub) {
+        adminRightService.assertIsAdmin();
         if (userInfosRepository.existsBySub(sub)) {
             throw new UserAdminException(USER_ALREADY_EXISTS);
         }
@@ -96,16 +94,16 @@ public class UserAdminService {
     }
 
     @Transactional
-    public long delete(String sub, String userId) {
-        adminRightService.assertIsAdmin(userId);
+    public long delete(String sub) {
+        adminRightService.assertIsAdmin();
         UserInfosEntity userInfosEntity = userInfosRepository.findBySub(sub).orElseThrow(() -> new UserAdminException(NOT_FOUND));
         removeUserFromGroups(userInfosEntity);
         return userInfosRepository.deleteBySub(sub);
     }
 
     @Transactional
-    public long delete(Collection<String> subs, String userId) {
-        adminRightService.assertIsAdmin(userId);
+    public long delete(Collection<String> subs) {
+        adminRightService.assertIsAdmin();
         subs.forEach(sub -> {
             UserInfosEntity userInfosEntity = userInfosRepository.findBySub(sub).orElseThrow(() -> new UserAdminException(NOT_FOUND));
             removeUserFromGroups(userInfosEntity);
@@ -114,8 +112,8 @@ public class UserAdminService {
     }
 
     @Transactional()
-    public void updateUser(String sub, String userId, UserInfos userInfos) {
-        adminRightService.assertIsAdmin(userId);
+    public void updateUser(String sub, UserInfos userInfos) {
+        adminRightService.assertIsAdmin();
         UserInfosEntity user = userInfosRepository.findBySub(sub).orElseThrow(() -> new UserAdminException(NOT_FOUND));
         Optional<UserProfileEntity> profile = userProfileRepository.findByName(userInfos.profileName());
         user.setSub(userInfos.sub());
@@ -144,18 +142,13 @@ public class UserAdminService {
     }
 
     @Transactional
-    public boolean subExists(String sub) {
-        final List<String> admins = adminRightService.getAdmins();
-        final boolean isAllowed = admins.isEmpty() && userInfosRepository.count() == 0L
-                                || admins.contains(sub)
-                                || userInfosRepository.existsBySub(sub);
-        connectionsService.recordConnectionAttempt(sub, isAllowed);
-        return isAllowed;
+    public void recordConnectionAttempt(String sub, boolean isConnectionAccepted) {
+        connectionsService.recordConnectionAttempt(sub, isConnectionAccepted);
     }
 
     @Transactional(readOnly = true)
-    public Optional<UserInfos> getUser(String sub, String userId) {
-        adminRightService.assertIsAdmin(userId);
+    public Optional<UserInfos> getUser(String sub) {
+        adminRightService.assertIsAdmin();
         return userInfosRepository.findBySub(sub).map(this::toDtoUserInfo);
     }
 
@@ -199,15 +192,8 @@ public class UserAdminService {
                 .orElse(applicationProps.getDefaultMaxAllowedBuilds());
     }
 
-    @Transactional(readOnly = true)
-    public boolean userIsAdmin(@NonNull String userId) {
-        return adminRightService.isAdmin(userId);
-    }
-
-    public void sendMaintenanceMessage(String userId, Integer durationInSeconds, String message) {
-        if (!adminRightService.isAdmin(userId)) {
-            throw new UserAdminException(FORBIDDEN);
-        }
+    public void sendMaintenanceMessage(Integer durationInSeconds, String message) {
+        adminRightService.assertIsAdmin();
         if (durationInSeconds == null) {
             notificationService.emitMaintenanceMessage(message);
         } else {
@@ -215,10 +201,8 @@ public class UserAdminService {
         }
     }
 
-    public void sendCancelMaintenanceMessage(String userId) {
-        if (!adminRightService.isAdmin(userId)) {
-            throw new UserAdminException(FORBIDDEN);
-        }
+    public void sendCancelMaintenanceMessage() {
+        adminRightService.assertIsAdmin();
         notificationService.emitCancelMaintenanceMessage();
     }
 }

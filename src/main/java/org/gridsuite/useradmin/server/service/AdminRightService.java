@@ -6,14 +6,12 @@
  */
 package org.gridsuite.useradmin.server.service;
 
-import org.gridsuite.useradmin.server.UserAdminApplicationProps;
 import org.gridsuite.useradmin.server.UserAdminException;
+import org.gridsuite.useradmin.server.constants.ApplicationRoles;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Objects;
-
-import static org.gridsuite.useradmin.server.UserAdminException.Type.FORBIDDEN;
+import java.util.Set;
 
 /**
  * @author David Braquart <david.braquart at rte-france.com
@@ -21,23 +19,13 @@ import static org.gridsuite.useradmin.server.UserAdminException.Type.FORBIDDEN;
 @Service
 public class AdminRightService {
 
-    private final UserAdminApplicationProps applicationProps;
+    private final RoleService roleService;
 
-    public AdminRightService(final UserAdminApplicationProps applicationProps) {
-        this.applicationProps = Objects.requireNonNull(applicationProps);
+    public AdminRightService(final RoleService roleService) {
+        this.roleService = Objects.requireNonNull(roleService);
     }
 
-    public List<String> getAdmins() {
-        return applicationProps.getAdmins();
-    }
-
-    public boolean isAdmin(@lombok.NonNull String sub) {
-        return this.getAdmins().contains(sub);
-    }
-
-    public void assertIsAdmin(@lombok.NonNull String sub) throws UserAdminException {
-        if (!this.isAdmin(sub)) {
-            throw new UserAdminException(FORBIDDEN);
-        }
+    public void assertIsAdmin() throws UserAdminException {
+        roleService.checkAccess(Set.of(ApplicationRoles.ADMIN), true);
     }
 }

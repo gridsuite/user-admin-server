@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -57,9 +56,8 @@ public class UserGroupController {
     @Operation(summary = "Get the group informations", description = "Access restricted to users of type: `admin`")
     @ApiResponse(responseCode = "200", description = "The group exist")
     @ApiResponse(responseCode = "404", description = "The group doesn't exist")
-    public ResponseEntity<UserGroup> getGroup(@PathVariable("group") String group,
-                                              @RequestHeader("userId") String userId) {
-        return ResponseEntity.of(service.getGroup(group, userId));
+    public ResponseEntity<UserGroup> getGroup(@PathVariable("group") String group) {
+        return ResponseEntity.of(service.getGroupIfAdmin(group));
     }
 
     @PutMapping(value = "/{groupUuid}")
@@ -67,9 +65,8 @@ public class UserGroupController {
     @ApiResponse(responseCode = "200", description = "The group exists")
     @ApiResponse(responseCode = "404", description = "The group does not exist")
     public ResponseEntity<Void> updateGroup(@PathVariable("groupUuid") UUID groupUuid,
-                                            @RequestHeader("userId") String userId,
                                             @RequestBody UserGroup userGroup) {
-        service.updateGroup(groupUuid, userId, userGroup);
+        service.updateGroup(groupUuid, userGroup);
         return ResponseEntity.ok().build();
     }
 
@@ -77,9 +74,8 @@ public class UserGroupController {
     @Operation(summary = "Create the group", description = "Access restricted to users of type: `admin`")
     @ApiResponse(responseCode = "201", description = "The group has been created")
     @ApiResponse(responseCode = "400", description = "The group already exists")
-    public ResponseEntity<Void> createGroup(@PathVariable("group") String group,
-                                            @RequestHeader("userId") String userId) {
-        service.createGroup(group, userId);
+    public ResponseEntity<Void> createGroup(@PathVariable("group") String group) {
+        service.createGroup(group);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
@@ -88,9 +84,9 @@ public class UserGroupController {
     @ApiResponse(responseCode = "204", description = "Groups deleted")
     @ApiResponse(responseCode = "404", description = "One or more group(s) not found")
     @ApiResponse(responseCode = "422", description = "Integrity issue when a group is still referenced by users")
-    public ResponseEntity<Void> deleteGroups(@RequestHeader("userId") String userId, @RequestBody @NotEmpty List<String> names) {
+    public ResponseEntity<Void> deleteGroups(@RequestBody @NotEmpty List<String> names) {
         try {
-            if (service.deleteGroups(names, userId) > 0L) {
+            if (service.deleteGroups(names) > 0L) {
                 return ResponseEntity.noContent().build();
             } else {
                 return ResponseEntity.notFound().build();

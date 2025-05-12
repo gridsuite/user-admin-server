@@ -18,6 +18,8 @@ import org.gridsuite.useradmin.server.repository.ConnectionRepository;
 import org.gridsuite.useradmin.server.repository.UserGroupRepository;
 import org.gridsuite.useradmin.server.repository.UserInfosRepository;
 import org.gridsuite.useradmin.server.repository.UserProfileRepository;
+import org.gridsuite.useradmin.server.constants.ApplicationRoles;
+import org.gridsuite.useradmin.server.service.RoleService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +45,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.gridsuite.useradmin.server.utils.TestConstants.*;
 
 /**
  * @author Etienne Homer <etienne.homer at rte-france.com>
@@ -95,17 +98,11 @@ class UserAdminTest {
 
     @Test
     void testUserAdmin() throws Exception {
-        mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/{sub}/isAdmin", USER_SUB))
-                .andExpect(status().isForbidden())
-                .andReturn();
-
-        mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/{sub}/isAdmin", ADMIN_USER))
-                .andExpect(status().isOk())
-                .andReturn();
 
         List<UserInfos> userInfos = objectMapper.readValue(
                 mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users")
                                 .header("userId", ADMIN_USER)
+                                .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),
@@ -113,12 +110,14 @@ class UserAdminTest {
 
         assertEquals(0, userInfos.size());
 
-        mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/{sub}", ADMIN_USER))
+        mockMvc.perform(head(RECORD_CONNECTION_URL, ADMIN_USER)
+                        .param(IS_CONNECTION_ACCEPTED_PARAM, "true"))
                 .andExpect(status().isOk())
                 .andReturn();
 
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB)
                         .header("userId", ADMIN_USER)
+                        .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
                 )
                 .andExpect(status().isCreated())
                 .andReturn();
@@ -126,6 +125,7 @@ class UserAdminTest {
         userInfos = objectMapper.readValue(
                 mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users")
                                 .header("userId", ADMIN_USER)
+                                .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),
@@ -133,12 +133,14 @@ class UserAdminTest {
 
         assertEquals(1, userInfos.size());
 
-        mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB))
+        mockMvc.perform(head(RECORD_CONNECTION_URL, USER_SUB)
+                        .param(IS_CONNECTION_ACCEPTED_PARAM, "true"))
                 .andExpect(status().isOk())
                 .andReturn();
 
-        mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_UNKNOWN))
-                .andExpect(status().isNoContent())
+        mockMvc.perform(head(RECORD_CONNECTION_URL, USER_UNKNOWN)
+                        .param(IS_CONNECTION_ACCEPTED_PARAM, "false"))
+                .andExpect(status().isOk())
                 .andReturn();
         assertEquals(3, connectionRepository.findAll().size());
         assertTrue(connectionRepository.findBySub(USER_SUB).get(0).getConnectionAccepted());
@@ -147,13 +149,15 @@ class UserAdminTest {
         //firstConnectionDate and lastConnectionDate are equals cause this is the first connection for this user
         assertTrue(firstConnectionDate.toEpochSecond(ZoneOffset.UTC) < connectionRepository.findBySub(USER_SUB).get(0).getLastConnexionDate().toEpochSecond(ZoneOffset.UTC) + 2);
 
-        mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB))
+        mockMvc.perform(head(RECORD_CONNECTION_URL, USER_SUB)
+                        .param(IS_CONNECTION_ACCEPTED_PARAM, "true"))
                 .andExpect(status().isOk())
                 .andReturn();
         assertEquals(firstConnectionDate, connectionRepository.findBySub(USER_SUB).get(0).getFirstConnexionDate());
 
         mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB)
                         .header("userId", ADMIN_USER)
+                        .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
                 )
                 .andExpect(status().isNoContent())
                 .andReturn();
@@ -161,6 +165,7 @@ class UserAdminTest {
         userInfos = objectMapper.readValue(
                 mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users")
                                 .header("userId", ADMIN_USER)
+                                .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),
@@ -194,6 +199,7 @@ class UserAdminTest {
 
         mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/users")
                         .header("userId", ADMIN_USER)
+                        .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
                         .contentType(APPLICATION_JSON)
                         .content("[]"))
                 .andExpect(status().isBadRequest())
@@ -201,6 +207,7 @@ class UserAdminTest {
 
         mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/users")
                         .header("userId", ADMIN_USER)
+                        .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
                         .contentType(APPLICATION_JSON)
                         .content("[\"" + USER_UNKNOWN + "\"]"))
                 .andExpect(status().isNotFound())
@@ -221,8 +228,8 @@ class UserAdminTest {
         createGroup(GROUP_2);
 
         // udpate the user: change its name and link it to the profile and to the first group
-        UserInfos userInfo = new UserInfos(USER_SUB2, false, PROFILE_1, null, null, null, Set.of(GROUP_1));
-        updateUser(USER_SUB, userInfo, HttpStatus.OK, ADMIN_USER);
+        UserInfos userInfo = new UserInfos(USER_SUB2, PROFILE_1, null, null, null, Set.of(GROUP_1));
+        updateUserWithAdmin(USER_SUB, userInfo, HttpStatus.OK);
 
         // Get and check user profile
         UserProfile userProfile = getUserProfile(USER_SUB2, HttpStatus.OK);
@@ -235,8 +242,8 @@ class UserAdminTest {
         assertEquals(GROUP_1, userGroups.get(0).name());
 
         // udpate the user: change groups
-        userInfo = new UserInfos(USER_SUB2, false, PROFILE_1, null, null, null, Set.of(GROUP_2));
-        updateUser(USER_SUB2, userInfo, HttpStatus.OK, ADMIN_USER);
+        userInfo = new UserInfos(USER_SUB2, PROFILE_1, null, null, null, Set.of(GROUP_2));
+        updateUserWithAdmin(USER_SUB2, userInfo, HttpStatus.OK);
 
         // Get and check user groups
         userGroups = getUserGroups(USER_SUB2, HttpStatus.OK);
@@ -246,12 +253,12 @@ class UserAdminTest {
 
     @Test
     void testUpdateUserNotFound() throws Exception {
-        updateUser("nofFound", new UserInfos("nofFound", false, "prof", null, null, null, null), HttpStatus.NOT_FOUND, ADMIN_USER);
+        updateUserWithAdmin("nofFound", new UserInfos("nofFound", "prof", null, null, null, null), HttpStatus.NOT_FOUND);
     }
 
     @Test
     void testUpdateUserForbidden() throws Exception {
-        updateUser("dummy", new UserInfos("dummy", false, "prof", null, null, null, null), HttpStatus.FORBIDDEN, NOT_ADMIN);
+        updateUserWithNotAdmin("dummy", new UserInfos("dummy", "prof", null, null, null, null));
     }
 
     @Test
@@ -263,12 +270,14 @@ class UserAdminTest {
     void testGetConnections() throws Exception {
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB)
                         .header("userId", ADMIN_USER)
+                        .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
                 )
                 .andExpect(status().isCreated())
                 .andReturn();
 
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB2)
                         .header("userId", ADMIN_USER)
+                        .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
                 )
                 .andExpect(status().isCreated())
                 .andReturn();
@@ -276,6 +285,7 @@ class UserAdminTest {
         List<UserInfos> userInfos = objectMapper.readValue(
                 mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users")
                                 .header("userId", ADMIN_USER)
+                                .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),
@@ -283,17 +293,20 @@ class UserAdminTest {
 
         assertEquals(2, userInfos.size());
 
-        mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB))
+        mockMvc.perform(head(RECORD_CONNECTION_URL, USER_SUB)
+                        .param(IS_CONNECTION_ACCEPTED_PARAM, "true"))
                 .andExpect(status().isOk())
                 .andReturn();
 
-        mockMvc.perform(head("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB2))
+        mockMvc.perform(head(RECORD_CONNECTION_URL, USER_SUB2)
+                        .param(IS_CONNECTION_ACCEPTED_PARAM, "true"))
                 .andExpect(status().isOk())
                 .andReturn();
 
         List<ConnectionEntity> connectionEntities = objectMapper.readValue(
                 mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/connections")
                                 .header("userId", ADMIN_USER)
+                                .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),
@@ -308,6 +321,7 @@ class UserAdminTest {
         connectionEntities = objectMapper.readValue(
                 mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/connections")
                                 .header("userId", ADMIN_USER)
+                                .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),
@@ -328,6 +342,7 @@ class UserAdminTest {
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/messages/maintenance", USER_SUB)
                 .queryParam("durationInSeconds", duration.toString())
                 .header("userId", ADMIN_USER)
+                .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody))
                 .andExpect(status().isOk());
@@ -336,6 +351,7 @@ class UserAdminTest {
         //Send a maintenance message without duration and expect everything to be ok
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/messages/maintenance")
                         .header("userId", ADMIN_USER)
+                        .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isOk());
@@ -355,7 +371,8 @@ class UserAdminTest {
     void testCancelMaintenanceMessage() throws Exception {
         //Send a cancel maintenance message and expect everything to be ok
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/messages/cancel-maintenance")
-                        .header("userId", ADMIN_USER))
+                        .header("userId", ADMIN_USER)
+                        .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN))
                 .andExpect(status().isOk());
         assertCancelMaintenanceMessageSent();
 
@@ -383,12 +400,14 @@ class UserAdminTest {
     private void createUser(String userName) throws Exception {
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/users/{sub}", userName)
                         .header("userId", ADMIN_USER)
+                        .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
                 )
                 .andExpect(status().isCreated())
                 .andReturn();
         UserInfos userInfos = objectMapper.readValue(
                 mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users/{sub}", userName)
                                 .header("userId", ADMIN_USER)
+                                .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),
@@ -400,7 +419,8 @@ class UserAdminTest {
 
         // user already exists
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/users/{sub}", userName)
-            .header("userId", ADMIN_USER))
+                        .header("userId", ADMIN_USER)
+                        .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN))
             .andExpect(status().isBadRequest());
     }
 
@@ -411,6 +431,7 @@ class UserAdminTest {
                         .content(objectWriter.writeValueAsString(profileInfo))
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("userId", ADMIN_USER)
+                        .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
                 )
                 .andExpect(status().isCreated())
                 .andReturn();
@@ -419,12 +440,14 @@ class UserAdminTest {
     private void createGroup(String groupName) throws Exception {
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/groups/{name}", groupName)
                         .header("userId", ADMIN_USER)
+                        .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
                 )
                 .andExpect(status().isCreated())
                 .andReturn();
         UserGroup groupInfos = objectMapper.readValue(
                 mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/groups/{name}", groupName)
                                 .header("userId", ADMIN_USER)
+                                .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),
@@ -434,18 +457,20 @@ class UserAdminTest {
         assertTrue(CollectionUtils.isEmpty(groupInfos.users()));
     }
 
-    private void updateUser(String updatedUserName, UserInfos userInfos, HttpStatusCode status, String userName) throws Exception {
+    private void updateUserWithAdmin(String updatedUserName, UserInfos userInfos, HttpStatusCode status) throws Exception {
         ObjectWriter objectWriter = objectMapper.writer().withDefaultPrettyPrinter();
         mockMvc.perform(put("/" + UserAdminApi.API_VERSION + "/users/{sub}", updatedUserName)
                         .content(objectWriter.writeValueAsString(userInfos))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header("userId", userName))
+                        .header("userId", ADMIN_USER)
+                        .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN))
                 .andExpect(status().is(status.value()));
 
         if (status == HttpStatus.OK) {
             UserInfos updatedUserInfos = objectMapper.readValue(
                     mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users/{sub}", userInfos.sub())
-                                    .header("userId", userName)
+                                    .header("userId", ADMIN_USER)
+                                    .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
                                     .contentType(APPLICATION_JSON))
                             .andExpect(status().isOk())
                             .andReturn().getResponse().getContentAsString(),
@@ -455,6 +480,15 @@ class UserAdminTest {
             assertEquals(userInfos.sub(), updatedUserInfos.sub());
             assertEquals(userInfos.profileName(), updatedUserInfos.profileName());
         }
+    }
+
+    private void updateUserWithNotAdmin(String updatedUserName, UserInfos userInfos) throws Exception {
+        ObjectWriter objectWriter = objectMapper.writer().withDefaultPrettyPrinter();
+        mockMvc.perform(put("/" + UserAdminApi.API_VERSION + "/users/{sub}", updatedUserName)
+                        .content(objectWriter.writeValueAsString(userInfos))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("userId", NOT_ADMIN))
+                .andExpect(status().isForbidden());
     }
 
     private UserProfile getUserProfile(String userName, HttpStatusCode status) throws Exception {
