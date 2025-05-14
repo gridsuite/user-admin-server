@@ -13,7 +13,6 @@ import org.gridsuite.useradmin.server.dto.UserProfile;
 import org.gridsuite.useradmin.server.entity.UserProfileEntity;
 import org.gridsuite.useradmin.server.repository.UserInfosRepository;
 import org.gridsuite.useradmin.server.repository.UserProfileRepository;
-import org.gridsuite.useradmin.server.constants.ApplicationRoles;
 import org.gridsuite.useradmin.server.service.RoleService;
 import static org.gridsuite.useradmin.server.utils.TestConstants.*;
 import org.junit.jupiter.api.AfterEach;
@@ -52,6 +51,9 @@ class NoQuotaTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private UserAdminApplicationProps userAdminApplicationProps;
 
     @Autowired
     private UserInfosRepository userInfosRepository;
@@ -161,7 +163,7 @@ class NoQuotaTest {
                         .content(content != null ? objectWriter.writeValueAsString(content) : "")
                         .contentType(APPLICATION_JSON)
                         .header("userId", ADMIN_USER)
-                        .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN))
+                        .header(RoleService.ROLES_HEADER, userAdminApplicationProps.getAdminRole()))
                 .andExpect(status().isCreated());
     }
 
@@ -170,14 +172,14 @@ class NoQuotaTest {
                         .content(objectWriter.writeValueAsString(content))
                         .contentType(APPLICATION_JSON)
                         .header("userId", ADMIN_USER)
-                        .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN))
+                        .header(RoleService.ROLES_HEADER, userAdminApplicationProps.getAdminRole()))
                 .andExpect(status().isOk());
     }
 
     private MvcResult performGet(String url) throws Exception {
         return mockMvc.perform(get(url)
                         .header("userId", ADMIN_USER)
-                        .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN))
+                        .header(RoleService.ROLES_HEADER, userAdminApplicationProps.getAdminRole()))
                 .andExpect(status().isOk())
                 .andReturn();
     }

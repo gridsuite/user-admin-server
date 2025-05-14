@@ -18,7 +18,6 @@ import org.gridsuite.useradmin.server.repository.ConnectionRepository;
 import org.gridsuite.useradmin.server.repository.UserGroupRepository;
 import org.gridsuite.useradmin.server.repository.UserInfosRepository;
 import org.gridsuite.useradmin.server.repository.UserProfileRepository;
-import org.gridsuite.useradmin.server.constants.ApplicationRoles;
 import org.gridsuite.useradmin.server.service.RoleService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -59,6 +58,9 @@ class UserAdminTest {
 
     @Autowired
     private ObjectMapper objectMapper = new ObjectMapper();
+
+    @Autowired
+    private UserAdminApplicationProps userAdminApplicationProps;
 
     @Autowired
     private UserInfosRepository userInfosRepository;
@@ -102,7 +104,7 @@ class UserAdminTest {
         List<UserInfos> userInfos = objectMapper.readValue(
                 mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users")
                                 .header("userId", ADMIN_USER)
-                                .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
+                                .header(RoleService.ROLES_HEADER, userAdminApplicationProps.getAdminRole())
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),
@@ -117,7 +119,7 @@ class UserAdminTest {
 
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB)
                         .header("userId", ADMIN_USER)
-                        .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
+                        .header(RoleService.ROLES_HEADER, userAdminApplicationProps.getAdminRole())
                 )
                 .andExpect(status().isCreated())
                 .andReturn();
@@ -125,7 +127,7 @@ class UserAdminTest {
         userInfos = objectMapper.readValue(
                 mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users")
                                 .header("userId", ADMIN_USER)
-                                .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
+                                .header(RoleService.ROLES_HEADER, userAdminApplicationProps.getAdminRole())
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),
@@ -157,7 +159,7 @@ class UserAdminTest {
 
         mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB)
                         .header("userId", ADMIN_USER)
-                        .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
+                        .header(RoleService.ROLES_HEADER, userAdminApplicationProps.getAdminRole())
                 )
                 .andExpect(status().isNoContent())
                 .andReturn();
@@ -165,7 +167,7 @@ class UserAdminTest {
         userInfos = objectMapper.readValue(
                 mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users")
                                 .header("userId", ADMIN_USER)
-                                .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
+                                .header(RoleService.ROLES_HEADER, userAdminApplicationProps.getAdminRole())
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),
@@ -199,7 +201,7 @@ class UserAdminTest {
 
         mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/users")
                         .header("userId", ADMIN_USER)
-                        .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
+                        .header(RoleService.ROLES_HEADER, userAdminApplicationProps.getAdminRole())
                         .contentType(APPLICATION_JSON)
                         .content("[]"))
                 .andExpect(status().isBadRequest())
@@ -207,7 +209,7 @@ class UserAdminTest {
 
         mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/users")
                         .header("userId", ADMIN_USER)
-                        .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
+                        .header(RoleService.ROLES_HEADER, userAdminApplicationProps.getAdminRole())
                         .contentType(APPLICATION_JSON)
                         .content("[\"" + USER_UNKNOWN + "\"]"))
                 .andExpect(status().isNotFound())
@@ -270,14 +272,14 @@ class UserAdminTest {
     void testGetConnections() throws Exception {
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB)
                         .header("userId", ADMIN_USER)
-                        .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
+                        .header(RoleService.ROLES_HEADER, userAdminApplicationProps.getAdminRole())
                 )
                 .andExpect(status().isCreated())
                 .andReturn();
 
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB2)
                         .header("userId", ADMIN_USER)
-                        .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
+                        .header(RoleService.ROLES_HEADER, userAdminApplicationProps.getAdminRole())
                 )
                 .andExpect(status().isCreated())
                 .andReturn();
@@ -285,7 +287,7 @@ class UserAdminTest {
         List<UserInfos> userInfos = objectMapper.readValue(
                 mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users")
                                 .header("userId", ADMIN_USER)
-                                .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
+                                .header(RoleService.ROLES_HEADER, userAdminApplicationProps.getAdminRole())
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),
@@ -306,7 +308,7 @@ class UserAdminTest {
         List<ConnectionEntity> connectionEntities = objectMapper.readValue(
                 mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/connections")
                                 .header("userId", ADMIN_USER)
-                                .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
+                                .header(RoleService.ROLES_HEADER, userAdminApplicationProps.getAdminRole())
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),
@@ -321,7 +323,7 @@ class UserAdminTest {
         connectionEntities = objectMapper.readValue(
                 mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/connections")
                                 .header("userId", ADMIN_USER)
-                                .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
+                                .header(RoleService.ROLES_HEADER, userAdminApplicationProps.getAdminRole())
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),
@@ -342,7 +344,7 @@ class UserAdminTest {
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/messages/maintenance", USER_SUB)
                 .queryParam("durationInSeconds", duration.toString())
                 .header("userId", ADMIN_USER)
-                .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
+                .header(RoleService.ROLES_HEADER, userAdminApplicationProps.getAdminRole())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody))
                 .andExpect(status().isOk());
@@ -351,7 +353,7 @@ class UserAdminTest {
         //Send a maintenance message without duration and expect everything to be ok
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/messages/maintenance")
                         .header("userId", ADMIN_USER)
-                        .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
+                        .header(RoleService.ROLES_HEADER, userAdminApplicationProps.getAdminRole())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isOk());
@@ -372,7 +374,7 @@ class UserAdminTest {
         //Send a cancel maintenance message and expect everything to be ok
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/messages/cancel-maintenance")
                         .header("userId", ADMIN_USER)
-                        .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN))
+                        .header(RoleService.ROLES_HEADER, userAdminApplicationProps.getAdminRole()))
                 .andExpect(status().isOk());
         assertCancelMaintenanceMessageSent();
 
@@ -400,14 +402,14 @@ class UserAdminTest {
     private void createUser(String userName) throws Exception {
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/users/{sub}", userName)
                         .header("userId", ADMIN_USER)
-                        .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
+                        .header(RoleService.ROLES_HEADER, userAdminApplicationProps.getAdminRole())
                 )
                 .andExpect(status().isCreated())
                 .andReturn();
         UserInfos userInfos = objectMapper.readValue(
                 mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users/{sub}", userName)
                                 .header("userId", ADMIN_USER)
-                                .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
+                                .header(RoleService.ROLES_HEADER, userAdminApplicationProps.getAdminRole())
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),
@@ -420,7 +422,7 @@ class UserAdminTest {
         // user already exists
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/users/{sub}", userName)
                         .header("userId", ADMIN_USER)
-                        .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN))
+                        .header(RoleService.ROLES_HEADER, userAdminApplicationProps.getAdminRole()))
             .andExpect(status().isBadRequest());
     }
 
@@ -431,7 +433,7 @@ class UserAdminTest {
                         .content(objectWriter.writeValueAsString(profileInfo))
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("userId", ADMIN_USER)
-                        .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
+                        .header(RoleService.ROLES_HEADER, userAdminApplicationProps.getAdminRole())
                 )
                 .andExpect(status().isCreated())
                 .andReturn();
@@ -440,14 +442,14 @@ class UserAdminTest {
     private void createGroup(String groupName) throws Exception {
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/groups/{name}", groupName)
                         .header("userId", ADMIN_USER)
-                        .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
+                        .header(RoleService.ROLES_HEADER, userAdminApplicationProps.getAdminRole())
                 )
                 .andExpect(status().isCreated())
                 .andReturn();
         UserGroup groupInfos = objectMapper.readValue(
                 mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/groups/{name}", groupName)
                                 .header("userId", ADMIN_USER)
-                                .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
+                                .header(RoleService.ROLES_HEADER, userAdminApplicationProps.getAdminRole())
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),
@@ -463,14 +465,14 @@ class UserAdminTest {
                         .content(objectWriter.writeValueAsString(userInfos))
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("userId", ADMIN_USER)
-                        .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN))
+                        .header(RoleService.ROLES_HEADER, userAdminApplicationProps.getAdminRole()))
                 .andExpect(status().is(status.value()));
 
         if (status == HttpStatus.OK) {
             UserInfos updatedUserInfos = objectMapper.readValue(
                     mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users/{sub}", userInfos.sub())
                                     .header("userId", ADMIN_USER)
-                                    .header(RoleService.ROLES_HEADER, ApplicationRoles.ADMIN)
+                                    .header(RoleService.ROLES_HEADER, userAdminApplicationProps.getAdminRole())
                                     .contentType(APPLICATION_JSON))
                             .andExpect(status().isOk())
                             .andReturn().getResponse().getContentAsString(),

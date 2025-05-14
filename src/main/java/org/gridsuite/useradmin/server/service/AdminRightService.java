@@ -6,8 +6,8 @@
  */
 package org.gridsuite.useradmin.server.service;
 
+import org.gridsuite.useradmin.server.UserAdminApplicationProps;
 import org.gridsuite.useradmin.server.UserAdminException;
-import org.gridsuite.useradmin.server.constants.ApplicationRoles;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
@@ -20,12 +20,15 @@ import java.util.Set;
 public class AdminRightService {
 
     private final RoleService roleService;
+    private final UserAdminApplicationProps userAdminApplicationProps;
 
-    public AdminRightService(final RoleService roleService) {
+    public AdminRightService(final RoleService roleService,
+                             final UserAdminApplicationProps userAdminApplicationProps) {
         this.roleService = Objects.requireNonNull(roleService);
+        this.userAdminApplicationProps = Objects.requireNonNull(userAdminApplicationProps);
     }
 
     public void assertIsAdmin() throws UserAdminException {
-        roleService.checkAccess(Set.of(ApplicationRoles.ADMIN), true);
+        roleService.checkAccess(Set.of(userAdminApplicationProps.getAdminRole()), true);
     }
 }
