@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.gridsuite.useradmin.server.UserAdminException.Type.*;
+import static org.gridsuite.useradmin.server.Utils.ROLES_HEADER;
 import static org.gridsuite.useradmin.server.service.NotificationService.HEADER_MESSAGE_TYPE;
 import static org.gridsuite.useradmin.server.service.NotificationService.MESSAGE_TYPE_CANCEL_ANNOUNCEMENT;
 import static org.junit.jupiter.api.Assertions.*;
@@ -53,6 +54,8 @@ class AnnouncementTest implements WithAssertions {
     private static final String NOT_ADMIN = "notAdmin";
     @Autowired
     private AnnouncementRepository announcementRepository;
+    @Autowired
+    private UserAdminApplicationProps userAdminApplicationProps;
     @Autowired
     private MockMvc mockMvc;
     @Autowired
@@ -98,6 +101,7 @@ class AnnouncementTest implements WithAssertions {
         // Should NOT be ok because startDate > endDate
         MvcResult result = mockMvc.perform(put("/" + UserAdminApi.API_VERSION + "/announcements")
                 .header("userId", ADMIN_USER)
+                .header(ROLES_HEADER, userAdminApplicationProps.getAdminRole())
                 .queryParam("severity", announcementToBeCreated.severity().name())
                 .queryParam("startDate", announcementToBeCreated.endDate().toString())
                 .queryParam("endDate", announcementToBeCreated.startDate().toString())
@@ -111,6 +115,7 @@ class AnnouncementTest implements WithAssertions {
         // Should NOT be ok because severity doesn't exist
         result = mockMvc.perform(put("/" + UserAdminApi.API_VERSION + "/announcements")
                 .header("userId", ADMIN_USER)
+                .header(ROLES_HEADER, userAdminApplicationProps.getAdminRole())
                 .queryParam("severity", "NOT A SEVERITY")
                 .queryParam("startDate", announcementToBeCreated.startDate().toString())
                 .queryParam("endDate", announcementToBeCreated.endDate().toString())
@@ -124,6 +129,7 @@ class AnnouncementTest implements WithAssertions {
         // Should NOT be ok because startDate = endDate
         result = mockMvc.perform(put("/" + UserAdminApi.API_VERSION + "/announcements")
                 .header("userId", ADMIN_USER)
+                .header(ROLES_HEADER, userAdminApplicationProps.getAdminRole())
                 .queryParam("severity", announcementToBeCreated.severity().name())
                 .queryParam("startDate", announcementToBeCreated.startDate().toString())
                 .queryParam("endDate", announcementToBeCreated.startDate().toString())
@@ -137,6 +143,7 @@ class AnnouncementTest implements WithAssertions {
         // Should be ok because user is admin
         result = mockMvc.perform(put("/" + UserAdminApi.API_VERSION + "/announcements")
                 .header("userId", ADMIN_USER)
+                .header(ROLES_HEADER, userAdminApplicationProps.getAdminRole())
                 .queryParam("severity", announcementToBeCreated.severity().name())
                 .queryParam("startDate", announcementToBeCreated.startDate().toString())
                 .queryParam("endDate", announcementToBeCreated.endDate().toString())
@@ -160,6 +167,7 @@ class AnnouncementTest implements WithAssertions {
         // Should NOT be ok because the date of announcement overlaps with another registered announcement
         result = mockMvc.perform(put("/" + UserAdminApi.API_VERSION + "/announcements")
                 .header("userId", ADMIN_USER)
+                .header(ROLES_HEADER, userAdminApplicationProps.getAdminRole())
                 .queryParam("severity", announcementToBeCreated.severity().name())
                 .queryParam("startDate", announcementToBeCreated.startDate().minus(1, ChronoUnit.DAYS).toString())
                 .queryParam("endDate", announcementToBeCreated.endDate().plus(1, ChronoUnit.DAYS).toString())
@@ -188,7 +196,8 @@ class AnnouncementTest implements WithAssertions {
 
         // Should be ok even if the id doesn't exist (it just doesn't do anything)
         mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/announcements/{id}", UUID.randomUUID())
-                .header("userId", ADMIN_USER))
+                .header("userId", ADMIN_USER)
+                .header(ROLES_HEADER, userAdminApplicationProps.getAdminRole()))
             .andExpect(status().isOk());
         assertEquals(1, announcementRepository.findAll().size());
 
@@ -200,7 +209,8 @@ class AnnouncementTest implements WithAssertions {
 
         // Should be ok and the entry should be gone
         mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/announcements/{id}", announcementToBeCreated.getId())
-                .header("userId", ADMIN_USER))
+                .header("userId", ADMIN_USER)
+                .header(ROLES_HEADER, userAdminApplicationProps.getAdminRole()))
             .andExpect(status().isOk());
         assertEquals(0, announcementRepository.findAll().size());
         assertCancelAnnouncementMessageSent();
@@ -211,7 +221,8 @@ class AnnouncementTest implements WithAssertions {
         assertEquals(1, announcementRepository.findAll().size());
         // Delete the announcement that was just added, it should not trigger a message in the broker because the announcement was not sent
         mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/announcements/{id}", futureAnnouncement.getId())
-                .header("userId", ADMIN_USER))
+                .header("userId", ADMIN_USER)
+                .header(ROLES_HEADER, userAdminApplicationProps.getAdminRole()))
             .andExpect(status().isOk());
         assertEquals(0, announcementRepository.findAll().size());
         assertNull(output.receive(TIMEOUT, ANNOUNCEMENT_DESTINATION));
@@ -238,6 +249,7 @@ class AnnouncementTest implements WithAssertions {
         // Should be ok but empty result
         MvcResult result = mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/announcements")
                 .header("userId", ADMIN_USER)
+                .header(ROLES_HEADER, userAdminApplicationProps.getAdminRole())
             )
             .andExpect(status().isOk())
             .andReturn();
@@ -257,6 +269,7 @@ class AnnouncementTest implements WithAssertions {
         // Should be ok
         result = mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/announcements")
                 .header("userId", ADMIN_USER)
+                .header(ROLES_HEADER, userAdminApplicationProps.getAdminRole())
             )
             .andExpect(status().isOk())
             .andReturn();
@@ -283,6 +296,7 @@ class AnnouncementTest implements WithAssertions {
 
         var result = mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/announcements/current")
                 .header("userId", ADMIN_USER)
+                .header(ROLES_HEADER, userAdminApplicationProps.getAdminRole())
             )
             .andExpect(status().isOk())
             .andReturn();
@@ -307,6 +321,7 @@ class AnnouncementTest implements WithAssertions {
 
         mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/announcements/current")
                 .header("userId", ADMIN_USER)
+                .header(ROLES_HEADER, userAdminApplicationProps.getAdminRole())
             )
             .andExpect(status().isNoContent())
             .andReturn();

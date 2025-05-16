@@ -17,16 +17,13 @@ public class UserInfosService {
     private final UserInfosRepository userInfosRepository;
     private final DirectoryService directoryService;
     private final UserAdminApplicationProps applicationProps;
-    private final AdminRightService adminRightService;
 
     public UserInfosService(final UserInfosRepository userInfosRepository,
                             final DirectoryService directoryService,
-                            final UserAdminApplicationProps applicationProps,
-                            final AdminRightService adminRightService) {
+                            final UserAdminApplicationProps applicationProps) {
         this.userInfosRepository = Objects.requireNonNull(userInfosRepository);
         this.directoryService = Objects.requireNonNull(directoryService);
         this.applicationProps = Objects.requireNonNull(applicationProps);
-        this.adminRightService = Objects.requireNonNull(adminRightService);
     }
 
     public UserInfos toDtoUserInfo(final UserInfosEntity userInfosEntity, Integer casesUsed) {
@@ -38,7 +35,7 @@ public class UserInfosService {
         Integer maxAllowedBuilds = Optional.ofNullable(userInfosEntity.getProfile())
                 .map(UserProfileEntity::getMaxAllowedBuilds)
                 .orElse(applicationProps.getDefaultMaxAllowedBuilds());
-        return UserInfosEntity.toDtoWithDetail(userInfosEntity, adminRightService::isAdmin, maxAllowedCases, casesUsed, maxAllowedBuilds);
+        return UserInfosEntity.toDtoWithDetail(userInfosEntity, maxAllowedCases, casesUsed, maxAllowedBuilds);
     }
 
     @Transactional(readOnly = true)

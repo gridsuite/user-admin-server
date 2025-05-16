@@ -45,7 +45,7 @@ public class UserProfileService {
 
     @Transactional(readOnly = true)
     public List<UserProfile> getProfiles(String userId, boolean checkLinksValidity) {
-        adminRightService.assertIsAdmin(userId);
+        adminRightService.assertIsAdmin();
         List<UserProfileEntity> profiles = userProfileRepository.findAll().stream().toList();
         if (profiles.isEmpty()) {
             return List.of();
@@ -105,14 +105,14 @@ public class UserProfileService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<UserProfile> getProfile(UUID profileUuid, String userId) {
-        adminRightService.assertIsAdmin(userId);
+    public Optional<UserProfile> getProfileIfAdmin(UUID profileUuid) {
+        adminRightService.assertIsAdmin();
         return getProfile(profileUuid);
     }
 
     @Transactional()
-    public void updateProfile(UUID profileUuid, String userId, UserProfile userProfile) {
-        adminRightService.assertIsAdmin(userId);
+    public void updateProfile(UUID profileUuid, UserProfile userProfile) {
+        adminRightService.assertIsAdmin();
         UserProfileEntity profile = userProfileRepository.findById(profileUuid).orElseThrow(() -> new UserAdminException(NOT_FOUND));
         profile.setName(userProfile.name());
         profile.setLoadFlowParameterId(userProfile.loadFlowParameterId());
@@ -127,8 +127,8 @@ public class UserProfileService {
     }
 
     @Transactional
-    public void createProfile(UserProfile userProfile, String userId) {
-        adminRightService.assertIsAdmin(userId);
+    public void createProfile(UserProfile userProfile) {
+        adminRightService.assertIsAdmin();
         if (userProfileRepository.findByName(userProfile.name()).isPresent()) {
             throw new UserAdminException(PROFILE_ALREADY_EXISTS);
         }
@@ -137,8 +137,8 @@ public class UserProfileService {
     }
 
     @Transactional
-    public long deleteProfiles(List<String> names, String userId) {
-        adminRightService.assertIsAdmin(userId);
+    public long deleteProfiles(List<String> names) {
+        adminRightService.assertIsAdmin();
         return userProfileRepository.deleteAllByNameIn(names);
     }
 

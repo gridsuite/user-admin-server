@@ -1,5 +1,3 @@
 useradmin:
-  admins:
-    - admin1
   defaultMaxAllowedCases:
   defaultMaxAllowedBuilds:

@@ -10,7 +10,6 @@ import java.util.Set;
 
 public record UserInfos(
     String sub,
-    boolean isAdmin,
     String profileName,
     Integer maxAllowedCases,
     Integer numberCasesUsed,

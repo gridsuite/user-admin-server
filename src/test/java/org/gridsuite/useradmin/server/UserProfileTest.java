@@ -40,6 +40,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static org.gridsuite.useradmin.server.Utils.ROLES_HEADER;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -107,7 +108,7 @@ class UserProfileTest {
 
     @Test
     void testCreateProfile() throws Exception {
-        createProfile(PROFILE_1, ADMIN_USER, 10, 15, HttpStatus.CREATED);
+        createProfile(PROFILE_1, ADMIN_USER, userAdminApplicationProps.getAdminRole(), 10, 15, HttpStatus.CREATED);
 
         List<UserProfile> userProfiles = getProfileList(false);
         assertEquals(1, userProfiles.size());
@@ -123,41 +124,47 @@ class UserProfileTest {
         assertNull(userProfiles.get(0).spreadsheetConfigCollectionId());
         assertNull(userProfiles.get(0).networkVisualizationParameterId());
 
-        createProfile(PROFILE_2, ADMIN_USER, null, null, HttpStatus.CREATED);
-        createProfile(PROFILE_1, ADMIN_USER, null, null, HttpStatus.BAD_REQUEST);  // profile already exists
+        createProfile(PROFILE_2, ADMIN_USER, userAdminApplicationProps.getAdminRole(), null, null, HttpStatus.CREATED);
+        createProfile(PROFILE_1, ADMIN_USER, userAdminApplicationProps.getAdminRole(), null, null, HttpStatus.BAD_REQUEST);  // profile already exists
     }
 
     @Test
     void testCreateProfileForbidden() throws Exception {
-        createProfile(PROFILE_1, NOT_ADMIN, 1, 0, HttpStatus.FORBIDDEN);
+        createProfile(PROFILE_1, NOT_ADMIN, "USER", 1, 0, HttpStatus.FORBIDDEN);
     }
 
     @Test
     void testDeleteExistingProfile() throws Exception {
-        createProfile(PROFILE_1, ADMIN_USER, null, null, HttpStatus.CREATED);
+        createProfile(PROFILE_1, ADMIN_USER, userAdminApplicationProps.getAdminRole(), null, null, HttpStatus.CREATED);
         assertEquals(1, getProfileList(false).size());
-        removeProfile(PROFILE_1, ADMIN_USER, HttpStatus.NO_CONTENT);
+        removeProfile(PROFILE_1, ADMIN_USER, userAdminApplicationProps.getAdminRole(), HttpStatus.NO_CONTENT);
         assertEquals(0, getProfileList(false).size());
     }
 
     @Test
     void testDeleteProfileForbidden() throws Exception {
-        removeProfile(PROFILE_1, NOT_ADMIN, HttpStatus.FORBIDDEN);
+        removeProfile(PROFILE_1, NOT_ADMIN, "USER", HttpStatus.FORBIDDEN);
     }
 
     @Test
     void testDeleteProfileNotFound() throws Exception {
-        removeProfile("noExist", ADMIN_USER, HttpStatus.NOT_FOUND);
+        removeProfile("noExist", ADMIN_USER, userAdminApplicationProps.getAdminRole(), HttpStatus.NOT_FOUND);
     }
 
     @Test
     void testProfileUpdateNotFound() throws Exception {
-        updateProfile(new UserProfile(UUID.randomUUID(), PROFILE_2, null, null, null, null, null, null, null, null, null, null), ADMIN_USER, HttpStatus.NOT_FOUND);
+        updateProfile(new UserProfile(UUID.randomUUID(), PROFILE_2, null, null, null, null, null, null, null, null, null, null),
+                ADMIN_USER,
+                userAdminApplicationProps.getAdminRole(),
+                HttpStatus.NOT_FOUND);
     }
 
     @Test
     void testProfileUpdateForbidden() throws Exception {
-        updateProfile(new UserProfile(UUID.randomUUID(), PROFILE_2, null, null, null, null, null, null, null, null, null, null), NOT_ADMIN, HttpStatus.FORBIDDEN);
+        updateProfile(new UserProfile(UUID.randomUUID(), PROFILE_2, null, null, null, null, null, null, null, null, null, null),
+                NOT_ADMIN,
+                "USER",
+                HttpStatus.FORBIDDEN);
     }
 
     @Test
@@ -179,6 +186,7 @@ class UserProfileTest {
 
         MvcResult result = mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users/{sub}/profile/max-cases", ADMIN_USER)
                         .header("userId", ADMIN_USER)
+                        .header(ROLES_HEADER, userAdminApplicationProps.getAdminRole())
                 )
                 .andExpect(status().isOk())
                 .andReturn();
@@ -194,6 +202,7 @@ class UserProfileTest {
 
         MvcResult result = mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users/{sub}/profile/max-builds", ADMIN_USER)
                         .header("userId", ADMIN_USER)
+                        .header(ROLES_HEADER, userAdminApplicationProps.getAdminRole())
                 )
                 .andExpect(status().isOk())
                 .andReturn();
@@ -207,6 +216,7 @@ class UserProfileTest {
 
         MvcResult result = mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users/{sub}/profile/max-cases", ADMIN_USER)
                         .header("userId", ADMIN_USER)
+                        .header(ROLES_HEADER, userAdminApplicationProps.getAdminRole())
                 )
                 .andExpect(status().isOk())
                 .andReturn();
@@ -221,6 +231,7 @@ class UserProfileTest {
 
         MvcResult result = mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users/{sub}/profile/max-builds", ADMIN_USER)
                         .header("userId", ADMIN_USER)
+                        .header(ROLES_HEADER, userAdminApplicationProps.getAdminRole())
                 )
                 .andExpect(status().isOk())
                 .andReturn();
@@ -255,12 +266,12 @@ class UserProfileTest {
                         .withBody(objectMapper.writeValueAsString(existingElements))
                         .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE))).getId();
 
-        UUID profileUuid = createProfile(PROFILE_1, ADMIN_USER, null, 0, HttpStatus.CREATED);
+        UUID profileUuid = createProfile(PROFILE_1, ADMIN_USER, userAdminApplicationProps.getAdminRole(), null, 0, HttpStatus.CREATED);
 
         // udpate the profile: change name and set its parameters, maxAllowedCases, maxAllowedBuilds and spreadsheet config collection
         UserProfile userProfile = new UserProfile(profileUuid, PROFILE_2, loadFlowParametersUuid, securityAnalysisParametersUuid,
             sensitivityAnalysisParametersUuid, shortcircuitParametersUuid, voltageInitParametersUuid, null, 10, 11, spreadsheetConfigCollectionUuid, networkVisualizationParametersUuid);
-        updateProfile(userProfile, ADMIN_USER, HttpStatus.OK);
+        updateProfile(userProfile, ADMIN_USER, userAdminApplicationProps.getAdminRole(), HttpStatus.OK);
 
         // profiles list (with validity flag)
         List<UserProfile> userProfiles = getProfileList(true);
@@ -287,12 +298,13 @@ class UserProfileTest {
         return Map.of("ids", WireMock.matching(paramIds.stream().map(uuid -> ".+").collect(Collectors.joining(","))));
     }
 
-    private UUID createProfile(String profileName, String userName, Integer maxAllowedCases, Integer maxAllowedBuilds, HttpStatusCode status) throws Exception {
+    private UUID createProfile(String profileName, String userName, String userRole, Integer maxAllowedCases, Integer maxAllowedBuilds, HttpStatusCode status) throws Exception {
         UserProfile profileInfo = new UserProfile(null, profileName, null, null, null, null, null, false, maxAllowedCases, maxAllowedBuilds, null, null);
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/profiles")
                         .content(objectWriter.writeValueAsString(profileInfo))
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("userId", userName)
+                        .header(ROLES_HEADER, userRole)
                 )
                 .andExpect(status().is(status.value()))
                 .andReturn();
@@ -324,27 +336,30 @@ class UserProfileTest {
         return objectMapper.readValue(
                 mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/profiles?checkLinksValidity=" + checkLinksValidity)
                                 .header("userId", ADMIN_USER)
+                                .header(ROLES_HEADER, userAdminApplicationProps.getAdminRole())
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),
                 new TypeReference<>() { });
     }
 
-    private void removeProfile(String profileName, String userName, HttpStatusCode status) throws Exception {
+    private void removeProfile(String profileName, String userName, String userRole, HttpStatusCode status) throws Exception {
         mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/profiles")
                         .content(objectWriter.writeValueAsString(List.of(profileName)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("userId", userName)
+                        .header(ROLES_HEADER, userRole)
                 )
                 .andExpect(status().is(status.value()))
                 .andReturn();
     }
 
-    private void updateProfile(UserProfile newData, String userName, HttpStatusCode status) throws Exception {
+    private void updateProfile(UserProfile newData, String userName, String userRole, HttpStatusCode status) throws Exception {
         mockMvc.perform(put("/" + UserAdminApi.API_VERSION + "/profiles/{profileUuid}", newData.id())
                         .content(objectWriter.writeValueAsString(newData))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header("userId", userName))
+                        .header("userId", userName)
+                        .header(ROLES_HEADER, userRole))
                 .andExpect(status().is(status.value()));
 
         if (status == HttpStatus.OK) {
@@ -352,6 +367,7 @@ class UserProfileTest {
             UserProfile updatedProfile = objectMapper.readValue(
                     mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/profiles/{profileUuid}", newData.id())
                                     .header("userId", userName)
+                                    .header(ROLES_HEADER, userRole)
                                     .contentType(APPLICATION_JSON))
                             .andExpect(status().isOk())
                             .andReturn().getResponse().getContentAsString(),

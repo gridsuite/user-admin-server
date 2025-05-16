@@ -9,11 +9,10 @@ package org.gridsuite.useradmin.server;
 import jakarta.validation.constraints.AssertTrue;
 import lombok.Data;
 import org.gridsuite.useradmin.server.controller.UserAdminController;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.scheduling.support.CronExpression;
 import org.springframework.validation.annotation.Validated;
-
-import java.util.List;
 
 /**
  * @author Etienne Homer <etienne.homer at rte-france.com>
@@ -22,11 +21,6 @@ import java.util.List;
 @Validated
 @ConfigurationProperties(prefix = "useradmin")
 public class UserAdminApplicationProps {
-
-    /**
-     * List of administrators users.
-     */
-    private List<String> admins;
 
     /**
      * Default value of {@link org.gridsuite.useradmin.server.dto.UserInfos#maxAllowedCases()} if {@code null}.
@@ -64,4 +58,7 @@ public class UserAdminApplicationProps {
             return this.announcementClean == null || CronExpression.isValidExpression(this.announcementClean);
         }
     }
+
+    @Value("${gridsuite.user-roles.admin:ADMIN}")
+    private String adminRole;
 }

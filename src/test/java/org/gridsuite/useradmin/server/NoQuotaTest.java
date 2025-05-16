@@ -13,6 +13,9 @@ import org.gridsuite.useradmin.server.dto.UserProfile;
 import org.gridsuite.useradmin.server.entity.UserProfileEntity;
 import org.gridsuite.useradmin.server.repository.UserInfosRepository;
 import org.gridsuite.useradmin.server.repository.UserProfileRepository;
+
+import static org.gridsuite.useradmin.server.Utils.ROLES_HEADER;
+import static org.gridsuite.useradmin.server.utils.TestConstants.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -47,10 +50,11 @@ class NoQuotaTest {
 
     private static final String USER_SUB_TWO = "user_two";
 
-    private static final String API_BASE_PATH = "/" + UserAdminApi.API_VERSION;
-
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private UserAdminApplicationProps userAdminApplicationProps;
 
     @Autowired
     private UserInfosRepository userInfosRepository;
@@ -141,7 +145,7 @@ class NoQuotaTest {
     }
 
     private void associateProfileToUser(String userSub, String profileName) throws Exception {
-        UserInfos userInfos = new UserInfos(userSub, false, profileName, null, null, null, null);
+        UserInfos userInfos = new UserInfos(userSub, profileName, null, null, null, null);
         performPut(API_BASE_PATH + "/users/" + userSub, userInfos);
     }
 
@@ -159,7 +163,8 @@ class NoQuotaTest {
         mockMvc.perform(post(url)
                         .content(content != null ? objectWriter.writeValueAsString(content) : "")
                         .contentType(APPLICATION_JSON)
-                        .header("userId", ADMIN_USER))
+                        .header("userId", ADMIN_USER)
+                        .header(ROLES_HEADER, userAdminApplicationProps.getAdminRole()))
                 .andExpect(status().isCreated());
     }
 
@@ -167,13 +172,15 @@ class NoQuotaTest {
         mockMvc.perform(put(url)
                         .content(objectWriter.writeValueAsString(content))
                         .contentType(APPLICATION_JSON)
-                        .header("userId", ADMIN_USER))
+                        .header("userId", ADMIN_USER)
+                        .header(ROLES_HEADER, userAdminApplicationProps.getAdminRole()))
                 .andExpect(status().isOk());
     }
 
     private MvcResult performGet(String url) throws Exception {
         return mockMvc.perform(get(url)
-                        .header("userId", ADMIN_USER))
+                        .header("userId", ADMIN_USER)
+                        .header(ROLES_HEADER, userAdminApplicationProps.getAdminRole()))
                 .andExpect(status().isOk())
                 .andReturn();
     }

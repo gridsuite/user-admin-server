@@ -23,8 +23,5 @@ powsybl-ws:
     hostPort: ":"
 
 useradmin:
-  admins:
-    - admin1
-    - admin2
   defaultMaxAllowedCases: 20
   defaultMaxAllowedBuilds: 10

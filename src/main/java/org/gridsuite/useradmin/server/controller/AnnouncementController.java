@@ -37,8 +37,8 @@ public class AnnouncementController {
     @Operation(summary = "get the list of announcements")
     @ApiResponse(responseCode = "200", description = "the list of announcements")
     @ApiResponse(responseCode = "403", description = "User is not an admin")
-    public ResponseEntity<List<Announcement>> getAnnouncements(@RequestHeader("userId") String userId) {
-        return ResponseEntity.ok(service.getAnnouncements(userId));
+    public ResponseEntity<List<Announcement>> getAnnouncements() {
+        return ResponseEntity.ok(service.getAnnouncements());
     }
 
     @GetMapping("/current")
@@ -55,21 +55,19 @@ public class AnnouncementController {
     @ApiResponse(responseCode = "200", description = "the created announcement")
     @ApiResponse(responseCode = "403", description = "User is not an admin")
     @ApiResponse(responseCode = "409", description = "There is a conflict in display time")
-    public ResponseEntity<Announcement> createAnnouncement(@RequestHeader("userId") String userId,
-                                                           @RequestParam("startDate") Instant startDate,
+    public ResponseEntity<Announcement> createAnnouncement(@RequestParam("startDate") Instant startDate,
                                                            @RequestParam("endDate") @Future Instant endDate,
                                                            @RequestParam("severity") AnnouncementSeverity severity,
                                                            @RequestBody @NotBlank String message) {
-        return ResponseEntity.ok(service.createAnnouncement(startDate, endDate, message, severity, userId));
+        return ResponseEntity.ok(service.createAnnouncement(startDate, endDate, message, severity));
     }
 
     @DeleteMapping(value = "/{announcementId}")
     @Operation(summary = "Delete an announcement")
     @ApiResponse(responseCode = "200", description = "Announcement deleted")
     @ApiResponse(responseCode = "403", description = "User is not an admin")
-    public ResponseEntity<Void> deleteAnnouncement(@RequestHeader("userId") String userId,
-                                                   @PathVariable("announcementId") UUID announcementId) {
-        service.deleteAnnouncement(announcementId, userId);
+    public ResponseEntity<Void> deleteAnnouncement(@PathVariable("announcementId") UUID announcementId) {
+        service.deleteAnnouncement(announcementId);
         return ResponseEntity.ok().build();
     }
 }

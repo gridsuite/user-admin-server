@@ -50,8 +50,8 @@ public class UserProfileController {
     @Operation(summary = "get the profile information", description = "Access restricted to users of type: `admin`")
     @ApiResponse(responseCode = "200", description = "The profile exist")
     @ApiResponse(responseCode = "404", description = "The profile does not exist")
-    public ResponseEntity<UserProfile> getProfile(@PathVariable("profileUuid") UUID profileUuid, @RequestHeader("userId") String userId) {
-        return ResponseEntity.of(service.getProfile(profileUuid, userId));
+    public ResponseEntity<UserProfile> getProfile(@PathVariable("profileUuid") UUID profileUuid) {
+        return ResponseEntity.of(service.getProfileIfAdmin(profileUuid));
     }
 
     @PutMapping(value = "/{profileUuid}")
@@ -59,18 +59,16 @@ public class UserProfileController {
     @ApiResponse(responseCode = "200", description = "The profile exists")
     @ApiResponse(responseCode = "404", description = "The profile does not exist")
     public ResponseEntity<UserProfile> updateProfile(@PathVariable("profileUuid") UUID profileUuid,
-                                                     @RequestHeader("userId") String userId,
                                                      @RequestBody UserProfile userProfile) {
-        service.updateProfile(profileUuid, userId, userProfile);
+        service.updateProfile(profileUuid, userProfile);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping(value = "")
     @Operation(summary = "Create the profile", description = "Access restricted to users of type: `admin`")
     @ApiResponse(responseCode = "201", description = "The profile has been created")
-    public ResponseEntity<Void> createProfile(@RequestHeader("userId") String userId,
-                                              @RequestBody UserProfile userProfile) {
-        service.createProfile(userProfile, userId);
+    public ResponseEntity<Void> createProfile(@RequestBody UserProfile userProfile) {
+        service.createProfile(userProfile);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
@@ -79,9 +77,9 @@ public class UserProfileController {
     @ApiResponse(responseCode = "204", description = "Profiles deleted")
     @ApiResponse(responseCode = "404", description = "One or more profile(s) not found")
     @ApiResponse(responseCode = "422", description = "Integrity issue when a profile is still referenced by users")
-    public ResponseEntity<Void> deleteProfiles(@RequestHeader("userId") String userId, @RequestBody @NotEmpty List<String> names) {
+    public ResponseEntity<Void> deleteProfiles(@RequestBody @NotEmpty List<String> names) {
         try {
-            if (service.deleteProfiles(names, userId) > 0L) {
+            if (service.deleteProfiles(names) > 0L) {
                 return ResponseEntity.noContent().build();
             } else {
                 return ResponseEntity.notFound().build();
