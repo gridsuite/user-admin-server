@@ -13,22 +13,25 @@ import org.springframework.stereotype.Service;
 import java.util.Objects;
 import java.util.Set;
 
+import static org.gridsuite.useradmin.server.Utils.getCurrentUserRoles;
+
 /**
  * @author David Braquart <david.braquart at rte-france.com
  */
 @Service
 public class AdminRightService {
 
-    private final RoleService roleService;
     private final UserAdminApplicationProps userAdminApplicationProps;
 
-    public AdminRightService(final RoleService roleService,
-                             final UserAdminApplicationProps userAdminApplicationProps) {
-        this.roleService = Objects.requireNonNull(roleService);
+    public AdminRightService(final UserAdminApplicationProps userAdminApplicationProps) {
         this.userAdminApplicationProps = Objects.requireNonNull(userAdminApplicationProps);
     }
 
     public void assertIsAdmin() throws UserAdminException {
-        roleService.checkAccess(Set.of(userAdminApplicationProps.getAdminRole()), true);
+        Set<String> userRoles = getCurrentUserRoles();
+
+        if (userRoles.isEmpty() || !userRoles.contains(userAdminApplicationProps.getAdminRole())) {
+            throw new UserAdminException(UserAdminException.Type.FORBIDDEN);
+        }
     }
 }

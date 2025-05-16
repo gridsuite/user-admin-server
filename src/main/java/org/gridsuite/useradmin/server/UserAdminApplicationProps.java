@@ -61,7 +61,4 @@ public class UserAdminApplicationProps {
 
     @Value("${gridsuite.user-roles.admin:ADMIN}")
     private String adminRole;
-
-    @Value("${gridsuite.user-roles.user:UTILISATEURS}")
-    private String userRole;
 }

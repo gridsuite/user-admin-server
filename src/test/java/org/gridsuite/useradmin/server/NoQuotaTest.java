@@ -13,7 +13,8 @@ import org.gridsuite.useradmin.server.dto.UserProfile;
 import org.gridsuite.useradmin.server.entity.UserProfileEntity;
 import org.gridsuite.useradmin.server.repository.UserInfosRepository;
 import org.gridsuite.useradmin.server.repository.UserProfileRepository;
-import org.gridsuite.useradmin.server.service.RoleService;
+
+import static org.gridsuite.useradmin.server.Utils.ROLES_HEADER;
 import static org.gridsuite.useradmin.server.utils.TestConstants.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -163,7 +164,7 @@ class NoQuotaTest {
                         .content(content != null ? objectWriter.writeValueAsString(content) : "")
                         .contentType(APPLICATION_JSON)
                         .header("userId", ADMIN_USER)
-                        .header(RoleService.ROLES_HEADER, userAdminApplicationProps.getAdminRole()))
+                        .header(ROLES_HEADER, userAdminApplicationProps.getAdminRole()))
                 .andExpect(status().isCreated());
     }
 
@@ -172,14 +173,14 @@ class NoQuotaTest {
                         .content(objectWriter.writeValueAsString(content))
                         .contentType(APPLICATION_JSON)
                         .header("userId", ADMIN_USER)
-                        .header(RoleService.ROLES_HEADER, userAdminApplicationProps.getAdminRole()))
+                        .header(ROLES_HEADER, userAdminApplicationProps.getAdminRole()))
                 .andExpect(status().isOk());
     }
 
     private MvcResult performGet(String url) throws Exception {
         return mockMvc.perform(get(url)
                         .header("userId", ADMIN_USER)
-                        .header(RoleService.ROLES_HEADER, userAdminApplicationProps.getAdminRole()))
+                        .header(ROLES_HEADER, userAdminApplicationProps.getAdminRole()))
                 .andExpect(status().isOk())
                 .andReturn();
     }

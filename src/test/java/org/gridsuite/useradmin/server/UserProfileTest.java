@@ -18,7 +18,6 @@ import org.gridsuite.useradmin.server.entity.UserInfosEntity;
 import org.gridsuite.useradmin.server.entity.UserProfileEntity;
 import org.gridsuite.useradmin.server.repository.UserInfosRepository;
 import org.gridsuite.useradmin.server.repository.UserProfileRepository;
-import org.gridsuite.useradmin.server.service.RoleService;
 import org.gridsuite.useradmin.server.service.DirectoryService;
 import org.gridsuite.useradmin.server.utils.WireMockUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -41,6 +40,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static org.gridsuite.useradmin.server.Utils.ROLES_HEADER;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -130,7 +130,7 @@ class UserProfileTest {
 
     @Test
     void testCreateProfileForbidden() throws Exception {
-        createProfile(PROFILE_1, NOT_ADMIN, userAdminApplicationProps.getUserRole(), 1, 0, HttpStatus.FORBIDDEN);
+        createProfile(PROFILE_1, NOT_ADMIN, "USER", 1, 0, HttpStatus.FORBIDDEN);
     }
 
     @Test
@@ -143,7 +143,7 @@ class UserProfileTest {
 
     @Test
     void testDeleteProfileForbidden() throws Exception {
-        removeProfile(PROFILE_1, NOT_ADMIN, userAdminApplicationProps.getUserRole(), HttpStatus.FORBIDDEN);
+        removeProfile(PROFILE_1, NOT_ADMIN, "USER", HttpStatus.FORBIDDEN);
     }
 
     @Test
@@ -163,7 +163,7 @@ class UserProfileTest {
     void testProfileUpdateForbidden() throws Exception {
         updateProfile(new UserProfile(UUID.randomUUID(), PROFILE_2, null, null, null, null, null, null, null, null, null, null),
                 NOT_ADMIN,
-                userAdminApplicationProps.getUserRole(),
+                "USER",
                 HttpStatus.FORBIDDEN);
     }
 
@@ -186,7 +186,7 @@ class UserProfileTest {
 
         MvcResult result = mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users/{sub}/profile/max-cases", ADMIN_USER)
                         .header("userId", ADMIN_USER)
-                        .header(RoleService.ROLES_HEADER, userAdminApplicationProps.getAdminRole())
+                        .header(ROLES_HEADER, userAdminApplicationProps.getAdminRole())
                 )
                 .andExpect(status().isOk())
                 .andReturn();
@@ -202,7 +202,7 @@ class UserProfileTest {
 
         MvcResult result = mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users/{sub}/profile/max-builds", ADMIN_USER)
                         .header("userId", ADMIN_USER)
-                        .header(RoleService.ROLES_HEADER, userAdminApplicationProps.getAdminRole())
+                        .header(ROLES_HEADER, userAdminApplicationProps.getAdminRole())
                 )
                 .andExpect(status().isOk())
                 .andReturn();
@@ -216,7 +216,7 @@ class UserProfileTest {
 
         MvcResult result = mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users/{sub}/profile/max-cases", ADMIN_USER)
                         .header("userId", ADMIN_USER)
-                        .header(RoleService.ROLES_HEADER, userAdminApplicationProps.getAdminRole())
+                        .header(ROLES_HEADER, userAdminApplicationProps.getAdminRole())
                 )
                 .andExpect(status().isOk())
                 .andReturn();
@@ -231,7 +231,7 @@ class UserProfileTest {
 
         MvcResult result = mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users/{sub}/profile/max-builds", ADMIN_USER)
                         .header("userId", ADMIN_USER)
-                        .header(RoleService.ROLES_HEADER, userAdminApplicationProps.getAdminRole())
+                        .header(ROLES_HEADER, userAdminApplicationProps.getAdminRole())
                 )
                 .andExpect(status().isOk())
                 .andReturn();
@@ -304,7 +304,7 @@ class UserProfileTest {
                         .content(objectWriter.writeValueAsString(profileInfo))
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("userId", userName)
-                        .header(RoleService.ROLES_HEADER, userRole)
+                        .header(ROLES_HEADER, userRole)
                 )
                 .andExpect(status().is(status.value()))
                 .andReturn();
@@ -336,7 +336,7 @@ class UserProfileTest {
         return objectMapper.readValue(
                 mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/profiles?checkLinksValidity=" + checkLinksValidity)
                                 .header("userId", ADMIN_USER)
-                                .header(RoleService.ROLES_HEADER, userAdminApplicationProps.getAdminRole())
+                                .header(ROLES_HEADER, userAdminApplicationProps.getAdminRole())
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),
@@ -348,7 +348,7 @@ class UserProfileTest {
                         .content(objectWriter.writeValueAsString(List.of(profileName)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("userId", userName)
-                        .header(RoleService.ROLES_HEADER, userRole)
+                        .header(ROLES_HEADER, userRole)
                 )
                 .andExpect(status().is(status.value()))
                 .andReturn();
@@ -359,7 +359,7 @@ class UserProfileTest {
                         .content(objectWriter.writeValueAsString(newData))
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("userId", userName)
-                        .header(RoleService.ROLES_HEADER, userRole))
+                        .header(ROLES_HEADER, userRole))
                 .andExpect(status().is(status.value()));
 
         if (status == HttpStatus.OK) {
@@ -367,7 +367,7 @@ class UserProfileTest {
             UserProfile updatedProfile = objectMapper.readValue(
                     mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/profiles/{profileUuid}", newData.id())
                                     .header("userId", userName)
-                                    .header(RoleService.ROLES_HEADER, userRole)
+                                    .header(ROLES_HEADER, userRole)
                                     .contentType(APPLICATION_JSON))
                             .andExpect(status().isOk())
                             .andReturn().getResponse().getContentAsString(),

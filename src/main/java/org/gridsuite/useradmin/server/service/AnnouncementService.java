@@ -34,9 +34,8 @@ public class AnnouncementService {
     public Announcement createAnnouncement(Instant startDate,
                                            Instant endDate,
                                            String message,
-                                           AnnouncementSeverity severity,
-                                           String userId) {
-        adminRightService.assertIsAdmin(userId);
+                                           AnnouncementSeverity severity) {
+        adminRightService.assertIsAdmin();
         if (!startDate.isBefore(endDate)) { // internally compare in seconds
             throw new UserAdminException(START_DATE_SAME_OR_AFTER_END_DATE);
         }
@@ -47,8 +46,8 @@ public class AnnouncementService {
         return announcementRepository.save(new AnnouncementEntity(startDate, endDate, message.trim(), severity)).toDto();
     }
 
-    public void deleteAnnouncement(UUID announcementId, String userId) {
-        adminRightService.assertIsAdmin(userId);
+    public void deleteAnnouncement(UUID announcementId) {
+        adminRightService.assertIsAdmin();
         announcementRepository.findById(announcementId).ifPresent(announcement -> {
             final Instant now = Instant.now();
             announcementRepository.deleteById(announcement.getId());
@@ -59,8 +58,8 @@ public class AnnouncementService {
         });
     }
 
-    public List<Announcement> getAnnouncements(String userId) {
-        adminRightService.assertIsAdmin(userId);
+    public List<Announcement> getAnnouncements() {
+        adminRightService.assertIsAdmin();
         return announcementRepository.findAnnouncements().stream().map(AnnouncementEntity::toDto).toList();
     }
 
