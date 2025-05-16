@@ -42,8 +42,9 @@
     </developers>
 
     <properties>
-        <gridsuite-dependencies.version>38.0.0</gridsuite-dependencies.version>
+        <gridsuite-dependencies.version>39.0.0</gridsuite-dependencies.version>
         <liquibase-hibernate-package>org.gridsuite.useradmin.server</liquibase-hibernate-package>
+        <shedlock.version>6.4.0</shedlock.version>
         <sonar.organization>gridsuite</sonar.organization>
         <sonar.projectKey>org.gridsuite:user-admin-server</sonar.projectKey>
     </properties>
@@ -79,10 +80,28 @@
             </dependency>
 
             <!-- project specific dependencies -->
+            <dependency>
+                <groupId>net.javacrumbs.shedlock</groupId>
+                <artifactId>shedlock-bom</artifactId>
+                <version>${shedlock.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
     <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+
         <!-- Compilation dependencies -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -93,10 +112,14 @@
             <artifactId>powsybl-ws-commons</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <scope>provided</scope>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-provider-jdbc-template</artifactId>
         </dependency>
+        <dependency>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-spring</artifactId>
+        </dependency>
+
         <!-- jpa, crud repository -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

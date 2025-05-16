@@ -34,7 +34,6 @@ public class UserAdminService {
     private final UserInfosRepository userInfosRepository;
     private final UserProfileRepository userProfileRepository;
     private final ConnectionsService connectionsService;
-    private final NotificationService notificationService;
     private final AdminRightService adminRightService;
     private final UserProfileService userProfileService;
     private final UserGroupService userGroupService;
@@ -46,7 +45,6 @@ public class UserAdminService {
                             final UserProfileRepository userProfileRepository,
                             final ConnectionsService connectionsService,
                             final AdminRightService adminRightService,
-                            final NotificationService notificationService,
                             final UserProfileService userProfileService,
                             final UserGroupService userGroupService,
                             final UserAdminApplicationProps applicationProps,
@@ -55,7 +53,6 @@ public class UserAdminService {
         this.userProfileRepository = Objects.requireNonNull(userProfileRepository);
         this.connectionsService = Objects.requireNonNull(connectionsService);
         this.adminRightService = Objects.requireNonNull(adminRightService);
-        this.notificationService = Objects.requireNonNull(notificationService);
         this.userProfileService = Objects.requireNonNull(userProfileService);
         this.userGroupService = Objects.requireNonNull(userGroupService);
         this.applicationProps = Objects.requireNonNull(applicationProps);
@@ -190,19 +187,5 @@ public class UserAdminService {
         return doGetUserProfile(sub)
                 .map(UserProfile::maxAllowedBuilds)
                 .orElse(applicationProps.getDefaultMaxAllowedBuilds());
-    }
-
-    public void sendMaintenanceMessage(Integer durationInSeconds, String message) {
-        adminRightService.assertIsAdmin();
-        if (durationInSeconds == null) {
-            notificationService.emitMaintenanceMessage(message);
-        } else {
-            notificationService.emitMaintenanceMessage(message, durationInSeconds);
-        }
-    }
-
-    public void sendCancelMaintenanceMessage() {
-        adminRightService.assertIsAdmin();
-        notificationService.emitCancelMaintenanceMessage();
     }
 }
