@@ -24,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.gridsuite.useradmin.server.UserAdminException.Type.FORBIDDEN;
 import static org.gridsuite.useradmin.server.UserAdminException.Type.NOT_FOUND;
 import static org.gridsuite.useradmin.server.UserAdminException.Type.USER_ALREADY_EXISTS;
 
@@ -36,7 +35,6 @@ public class UserAdminService {
     private final UserInfosRepository userInfosRepository;
     private final UserProfileRepository userProfileRepository;
     private final ConnectionsService connectionsService;
-    private final NotificationService notificationService;
     private final AdminRightService adminRightService;
     private final UserProfileService userProfileService;
     private final UserGroupService userGroupService;
@@ -48,7 +46,6 @@ public class UserAdminService {
                             final UserProfileRepository userProfileRepository,
                             final ConnectionsService connectionsService,
                             final AdminRightService adminRightService,
-                            final NotificationService notificationService,
                             final UserProfileService userProfileService,
                             final UserGroupService userGroupService,
                             final UserAdminApplicationProps applicationProps,
@@ -57,7 +54,6 @@ public class UserAdminService {
         this.userProfileRepository = Objects.requireNonNull(userProfileRepository);
         this.connectionsService = Objects.requireNonNull(connectionsService);
         this.adminRightService = Objects.requireNonNull(adminRightService);
-        this.notificationService = Objects.requireNonNull(notificationService);
         this.userProfileService = Objects.requireNonNull(userProfileService);
         this.userGroupService = Objects.requireNonNull(userGroupService);
         this.applicationProps = Objects.requireNonNull(applicationProps);
@@ -202,23 +198,5 @@ public class UserAdminService {
     @Transactional(readOnly = true)
     public boolean userIsAdmin(@NonNull String userId) {
         return adminRightService.isAdmin(userId);
-    }
-
-    public void sendMaintenanceMessage(String userId, Integer durationInSeconds, String message) {
-        if (!adminRightService.isAdmin(userId)) {
-            throw new UserAdminException(FORBIDDEN);
-        }
-        if (durationInSeconds == null) {
-            notificationService.emitMaintenanceMessage(message);
-        } else {
-            notificationService.emitMaintenanceMessage(message, durationInSeconds);
-        }
-    }
-
-    public void sendCancelMaintenanceMessage(String userId) {
-        if (!adminRightService.isAdmin(userId)) {
-            throw new UserAdminException(FORBIDDEN);
-        }
-        notificationService.emitCancelMaintenanceMessage();
     }
 }
