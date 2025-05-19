@@ -17,6 +17,8 @@ public final class TestConstants {
     public static final String RECORD_CONNECTION_URL = "/" + UserAdminApi.API_VERSION + "/users/{sub}/record-connection";
     public static final String IS_CONNECTION_ACCEPTED_PARAM = "isConnectionAccepted";
 
+    public static final String USER_ADMIN_ROLE = "ADMIN";
+
     // Private constructor to prevent instantiation
     private TestConstants() {
         // Utility class should not be instantiated

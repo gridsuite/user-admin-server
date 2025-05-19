@@ -41,6 +41,7 @@ import java.util.stream.Collectors;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.gridsuite.useradmin.server.Utils.ROLES_HEADER;
+import static org.gridsuite.useradmin.server.utils.TestConstants.USER_ADMIN_ROLE;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -108,7 +109,7 @@ class UserProfileTest {
 
     @Test
     void testCreateProfile() throws Exception {
-        createProfile(PROFILE_1, ADMIN_USER, userAdminApplicationProps.getAdminRole(), 10, 15, HttpStatus.CREATED);
+        createProfile(PROFILE_1, ADMIN_USER, USER_ADMIN_ROLE, 10, 15, HttpStatus.CREATED);
 
         List<UserProfile> userProfiles = getProfileList(false);
         assertEquals(1, userProfiles.size());
@@ -124,8 +125,8 @@ class UserProfileTest {
         assertNull(userProfiles.get(0).spreadsheetConfigCollectionId());
         assertNull(userProfiles.get(0).networkVisualizationParameterId());
 
-        createProfile(PROFILE_2, ADMIN_USER, userAdminApplicationProps.getAdminRole(), null, null, HttpStatus.CREATED);
-        createProfile(PROFILE_1, ADMIN_USER, userAdminApplicationProps.getAdminRole(), null, null, HttpStatus.BAD_REQUEST);  // profile already exists
+        createProfile(PROFILE_2, ADMIN_USER, USER_ADMIN_ROLE, null, null, HttpStatus.CREATED);
+        createProfile(PROFILE_1, ADMIN_USER, USER_ADMIN_ROLE, null, null, HttpStatus.BAD_REQUEST);  // profile already exists
     }
 
     @Test
@@ -135,9 +136,9 @@ class UserProfileTest {
 
     @Test
     void testDeleteExistingProfile() throws Exception {
-        createProfile(PROFILE_1, ADMIN_USER, userAdminApplicationProps.getAdminRole(), null, null, HttpStatus.CREATED);
+        createProfile(PROFILE_1, ADMIN_USER, USER_ADMIN_ROLE, null, null, HttpStatus.CREATED);
         assertEquals(1, getProfileList(false).size());
-        removeProfile(PROFILE_1, ADMIN_USER, userAdminApplicationProps.getAdminRole(), HttpStatus.NO_CONTENT);
+        removeProfile(PROFILE_1, ADMIN_USER, USER_ADMIN_ROLE, HttpStatus.NO_CONTENT);
         assertEquals(0, getProfileList(false).size());
     }
 
@@ -148,14 +149,14 @@ class UserProfileTest {
 
     @Test
     void testDeleteProfileNotFound() throws Exception {
-        removeProfile("noExist", ADMIN_USER, userAdminApplicationProps.getAdminRole(), HttpStatus.NOT_FOUND);
+        removeProfile("noExist", ADMIN_USER, USER_ADMIN_ROLE, HttpStatus.NOT_FOUND);
     }
 
     @Test
     void testProfileUpdateNotFound() throws Exception {
         updateProfile(new UserProfile(UUID.randomUUID(), PROFILE_2, null, null, null, null, null, null, null, null, null, null),
                 ADMIN_USER,
-                userAdminApplicationProps.getAdminRole(),
+                USER_ADMIN_ROLE,
                 HttpStatus.NOT_FOUND);
     }
 
@@ -186,7 +187,7 @@ class UserProfileTest {
 
         MvcResult result = mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users/{sub}/profile/max-cases", ADMIN_USER)
                         .header("userId", ADMIN_USER)
-                        .header(ROLES_HEADER, userAdminApplicationProps.getAdminRole())
+                        .header(ROLES_HEADER, USER_ADMIN_ROLE)
                 )
                 .andExpect(status().isOk())
                 .andReturn();
@@ -202,7 +203,7 @@ class UserProfileTest {
 
         MvcResult result = mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users/{sub}/profile/max-builds", ADMIN_USER)
                         .header("userId", ADMIN_USER)
-                        .header(ROLES_HEADER, userAdminApplicationProps.getAdminRole())
+                        .header(ROLES_HEADER, USER_ADMIN_ROLE)
                 )
                 .andExpect(status().isOk())
                 .andReturn();
@@ -216,7 +217,7 @@ class UserProfileTest {
 
         MvcResult result = mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users/{sub}/profile/max-cases", ADMIN_USER)
                         .header("userId", ADMIN_USER)
-                        .header(ROLES_HEADER, userAdminApplicationProps.getAdminRole())
+                        .header(ROLES_HEADER, USER_ADMIN_ROLE)
                 )
                 .andExpect(status().isOk())
                 .andReturn();
@@ -231,7 +232,7 @@ class UserProfileTest {
 
         MvcResult result = mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users/{sub}/profile/max-builds", ADMIN_USER)
                         .header("userId", ADMIN_USER)
-                        .header(ROLES_HEADER, userAdminApplicationProps.getAdminRole())
+                        .header(ROLES_HEADER, USER_ADMIN_ROLE)
                 )
                 .andExpect(status().isOk())
                 .andReturn();
@@ -266,12 +267,12 @@ class UserProfileTest {
                         .withBody(objectMapper.writeValueAsString(existingElements))
                         .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE))).getId();
 
-        UUID profileUuid = createProfile(PROFILE_1, ADMIN_USER, userAdminApplicationProps.getAdminRole(), null, 0, HttpStatus.CREATED);
+        UUID profileUuid = createProfile(PROFILE_1, ADMIN_USER, USER_ADMIN_ROLE, null, 0, HttpStatus.CREATED);
 
         // udpate the profile: change name and set its parameters, maxAllowedCases, maxAllowedBuilds and spreadsheet config collection
         UserProfile userProfile = new UserProfile(profileUuid, PROFILE_2, loadFlowParametersUuid, securityAnalysisParametersUuid,
             sensitivityAnalysisParametersUuid, shortcircuitParametersUuid, voltageInitParametersUuid, null, 10, 11, spreadsheetConfigCollectionUuid, networkVisualizationParametersUuid);
-        updateProfile(userProfile, ADMIN_USER, userAdminApplicationProps.getAdminRole(), HttpStatus.OK);
+        updateProfile(userProfile, ADMIN_USER, USER_ADMIN_ROLE, HttpStatus.OK);
 
         // profiles list (with validity flag)
         List<UserProfile> userProfiles = getProfileList(true);
@@ -336,7 +337,7 @@ class UserProfileTest {
         return objectMapper.readValue(
                 mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/profiles?checkLinksValidity=" + checkLinksValidity)
                                 .header("userId", ADMIN_USER)
-                                .header(ROLES_HEADER, userAdminApplicationProps.getAdminRole())
+                                .header(ROLES_HEADER, USER_ADMIN_ROLE)
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),

@@ -54,9 +54,6 @@ class NoQuotaTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private UserAdminApplicationProps userAdminApplicationProps;
-
-    @Autowired
     private UserInfosRepository userInfosRepository;
 
     @Autowired
@@ -164,7 +161,7 @@ class NoQuotaTest {
                         .content(content != null ? objectWriter.writeValueAsString(content) : "")
                         .contentType(APPLICATION_JSON)
                         .header("userId", ADMIN_USER)
-                        .header(ROLES_HEADER, userAdminApplicationProps.getAdminRole()))
+                        .header(ROLES_HEADER, USER_ADMIN_ROLE))
                 .andExpect(status().isCreated());
     }
 
@@ -173,14 +170,14 @@ class NoQuotaTest {
                         .content(objectWriter.writeValueAsString(content))
                         .contentType(APPLICATION_JSON)
                         .header("userId", ADMIN_USER)
-                        .header(ROLES_HEADER, userAdminApplicationProps.getAdminRole()))
+                        .header(ROLES_HEADER, USER_ADMIN_ROLE))
                 .andExpect(status().isOk());
     }
 
     private MvcResult performGet(String url) throws Exception {
         return mockMvc.perform(get(url)
                         .header("userId", ADMIN_USER)
-                        .header(ROLES_HEADER, userAdminApplicationProps.getAdminRole()))
+                        .header(ROLES_HEADER, USER_ADMIN_ROLE))
                 .andExpect(status().isOk())
                 .andReturn();
     }

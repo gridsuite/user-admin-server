@@ -9,7 +9,6 @@ package org.gridsuite.useradmin.server.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.gridsuite.useradmin.server.UserAdminApplicationProps;
 import org.gridsuite.useradmin.server.dto.UserGroup;
 import org.gridsuite.useradmin.server.dto.UserInfos;
 import org.gridsuite.useradmin.server.entity.UserInfosEntity;
@@ -60,9 +59,6 @@ class UserGroupControllerTest {
     private static final String ADMIN_USER = "admin1";
 
     @Autowired
-    private UserAdminApplicationProps userAdminApplicationProps;
-
-    @Autowired
     private UserGroupRepository userGroupRepository;
 
     @Autowired
@@ -86,7 +82,7 @@ class UserGroupControllerTest {
     private void createGroup(String groupName) throws Exception {
         mockMvc.perform(post(API_BASE_PATH + "/groups/{group}", groupName)
                         .header("userId", ADMIN_USER)
-                        .header(ROLES_HEADER, userAdminApplicationProps.getAdminRole())
+                        .header(ROLES_HEADER, USER_ADMIN_ROLE)
                 )
                 .andExpect(status().isCreated())
                 .andReturn();
@@ -96,7 +92,7 @@ class UserGroupControllerTest {
         return objectMapper.readValue(
             mockMvc.perform(get(API_BASE_PATH + "/groups/" + groupName)
                     .header("userId", ADMIN_USER)
-                    .header(ROLES_HEADER, userAdminApplicationProps.getAdminRole())
+                    .header(ROLES_HEADER, USER_ADMIN_ROLE)
                     .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString(),
@@ -108,7 +104,7 @@ class UserGroupControllerTest {
                 .content(objectMapper.writeValueAsString(new UserGroup(uuidGroupe, groupName, users)))
                 .contentType(APPLICATION_JSON)
                 .header("userId", ADMIN_USER)
-                .header(ROLES_HEADER, userAdminApplicationProps.getAdminRole())
+                .header(ROLES_HEADER, USER_ADMIN_ROLE)
             )
             .andExpect(status().isOk())
             .andReturn();
@@ -118,7 +114,7 @@ class UserGroupControllerTest {
         return objectMapper.readValue(
             mockMvc.perform(get(API_BASE_PATH + "/groups")
                     .header("userId", ADMIN_USER)
-                    .header(ROLES_HEADER, userAdminApplicationProps.getAdminRole())
+                    .header(ROLES_HEADER, USER_ADMIN_ROLE)
                     .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString(),
@@ -148,7 +144,7 @@ class UserGroupControllerTest {
                 .content(objectMapper.writeValueAsString(groupNames))
                 .contentType(APPLICATION_JSON)
                 .header("userId", ADMIN_USER)
-                .header(ROLES_HEADER, userAdminApplicationProps.getAdminRole())
+                .header(ROLES_HEADER, USER_ADMIN_ROLE)
             )
             .andExpect(resultExpected)
             .andReturn();

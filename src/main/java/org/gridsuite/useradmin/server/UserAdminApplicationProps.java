@@ -59,6 +59,5 @@ public class UserAdminApplicationProps {
         }
     }
 
-    @Value("${gridsuite.user-roles.admin:ADMIN}")
-    private String adminRole;
+    private String adminRole = "ADMIN";
 }
