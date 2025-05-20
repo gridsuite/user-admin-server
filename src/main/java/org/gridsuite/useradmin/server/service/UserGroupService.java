@@ -57,14 +57,14 @@ public class UserGroupService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<UserGroup> getGroup(String group, String userId) {
-        adminRightService.assertIsAdmin(userId);
+    public Optional<UserGroup> getGroupIfAdmin(String group) {
+        adminRightService.assertIsAdmin();
         return getGroup(group);
     }
 
     @Transactional()
-    public void updateGroup(UUID groupUuid, String userId, UserGroup userGroup) {
-        adminRightService.assertIsAdmin(userId);
+    public void updateGroup(UUID groupUuid, UserGroup userGroup) {
+        adminRightService.assertIsAdmin();
         GroupInfosEntity group = userGroupRepository.findById(groupUuid).orElseThrow(() -> new UserAdminException(NOT_FOUND));
         group.setName(userGroup.name());
 
@@ -93,8 +93,8 @@ public class UserGroupService {
     }
 
     @Transactional
-    public void createGroup(String group, String userId) {
-        adminRightService.assertIsAdmin(userId);
+    public void createGroup(String group) {
+        adminRightService.assertIsAdmin();
         Optional<GroupInfosEntity> groupInfosEntity = userGroupRepository.findByName(group);
         if (groupInfosEntity.isPresent()) {
             throw new UserAdminException(GROUP_ALREADY_EXISTS);
@@ -103,8 +103,8 @@ public class UserGroupService {
     }
 
     @Transactional
-    public long deleteGroups(List<String> names, String userId) {
-        adminRightService.assertIsAdmin(userId);
+    public long deleteGroups(List<String> names) {
+        adminRightService.assertIsAdmin();
 
         // check if group contains users
         names.forEach(name -> {

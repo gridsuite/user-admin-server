@@ -10,10 +10,10 @@ import org.gridsuite.useradmin.server.UserAdminApplicationProps;
 import org.gridsuite.useradmin.server.UserAdminException;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
-import static org.gridsuite.useradmin.server.UserAdminException.Type.FORBIDDEN;
+import static org.gridsuite.useradmin.server.Utils.getCurrentUserRoles;
 
 /**
  * @author David Braquart <david.braquart at rte-france.com
@@ -21,23 +21,17 @@ import static org.gridsuite.useradmin.server.UserAdminException.Type.FORBIDDEN;
 @Service
 public class AdminRightService {
 
-    private final UserAdminApplicationProps applicationProps;
+    private final UserAdminApplicationProps userAdminApplicationProps;
 
-    public AdminRightService(final UserAdminApplicationProps applicationProps) {
-        this.applicationProps = Objects.requireNonNull(applicationProps);
+    public AdminRightService(final UserAdminApplicationProps userAdminApplicationProps) {
+        this.userAdminApplicationProps = Objects.requireNonNull(userAdminApplicationProps);
     }
 
-    public List<String> getAdmins() {
-        return applicationProps.getAdmins();
-    }
+    public void assertIsAdmin() throws UserAdminException {
+        Set<String> userRoles = getCurrentUserRoles();
 
-    public boolean isAdmin(@lombok.NonNull String sub) {
-        return this.getAdmins().contains(sub);
-    }
-
-    public void assertIsAdmin(@lombok.NonNull String sub) throws UserAdminException {
-        if (!this.isAdmin(sub)) {
-            throw new UserAdminException(FORBIDDEN);
+        if (userRoles.isEmpty() || !userRoles.contains(userAdminApplicationProps.getAdminRole())) {
+            throw new UserAdminException(UserAdminException.Type.FORBIDDEN);
         }
     }
 }

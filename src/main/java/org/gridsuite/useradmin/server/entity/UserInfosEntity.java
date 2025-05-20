@@ -16,7 +16,6 @@ import org.gridsuite.useradmin.server.dto.UserInfos;
 
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -49,20 +48,19 @@ public class UserInfosEntity {
     @ManyToMany(mappedBy = "users")
     private Set<GroupInfosEntity> groups;
 
-    private UserInfos toUserInfos(Predicate<String> isAdminFn,
-                                  Integer maxAllowedCases,
+    private UserInfos toUserInfos(Integer maxAllowedCases,
                                   Integer numberCasesUsed,
                                   Integer maxAllowedBuilds) {
         String profileName = getProfile() == null ? null : getProfile().getName();
         Set<String> groupNames = getGroups() == null ? null : getGroups().stream().map(GroupInfosEntity::getName).collect(Collectors.toSet());
-        return new UserInfos(getSub(), isAdminFn.test(getSub()), profileName, maxAllowedCases, numberCasesUsed, maxAllowedBuilds, groupNames);
+        return new UserInfos(getSub(), profileName, maxAllowedCases, numberCasesUsed, maxAllowedBuilds, groupNames);
     }
 
-    public static UserInfos toDto(@Nullable final UserInfosEntity entity, Predicate<String> isAdminFn) {
-        return entity == null ? null : entity.toUserInfos(isAdminFn, null, null, null);
+    public static UserInfos toDto(@Nullable final UserInfosEntity entity) {
+        return entity == null ? null : entity.toUserInfos(null, null, null);
     }
 
-    public static UserInfos toDtoWithDetail(@Nullable final UserInfosEntity entity, Predicate<String> isAdminFn, Integer maxAllowedCases, Integer numberCasesUsed, Integer maxAllowedBuilds) {
-        return entity == null ? null : entity.toUserInfos(isAdminFn, maxAllowedCases, numberCasesUsed, maxAllowedBuilds);
+    public static UserInfos toDtoWithDetail(@Nullable final UserInfosEntity entity, Integer maxAllowedCases, Integer numberCasesUsed, Integer maxAllowedBuilds) {
+        return entity == null ? null : entity.toUserInfos(maxAllowedCases, numberCasesUsed, maxAllowedBuilds);
     }
 }
