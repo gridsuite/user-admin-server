@@ -9,7 +9,6 @@ package org.gridsuite.useradmin.server;
 import jakarta.validation.constraints.AssertTrue;
 import lombok.Data;
 import org.gridsuite.useradmin.server.controller.UserAdminController;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.scheduling.support.CronExpression;
 import org.springframework.validation.annotation.Validated;
