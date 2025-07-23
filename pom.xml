@@ -42,7 +42,7 @@
     </developers>
 
     <properties>
-        <gridsuite-dependencies.version>41.0.0</gridsuite-dependencies.version>
+        <gridsuite-dependencies.version>42.0.0</gridsuite-dependencies.version>
         <liquibase-hibernate-package>org.gridsuite.useradmin.server</liquibase-hibernate-package>
         <shedlock.version>6.4.0</shedlock.version>
         <sonar.organization>gridsuite</sonar.organization>
