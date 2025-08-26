@@ -124,6 +124,7 @@ class UserProfileTest {
         assertEquals(15, userProfiles.get(0).maxAllowedBuilds());
         assertNull(userProfiles.get(0).spreadsheetConfigCollectionId());
         assertNull(userProfiles.get(0).networkVisualizationParameterId());
+        assertNull(userProfiles.get(0).diagramConfigId());
 
         createProfile(PROFILE_2, ADMIN_USER, USER_ADMIN_ROLE, null, null, HttpStatus.CREATED);
         createProfile(PROFILE_1, ADMIN_USER, USER_ADMIN_ROLE, null, null, HttpStatus.BAD_REQUEST);  // profile already exists
@@ -154,7 +155,7 @@ class UserProfileTest {
 
     @Test
     void testProfileUpdateNotFound() throws Exception {
-        updateProfile(new UserProfile(UUID.randomUUID(), PROFILE_2, null, null, null, null, null, null, null, null, null, null),
+        updateProfile(new UserProfile(UUID.randomUUID(), PROFILE_2, null, null, null, null, null, null, null, null, null, null, null),
                 ADMIN_USER,
                 USER_ADMIN_ROLE,
                 HttpStatus.NOT_FOUND);
@@ -162,7 +163,7 @@ class UserProfileTest {
 
     @Test
     void testProfileUpdateForbidden() throws Exception {
-        updateProfile(new UserProfile(UUID.randomUUID(), PROFILE_2, null, null, null, null, null, null, null, null, null, null),
+        updateProfile(new UserProfile(UUID.randomUUID(), PROFILE_2, null, null, null, null, null, null, null, null, null, null, null),
                 NOT_ADMIN,
                 "USER",
                 HttpStatus.FORBIDDEN);
@@ -180,7 +181,7 @@ class UserProfileTest {
 
     @Test
     void testGetProfileMaxAllowedCases() throws Exception {
-        UserProfileEntity userProfileEntity = new UserProfileEntity(UUID.randomUUID(), "profileName", null, null, null, null, null, 15, null, null, null);
+        UserProfileEntity userProfileEntity = new UserProfileEntity(UUID.randomUUID(), "profileName", null, null, null, null, null, 15, null, null, null, null);
         UserInfosEntity userInfosEntity = new UserInfosEntity(UUID.randomUUID(), ADMIN_USER, userProfileEntity, null);
         userProfileRepository.save(userProfileEntity);
         userInfosRepository.save(userInfosEntity);
@@ -196,7 +197,7 @@ class UserProfileTest {
 
     @Test
     void testGetProfileMaxAllowedBuilds() throws Exception {
-        UserProfileEntity userProfileEntity = new UserProfileEntity(UUID.randomUUID(), "profileName", null, null, null, null, null, null, 15, null, null);
+        UserProfileEntity userProfileEntity = new UserProfileEntity(UUID.randomUUID(), "profileName", null, null, null, null, null, null, 15, null, null, null);
         UserInfosEntity userInfosEntity = new UserInfosEntity(UUID.randomUUID(), ADMIN_USER, userProfileEntity, null);
         userProfileRepository.save(userProfileEntity);
         userInfosRepository.save(userInfosEntity);
@@ -248,8 +249,9 @@ class UserProfileTest {
         UUID voltageInitParametersUuid = UUID.fromString("55555555-9594-4e55-8ec7-07ea965d24eb");
         UUID spreadsheetConfigCollectionUuid = UUID.fromString("66666666-9594-4e55-8ec7-07ea965d24eb");
         UUID networkVisualizationParametersUuid = UUID.fromString("77777777-9594-4e55-8ec7-07ea965d24eb");
+        UUID diagramConfigUuid = UUID.fromString("88888888-9594-4e55-8ec7-07ea965d24eb");
         List<UUID> elementsUuids = List.of(loadFlowParametersUuid, securityAnalysisParametersUuid,
-            sensitivityAnalysisParametersUuid, shortcircuitParametersUuid, voltageInitParametersUuid, spreadsheetConfigCollectionUuid, networkVisualizationParametersUuid);
+            sensitivityAnalysisParametersUuid, shortcircuitParametersUuid, voltageInitParametersUuid, spreadsheetConfigCollectionUuid, networkVisualizationParametersUuid, diagramConfigUuid);
 
         // stub for parameters and spreadsheet config collection elements existence check
         final String urlPath = "/v1/elements";
@@ -260,7 +262,8 @@ class UserProfileTest {
             new ElementAttributes(shortcircuitParametersUuid, "shortcircuitParams", "SHORT_CIRCUIT_PARAMETERS"),
             new ElementAttributes(voltageInitParametersUuid, "voltageInitParams", "VOLTAGE_INIT_PARAMETERS"),
             new ElementAttributes(spreadsheetConfigCollectionUuid, "spreadsheetConfigCollection", "SPREADSHEET_CONFIG_COLLECTION"),
-            new ElementAttributes(networkVisualizationParametersUuid, "networkVisualizationParams", "NETWORK_VISUALIZATION_PARAMETERS")
+            new ElementAttributes(networkVisualizationParametersUuid, "networkVisualizationParams", "NETWORK_VISUALIZATION_PARAMETERS"),
+            new ElementAttributes(diagramConfigUuid, "diagramConfig", "DIAGRAM_CONFIG")
             ) : List.of();
         UUID stubId = wireMockServer.stubFor(WireMock.get(WireMock.urlMatching(urlPath + "\\?strictMode=false&ids=" + elementsUuids.stream().map(UUID::toString).collect(Collectors.joining(","))))
                 .willReturn(WireMock.ok()
@@ -271,7 +274,7 @@ class UserProfileTest {
 
         // udpate the profile: change name and set its parameters, maxAllowedCases, maxAllowedBuilds and spreadsheet config collection
         UserProfile userProfile = new UserProfile(profileUuid, PROFILE_2, loadFlowParametersUuid, securityAnalysisParametersUuid,
-            sensitivityAnalysisParametersUuid, shortcircuitParametersUuid, voltageInitParametersUuid, null, 10, 11, spreadsheetConfigCollectionUuid, networkVisualizationParametersUuid);
+            sensitivityAnalysisParametersUuid, shortcircuitParametersUuid, voltageInitParametersUuid, null, 10, 11, spreadsheetConfigCollectionUuid, networkVisualizationParametersUuid, diagramConfigUuid);
         updateProfile(userProfile, ADMIN_USER, USER_ADMIN_ROLE, HttpStatus.OK);
 
         // profiles list (with validity flag)
@@ -288,6 +291,7 @@ class UserProfileTest {
         assertEquals(11, userProfiles.get(0).maxAllowedBuilds());
         assertEquals(spreadsheetConfigCollectionUuid, userProfiles.get(0).spreadsheetConfigCollectionId());
         assertEquals(networkVisualizationParametersUuid, userProfiles.get(0).networkVisualizationParameterId());
+        assertEquals(diagramConfigUuid, userProfiles.get(0).diagramConfigId());
 
         // profiles list (without validity flag)
         userProfiles = getProfileList(false);
@@ -300,7 +304,7 @@ class UserProfileTest {
     }
 
     private UUID createProfile(String profileName, String userName, String userRole, Integer maxAllowedCases, Integer maxAllowedBuilds, HttpStatusCode status) throws Exception {
-        UserProfile profileInfo = new UserProfile(null, profileName, null, null, null, null, null, false, maxAllowedCases, maxAllowedBuilds, null, null);
+        UserProfile profileInfo = new UserProfile(null, profileName, null, null, null, null, null, false, maxAllowedCases, maxAllowedBuilds, null, null, null);
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/profiles")
                         .content(objectWriter.writeValueAsString(profileInfo))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -328,6 +332,7 @@ class UserProfileTest {
             assertNull(profile1.get().getVoltageInitParameterId()); // no voltage init params by dft
             assertNull(profile1.get().getSpreadsheetConfigCollectionId()); // no spreadsheet config collection by dft
             assertNull(profile1.get().getNetworkVisualizationParameterId()); // no network visualization params by dft
+            assertNull(profile1.get().getDiagramConfigId()); // no diagram config by dft
             return profile1.get().getId();
         }
         return null;
@@ -384,6 +389,7 @@ class UserProfileTest {
             assertNull(updatedProfile.allLinksValid()); // validity not set in this case
             assertEquals(newData.spreadsheetConfigCollectionId(), updatedProfile.spreadsheetConfigCollectionId());
             assertEquals(newData.networkVisualizationParameterId(), updatedProfile.networkVisualizationParameterId());
+            assertEquals(newData.diagramConfigId(), updatedProfile.diagramConfigId());
         }
     }
 }

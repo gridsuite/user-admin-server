@@ -20,5 +20,6 @@ public record UserProfile(
     Integer maxAllowedCases,
     Integer maxAllowedBuilds,
     UUID spreadsheetConfigCollectionId,
-    UUID networkVisualizationParameterId
+    UUID networkVisualizationParameterId,
+    UUID diagramConfigId
 ) { }
