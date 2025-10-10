@@ -6,46 +6,63 @@
  */
 package org.gridsuite.useradmin.server;
 
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.ConstraintViolationException;
-import org.jetbrains.annotations.NotNull;
+import com.powsybl.ws.commons.error.AbstractBaseRestExceptionHandler;
+import com.powsybl.ws.commons.error.PowsyblWsProblemDetail;
+import com.powsybl.ws.commons.error.ServerNameProvider;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ProblemDetail;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-
-import java.net.URI;
-import java.time.Instant;
-import java.util.stream.Collectors;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import java.util.Optional;
 
 /**
- * Handle exceptions catch from the {@link org.gridsuite.useradmin.server.controller controllers}.
+ * @author Mohamed Ben-rejeb {@literal <mohamed.ben-rejeb at rte-france.com>}
+ *
+ * Handle exception catch from the {@link org.gridsuite.useradmin.server.controller controllers}.
  */
-@RestControllerAdvice
-public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
-    @ExceptionHandler({UserAdminException.class})
-    protected ResponseEntity<Object> handleException(@NotNull final UserAdminException userAdminException) {
-        return switch (userAdminException.getType()) {
-            case FORBIDDEN -> ResponseEntity.status(HttpStatus.FORBIDDEN).body(userAdminException.getType());
-            case NOT_FOUND -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(userAdminException.getType());
-            case GROUP_ALREADY_EXISTS, USER_ALREADY_EXISTS, PROFILE_ALREADY_EXISTS, SEVERITY_DOES_NOT_EXIST,
-                 OVERLAPPING_ANNOUNCEMENTS, START_DATE_SAME_OR_AFTER_END_DATE ->
-                    ResponseEntity.status(HttpStatus.BAD_REQUEST).body(userAdminException.getType());
+@ControllerAdvice
+public class RestResponseEntityExceptionHandler
+    extends AbstractBaseRestExceptionHandler<UserAdminException, UserAdminBusinessErrorCode> {
+
+    public RestResponseEntityExceptionHandler(ServerNameProvider serverNameProvider) {
+        super(serverNameProvider);
+    }
+
+    @Override
+    protected Optional<PowsyblWsProblemDetail> getRemoteError(UserAdminException ex) {
+        return ex.getRemoteError();
+    }
+
+    @Override
+    protected Optional<UserAdminBusinessErrorCode> getBusinessCode(UserAdminException ex) {
+        return ex.getErrorCode();
+    }
+
+    @Override
+    protected HttpStatus mapStatus(UserAdminBusinessErrorCode errorCode) {
+        return switch (errorCode) {
+            case USER_ADMIN_PERMISSION_DENIED -> HttpStatus.FORBIDDEN;
+            case USER_ADMIN_USER_NOT_FOUND,
+                 USER_ADMIN_PROFILE_NOT_FOUND,
+                 USER_ADMIN_GROUP_NOT_FOUND -> HttpStatus.NOT_FOUND;
+            case USER_ADMIN_REMOTE_ERROR -> HttpStatus.BAD_GATEWAY;
+            case USER_ADMIN_USER_ALREADY_EXISTS,
+                 USER_ADMIN_PROFILE_ALREADY_EXISTS,
+                 USER_ADMIN_GROUP_ALREADY_EXISTS,
+                 USER_ADMIN_ANNOUNCEMENT_INVALID_PERIOD,
+                 USER_ADMIN_ANNOUNCEMENT_OVERLAP -> HttpStatus.BAD_REQUEST;
         };
     }
 
-    /**
-     * {@link org.springframework.validation.annotation.Validated @Validated} errors handler.
-     */
-    @ExceptionHandler({ConstraintViolationException.class}) // @Validated errors
-    public ProblemDetail handleConstraintViolation(@NotNull final ConstraintViolationException exception, WebRequest request) {
-        final ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Entity validation error");
-        problemDetail.setType(URI.create("http://gridsuite.org/errors/constraint-violation"));
-        problemDetail.setProperty("violations", exception.getConstraintViolations().stream().collect(Collectors.toUnmodifiableMap(ConstraintViolation::getPropertyPath, ConstraintViolation::getMessage)));
-        problemDetail.setProperty("timestamp", Instant.now());
-        return problemDetail;
+    @Override
+    protected UserAdminBusinessErrorCode defaultRemoteErrorCode() {
+        return UserAdminBusinessErrorCode.USER_ADMIN_REMOTE_ERROR;
+    }
+
+    @Override
+    protected UserAdminException wrapRemote(PowsyblWsProblemDetail remoteError) {
+        return new UserAdminException(
+            UserAdminBusinessErrorCode.USER_ADMIN_REMOTE_ERROR,
+            remoteError.getDetail(),
+            remoteError
+        );
     }
 }

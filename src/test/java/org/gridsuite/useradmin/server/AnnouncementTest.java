@@ -6,6 +6,7 @@
  */
 package org.gridsuite.useradmin.server;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.assertj.core.api.WithAssertions;
 import org.gridsuite.useradmin.server.dto.Announcement;
@@ -31,7 +32,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import static org.gridsuite.useradmin.server.UserAdminException.Type.*;
 import static org.gridsuite.useradmin.server.Utils.ROLES_HEADER;
 import static org.gridsuite.useradmin.server.service.NotificationService.HEADER_MESSAGE_TYPE;
 import static org.gridsuite.useradmin.server.service.NotificationService.MESSAGE_TYPE_CANCEL_ANNOUNCEMENT;
@@ -136,7 +136,10 @@ class AnnouncementTest implements WithAssertions {
             )
             .andExpect(status().isBadRequest())
             .andReturn();
-        assertTrue(result.getResponse().getContentAsString().contains("endDate\":\"must be a future date\""));
+        JsonNode invalidPeriodProblem = objectMapper.readTree(result.getResponse().getContentAsString());
+        assertEquals(UserAdminBusinessErrorCode.USER_ADMIN_ANNOUNCEMENT_INVALID_PERIOD.value(),
+            invalidPeriodProblem.get("businessErrorCode").asText());
+        assertTrue(invalidPeriodProblem.get("detail").asText().contains("must be after start date"));
         assertEquals(0, announcementRepository.findAll().size());
 
         // Should be ok because user is admin
@@ -179,7 +182,9 @@ class AnnouncementTest implements WithAssertions {
             .usingRecursiveComparison()
             .ignoringFields("id", "remainingDuration")
             .isEqualTo(announcementToBeCreated);
-        assertTrue(result.getResponse().getContentAsString().contains(OVERLAPPING_ANNOUNCEMENTS.name()));
+        JsonNode overlapProblem = objectMapper.readTree(result.getResponse().getContentAsString());
+        assertEquals(UserAdminBusinessErrorCode.USER_ADMIN_ANNOUNCEMENT_OVERLAP.value(),
+            overlapProblem.get("businessErrorCode").asText());
     }
 
     @Test

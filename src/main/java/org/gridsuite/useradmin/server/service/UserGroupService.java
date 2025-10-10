@@ -21,9 +21,6 @@ import org.springframework.util.CollectionUtils;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.gridsuite.useradmin.server.UserAdminException.Type.GROUP_ALREADY_EXISTS;
-import static org.gridsuite.useradmin.server.UserAdminException.Type.NOT_FOUND;
-
 /**
  * @author Franck Lecuyer <franck.lecuyer at rte-france.com>
  */
@@ -65,7 +62,8 @@ public class UserGroupService {
     @Transactional()
     public void updateGroup(UUID groupUuid, UserGroup userGroup) {
         adminRightService.assertIsAdmin();
-        GroupInfosEntity group = userGroupRepository.findById(groupUuid).orElseThrow(() -> new UserAdminException(NOT_FOUND));
+        GroupInfosEntity group = userGroupRepository.findById(groupUuid)
+            .orElseThrow(() -> UserAdminException.groupNotFound(groupUuid));
         group.setName(userGroup.name());
 
         // remove group from all of his existing users
@@ -97,7 +95,7 @@ public class UserGroupService {
         adminRightService.assertIsAdmin();
         Optional<GroupInfosEntity> groupInfosEntity = userGroupRepository.findByName(group);
         if (groupInfosEntity.isPresent()) {
-            throw new UserAdminException(GROUP_ALREADY_EXISTS);
+            throw UserAdminException.groupAlreadyExists(group);
         }
         userGroupRepository.save(new GroupInfosEntity(group));
     }
@@ -108,7 +106,8 @@ public class UserGroupService {
 
         // check if group contains users
         names.forEach(name -> {
-            GroupInfosEntity group = userGroupRepository.findByName(name).orElseThrow(() -> new UserAdminException(NOT_FOUND));
+            GroupInfosEntity group = userGroupRepository.findByName(name)
+                .orElseThrow(() -> UserAdminException.groupNotFound(name));
             if (!CollectionUtils.isEmpty(group.getUsers())) {
                 throw new DataIntegrityViolationException("Group " + name + " contains users !");
             }

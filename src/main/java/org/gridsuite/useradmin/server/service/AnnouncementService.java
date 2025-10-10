@@ -19,8 +19,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.gridsuite.useradmin.server.UserAdminException.Type.*;
-
 /**
  * @author Abdelsalem Hedhili <abdelsalem.hedhili at rte-france.com>
  */
@@ -37,11 +35,11 @@ public class AnnouncementService {
                                            AnnouncementSeverity severity) {
         adminRightService.assertIsAdmin();
         if (!startDate.isBefore(endDate)) { // internally compare in seconds
-            throw new UserAdminException(START_DATE_SAME_OR_AFTER_END_DATE);
+            throw UserAdminException.announcementInvalidPeriod(startDate, endDate);
         }
         // Start is inclusive, End is exclusive — [start, end)
         if (announcementRepository.existsByStartDateLessThanAndEndDateGreaterThan(endDate, startDate)) {
-            throw new UserAdminException(OVERLAPPING_ANNOUNCEMENTS);
+            throw UserAdminException.announcementOverlap(startDate, endDate);
         }
         return announcementRepository.save(new AnnouncementEntity(startDate, endDate, message.trim(), severity)).toDto();
     }

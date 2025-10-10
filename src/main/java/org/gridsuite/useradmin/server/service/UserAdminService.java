@@ -23,9 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.gridsuite.useradmin.server.UserAdminException.Type.NOT_FOUND;
-import static org.gridsuite.useradmin.server.UserAdminException.Type.USER_ALREADY_EXISTS;
-
 /**
  * @author Etienne Homer <etienne.homer at rte-france.com>
  */
@@ -79,7 +76,7 @@ public class UserAdminService {
     public void createUser(String sub) {
         adminRightService.assertIsAdmin();
         if (userInfosRepository.existsBySub(sub)) {
-            throw new UserAdminException(USER_ALREADY_EXISTS);
+            throw UserAdminException.userAlreadyExists(sub);
         }
         userInfosRepository.save(new UserInfosEntity(sub));
     }
@@ -93,7 +90,7 @@ public class UserAdminService {
     @Transactional
     public long delete(String sub) {
         adminRightService.assertIsAdmin();
-        UserInfosEntity userInfosEntity = userInfosRepository.findBySub(sub).orElseThrow(() -> new UserAdminException(NOT_FOUND));
+        UserInfosEntity userInfosEntity = userInfosRepository.findBySub(sub).orElseThrow(() -> UserAdminException.userNotFound(sub));
         removeUserFromGroups(userInfosEntity);
         return userInfosRepository.deleteBySub(sub);
     }
@@ -102,7 +99,7 @@ public class UserAdminService {
     public long delete(Collection<String> subs) {
         adminRightService.assertIsAdmin();
         subs.forEach(sub -> {
-            UserInfosEntity userInfosEntity = userInfosRepository.findBySub(sub).orElseThrow(() -> new UserAdminException(NOT_FOUND));
+            UserInfosEntity userInfosEntity = userInfosRepository.findBySub(sub).orElseThrow(() -> UserAdminException.userNotFound(sub));
             removeUserFromGroups(userInfosEntity);
         });
         return userInfosRepository.deleteAllBySubIn(subs);
@@ -111,7 +108,7 @@ public class UserAdminService {
     @Transactional()
     public void updateUser(String sub, UserInfos userInfos) {
         adminRightService.assertIsAdmin();
-        UserInfosEntity user = userInfosRepository.findBySub(sub).orElseThrow(() -> new UserAdminException(NOT_FOUND));
+        UserInfosEntity user = userInfosRepository.findBySub(sub).orElseThrow(() -> UserAdminException.userNotFound(sub));
         Optional<UserProfileEntity> profile = userProfileRepository.findByName(userInfos.profileName());
         user.setSub(userInfos.sub());
         user.setProfile(profile.orElse(null));
@@ -156,14 +153,14 @@ public class UserAdminService {
 
     private Optional<UserProfile> doGetUserProfile(String sub) {
         // this method is not restricted to Admin because it is called by any user to retrieve its own profile
-        UserInfosEntity user = userInfosRepository.findBySub(sub).orElseThrow(() -> new UserAdminException(NOT_FOUND));
+        UserInfosEntity user = userInfosRepository.findBySub(sub).orElseThrow(() -> UserAdminException.userNotFound(sub));
         return user.getProfile() == null ? Optional.empty() : userProfileService.getProfile(user.getProfile().getId());
     }
 
     @Transactional(readOnly = true)
     public Optional<List<UserGroup>> getUserGroups(String sub) {
         // this method is not restricted to Admin because it is called by any user to retrieve its own profile
-        UserInfosEntity user = userInfosRepository.findBySub(sub).orElseThrow(() -> new UserAdminException(NOT_FOUND));
+        UserInfosEntity user = userInfosRepository.findBySub(sub).orElseThrow(() -> UserAdminException.userNotFound(sub));
         return user.getGroups() == null ?
             Optional.empty() :
             Optional.of(user.getGroups().stream().map(g -> userGroupService.getGroup(g.getId()))
@@ -174,8 +171,8 @@ public class UserAdminService {
     @Transactional(readOnly = true)
     public Integer getUserProfileMaxAllowedCases(String sub) {
         return doGetUserProfile(sub)
-                .map(UserProfile::maxAllowedCases)
-                .orElse(applicationProps.getDefaultMaxAllowedCases());
+            .map(UserProfile::maxAllowedCases)
+            .orElse(applicationProps.getDefaultMaxAllowedCases());
     }
 
     public Integer getCasesAlertThreshold() {
@@ -185,7 +182,7 @@ public class UserAdminService {
     @Transactional(readOnly = true)
     public Integer getUserProfileMaxAllowedBuilds(String sub) {
         return doGetUserProfile(sub)
-                .map(UserProfile::maxAllowedBuilds)
-                .orElse(applicationProps.getDefaultMaxAllowedBuilds());
+            .map(UserProfile::maxAllowedBuilds)
+            .orElse(applicationProps.getDefaultMaxAllowedBuilds());
     }
 }

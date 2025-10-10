@@ -31,7 +31,7 @@ public class AdminRightService {
         Set<String> userRoles = getCurrentUserRoles();
 
         if (userRoles.isEmpty() || !userRoles.contains(userAdminApplicationProps.getAdminRole())) {
-            throw new UserAdminException(UserAdminException.Type.FORBIDDEN);
+            throw UserAdminException.forbidden();
         }
     }
 }
