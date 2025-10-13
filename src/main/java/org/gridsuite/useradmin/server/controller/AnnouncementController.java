@@ -9,7 +9,6 @@ package org.gridsuite.useradmin.server.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import org.gridsuite.useradmin.server.UserAdminApi;
@@ -56,7 +55,7 @@ public class AnnouncementController {
     @ApiResponse(responseCode = "403", description = "User is not an admin")
     @ApiResponse(responseCode = "409", description = "There is a conflict in display time")
     public ResponseEntity<Announcement> createAnnouncement(@RequestParam("startDate") Instant startDate,
-                                                           @RequestParam("endDate") @Future Instant endDate,
+                                                           @RequestParam("endDate") Instant endDate,
                                                            @RequestParam("severity") AnnouncementSeverity severity,
                                                            @RequestBody @NotBlank String message) {
         return ResponseEntity.ok(service.createAnnouncement(startDate, endDate, message, severity));
