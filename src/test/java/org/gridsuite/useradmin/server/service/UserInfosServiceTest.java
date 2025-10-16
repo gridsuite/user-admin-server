@@ -21,8 +21,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 /**
@@ -62,12 +61,28 @@ class UserInfosServiceTest {
         UserInfosEntity user = new UserInfosEntity(UUID.randomUUID(), "user_A", profile, null);
 
         when(userInfosRepositoryMock.findBySub("user_A")).thenReturn(Optional.of(user));
-        Optional<UserInfos> userInfos = userInfosService.getUserInfo("user_A");
-        assertTrue(userInfos.isPresent());
-        assertEquals("user_A", userInfos.get().sub());
-        assertEquals("profile_A", userInfos.get().profileName());
-        assertEquals(5, userInfos.get().maxAllowedCases());
-        assertEquals(3, userInfos.get().numberCasesUsed());
-        assertEquals(6, userInfos.get().maxAllowedBuilds());
+        UserInfos userInfos = userInfosService.getUserInfo("user_A");
+        assertNotNull(userInfos);
+        assertEquals("user_A", userInfos.sub());
+        assertEquals("profile_A", userInfos.profileName());
+        assertEquals(5, userInfos.maxAllowedCases());
+        assertEquals(3, userInfos.numberCasesUsed());
+        assertEquals(6, userInfos.maxAllowedBuilds());
+    }
+
+    @Test
+    void getUserInfoForNonExistentUser() {
+        when(applicationPropsMock.getDefaultMaxAllowedCases()).thenReturn(20);
+        when(applicationPropsMock.getDefaultMaxAllowedBuilds()).thenReturn(10);
+        when(userInfosRepositoryMock.findBySub("nonExistent")).thenReturn(Optional.empty());
+
+        UserInfos userInfos = userInfosService.getUserInfo("nonExistent");
+        assertNotNull(userInfos);
+        assertEquals("nonExistent", userInfos.sub());
+        assertNull(userInfos.profileName());
+        assertEquals(20, userInfos.maxAllowedCases());
+        assertEquals(0, userInfos.numberCasesUsed());
+        assertEquals(10, userInfos.maxAllowedBuilds());
+        assertTrue(userInfos.groups().isEmpty());
     }
 }

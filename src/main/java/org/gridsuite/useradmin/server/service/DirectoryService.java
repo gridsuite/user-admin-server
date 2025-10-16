@@ -73,6 +73,11 @@ public class DirectoryService {
 
     public Integer getCasesCount(String userId) {
         String path = UriComponentsBuilder.fromPath(USER_SERVER_ROOT_PATH + "/{userId}/cases/count").buildAndExpand(userId).toUriString();
-        return restTemplate.getForObject(directoryServerBaseUri + path, Integer.class);
+        try {
+            return restTemplate.getForObject(directoryServerBaseUri + path, Integer.class);
+        } catch (Exception e) {
+            return null;
+        }
+
     }
 }

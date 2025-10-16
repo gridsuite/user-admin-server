@@ -18,6 +18,6 @@ useradmin:
   cron:
     announcement-check: 0 */1 * * * *
     announcement-clean: 0 0 2 * * ?
-#  defaultMaxAllowedCases: 20   # Default allowed cases for a user (set here for testing purposes)
-#  defaultMaxAllowedBuilds: 10  # Default allowed builds for a user (set here for testing purposes)
-#  casesAlertThreshold: 90      # Default usage threshold (percentage) when user gets a warning when uploading cases (set here for testing purposes)
+  defaultMaxAllowedCases: 20   # Default allowed cases for a user
+  defaultMaxAllowedBuilds: 20  # Default allowed builds for a user
+  casesAlertThreshold: 90      # Default usage threshold (percentage) when user gets a warning when uploading cases
