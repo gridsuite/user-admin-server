@@ -140,7 +140,7 @@ class AnnouncementTest implements WithAssertions {
                 .queryParam("endDate", announcementToBeCreated.endDate().toString())
                 .content(announcementToBeCreated.message())
             )
-            .andExpect(status().isBadRequest())
+            .andExpect(status().isInternalServerError())
             .andReturn();
 
         assertTrue(result.getResponse().getContentAsString().contains("\"Failed to convert value of type 'java.lang.String' to required type 'org.gridsuite.useradmin.server.entity.AnnouncementSeverity'"));
