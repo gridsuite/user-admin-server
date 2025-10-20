@@ -32,8 +32,8 @@ public class RestResponseEntityExceptionHandler
     }
 
     @Override
-    protected Optional<UserAdminBusinessErrorCode> getBusinessCode(UserAdminException ex) {
-        return ex.getErrorCode();
+    protected UserAdminBusinessErrorCode getBusinessCode(UserAdminException ex) {
+        return ex.getBusinessErrorCode();
     }
 
     @Override

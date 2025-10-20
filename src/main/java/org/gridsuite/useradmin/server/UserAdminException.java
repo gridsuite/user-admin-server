@@ -6,8 +6,7 @@
  */
 package org.gridsuite.useradmin.server;
 
-import com.powsybl.ws.commons.error.AbstractPowsyblWsException;
-import com.powsybl.ws.commons.error.BusinessErrorCode;
+import com.powsybl.ws.commons.error.AbstractBusinessException;
 import com.powsybl.ws.commons.error.PowsyblWsProblemDetail;
 
 import java.time.Instant;
@@ -22,7 +21,7 @@ import static org.gridsuite.useradmin.server.UserAdminBusinessErrorCode.*;
  *
  * User admin specific runtime exception enriched with a business error code.
  */
-public class UserAdminException extends AbstractPowsyblWsException {
+public class UserAdminException extends AbstractBusinessException {
 
     private final UserAdminBusinessErrorCode errorCode;
     private final PowsyblWsProblemDetail remoteError;
@@ -83,13 +82,9 @@ public class UserAdminException extends AbstractPowsyblWsException {
         return new UserAdminException(errorCode, args.length == 0 ? message : String.format(message, args));
     }
 
-    public Optional<UserAdminBusinessErrorCode> getErrorCode() {
-        return Optional.of(errorCode);
-    }
-
     @Override
-    public Optional<BusinessErrorCode> getBusinessErrorCode() {
-        return Optional.ofNullable(errorCode);
+    public UserAdminBusinessErrorCode getBusinessErrorCode() {
+        return errorCode;
     }
 
     public Optional<PowsyblWsProblemDetail> getRemoteError() {

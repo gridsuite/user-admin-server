@@ -23,19 +23,19 @@ class UserAdminExceptionTest {
     @Test
     void staticFactoriesCoverAllPaths() {
         assertThat(UserAdminException.forbidden().getBusinessErrorCode())
-            .contains(UserAdminBusinessErrorCode.USER_ADMIN_PERMISSION_DENIED);
+            .isEqualTo(UserAdminBusinessErrorCode.USER_ADMIN_PERMISSION_DENIED);
 
         assertThat(UserAdminException.userAlreadyExists("subj").getMessage()).contains("subj");
         assertThat(UserAdminException.userNotFound("subj").getMessage()).contains("subj");
 
         assertThat(UserAdminException.profileAlreadyExists("profile").getBusinessErrorCode())
-            .contains(UserAdminBusinessErrorCode.USER_ADMIN_PROFILE_ALREADY_EXISTS);
+            .isEqualTo(UserAdminBusinessErrorCode.USER_ADMIN_PROFILE_ALREADY_EXISTS);
 
         UUID profileId = UUID.fromString("00000000-0000-0000-0000-000000000001");
         assertThat(UserAdminException.profileNotFound(profileId).getMessage()).contains(profileId.toString());
 
         assertThat(UserAdminException.groupAlreadyExists("group").getBusinessErrorCode())
-            .contains(UserAdminBusinessErrorCode.USER_ADMIN_GROUP_ALREADY_EXISTS);
+            .isEqualTo(UserAdminBusinessErrorCode.USER_ADMIN_GROUP_ALREADY_EXISTS);
 
         UUID groupId = UUID.fromString("00000000-0000-0000-0000-000000000002");
         assertThat(UserAdminException.groupNotFound(groupId).getMessage()).contains(groupId.toString());
@@ -44,9 +44,9 @@ class UserAdminExceptionTest {
         Instant start = Instant.parse("2025-12-01T00:00:00Z");
         Instant end = Instant.parse("2025-12-02T00:00:00Z");
         assertThat(UserAdminException.announcementInvalidPeriod(start, end).getBusinessErrorCode())
-            .contains(UserAdminBusinessErrorCode.USER_ADMIN_ANNOUNCEMENT_INVALID_PERIOD);
+            .isEqualTo(UserAdminBusinessErrorCode.USER_ADMIN_ANNOUNCEMENT_INVALID_PERIOD);
         assertThat(UserAdminException.announcementOverlap(start, end).getBusinessErrorCode())
-            .contains(UserAdminBusinessErrorCode.USER_ADMIN_ANNOUNCEMENT_OVERLAP);
+            .isEqualTo(UserAdminBusinessErrorCode.USER_ADMIN_ANNOUNCEMENT_OVERLAP);
 
         UserAdminException formatted = UserAdminException.of(UserAdminBusinessErrorCode.USER_ADMIN_USER_NOT_FOUND,
             "User %s missing", "x");
@@ -67,6 +67,6 @@ class UserAdminExceptionTest {
 
         assertThat(exception.getRemoteError()).contains(remote);
         assertThat(exception.getBusinessErrorCode())
-            .contains(UserAdminBusinessErrorCode.USER_ADMIN_REMOTE_ERROR);
+            .isEqualTo(UserAdminBusinessErrorCode.USER_ADMIN_REMOTE_ERROR);
     }
 }
