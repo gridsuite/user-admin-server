@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class UserInfosService {
@@ -39,15 +40,25 @@ public class UserInfosService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<UserInfos> getUserInfo(String sub) {
+    public UserInfos getUserInfo(String sub) {
         Optional<UserInfosEntity> userInfosEntity = getUserInfosEntity(sub);
+        // get number of cases used
+        Integer casesUsed = directoryService.getCasesCount(sub);
         if (userInfosEntity.isPresent()) {
-            // get number of cases used
-            Integer casesUsed = directoryService.getCasesCount(userInfosEntity.get().getSub());
-
-            return Optional.of(toDtoUserInfo(userInfosEntity.get(), casesUsed));
+            return toDtoUserInfo(userInfosEntity.get(), casesUsed);
         }
-        return Optional.empty();
+        return createDefaultUserInfo(sub, casesUsed);
+    }
+
+    private UserInfos createDefaultUserInfo(String sub, Integer casesUsed) {
+        return new UserInfos(
+                sub,
+                null,
+                applicationProps.getDefaultMaxAllowedCases(),
+                casesUsed,
+                applicationProps.getDefaultMaxAllowedBuilds(),
+                Set.of()
+        );
     }
 
     private Optional<UserInfosEntity> getUserInfosEntity(String sub) {

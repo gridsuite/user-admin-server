@@ -130,7 +130,7 @@ class UserGroupControllerTest {
             new TypeReference<>() { });
     }
 
-    private Set<UserGroup> getUserGroups(String userName) throws Exception {
+    private List<UserGroup> getUserGroups(String userName) throws Exception {
         return objectMapper.readValue(
             mockMvc.perform(get(API_BASE_PATH + "/users/" + userName + "/groups")
                     .contentType(APPLICATION_JSON))
@@ -212,7 +212,7 @@ class UserGroupControllerTest {
         checkUserGroup(USER_B, null);
         checkUserGroup(USER_C, null);
 
-        Set<UserGroup> userGroups = getUserGroups(USER_E);
+        List<UserGroup> userGroups = getUserGroups(USER_E);
         assertEquals(Set.of(GROUP_NEW_NAME), userGroups.stream().map(UserGroup::name).collect(Collectors.toSet()));
 
         // delete group : error because of users still referencing it
@@ -232,5 +232,12 @@ class UserGroupControllerTest {
         checkUserGroup(USER_C, null);
         checkUserGroup(USER_D, null);
         checkUserGroup(USER_E, null);
+    }
+
+    @Test
+    void testGetGroupsForNonExistentUser() throws Exception {
+        List<UserGroup> groups = getUserGroups("nonExistentUser");
+        assertNotNull(groups);
+        assertTrue(groups.isEmpty());
     }
 }

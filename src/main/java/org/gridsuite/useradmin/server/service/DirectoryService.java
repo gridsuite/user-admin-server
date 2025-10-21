@@ -6,6 +6,8 @@
  */
 package org.gridsuite.useradmin.server.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -30,6 +32,7 @@ import java.util.stream.Collectors;
 @Service
 public class DirectoryService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(DirectoryService.class);
     private static final String DIRECTORY_SERVER_API_VERSION = "v1";
 
     private static final String DELIMITER = "/";
@@ -73,6 +76,12 @@ public class DirectoryService {
 
     public Integer getCasesCount(String userId) {
         String path = UriComponentsBuilder.fromPath(USER_SERVER_ROOT_PATH + "/{userId}/cases/count").buildAndExpand(userId).toUriString();
-        return restTemplate.getForObject(directoryServerBaseUri + path, Integer.class);
+        try {
+            return restTemplate.getForObject(directoryServerBaseUri + path, Integer.class);
+        } catch (Exception e) {
+            LOGGER.warn("Failed to retrieve cases count for user {}", userId);
+            return null;
+        }
+
     }
 }

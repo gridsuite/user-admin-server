@@ -67,6 +67,9 @@ class UserAdminTest {
     @Autowired
     private ConnectionRepository connectionRepository;
 
+    @Autowired
+    private UserAdminApplicationProps userAdminApplicationProps;
+
     @AfterEach
     void cleanDB() {
         userGroupRepository.deleteAll();
@@ -251,7 +254,21 @@ class UserAdminTest {
 
     @Test
     void testGetUserProfileNotFound() throws Exception {
-        getUserProfile("BadUser", HttpStatus.NOT_FOUND);
+        UserProfile profile = getUserProfile("BadUser", HttpStatus.OK);
+        assertNotNull(profile);
+        assertEquals(UserProfile.DEFAULT_PROFILE_NAME, profile.name());
+        assertNull(profile.id());
+        assertEquals(userAdminApplicationProps.getDefaultMaxAllowedCases(), profile.maxAllowedCases());
+        assertEquals(userAdminApplicationProps.getDefaultMaxAllowedBuilds(), profile.maxAllowedBuilds());
+        assertNull(profile.loadFlowParameterId());
+        assertNull(profile.securityAnalysisParameterId());
+        assertNull(profile.sensitivityAnalysisParameterId());
+        assertNull(profile.shortcircuitParameterId());
+        assertNull(profile.voltageInitParameterId());
+        assertNull(profile.allLinksValid());
+        assertNull(profile.spreadsheetConfigCollectionId());
+        assertNull(profile.networkVisualizationParameterId());
+        assertNull(profile.diagramConfigId());
     }
 
     @Test
