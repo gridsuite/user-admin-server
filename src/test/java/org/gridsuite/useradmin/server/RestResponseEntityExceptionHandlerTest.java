@@ -6,18 +6,19 @@
  */
 package org.gridsuite.useradmin.server;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.powsybl.ws.commons.error.PowsyblWsProblemDetail;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -49,27 +50,30 @@ class RestResponseEntityExceptionHandlerTest {
     }
 
     @Test
-    void propagatesRemoteDetails() {
+    void propagatesRemoteDetails() throws JsonProcessingException {
         MockHttpServletRequest request = new MockHttpServletRequest("POST", "/user-admin/remote");
         PowsyblWsProblemDetail remote = PowsyblWsProblemDetail.builder(HttpStatus.BAD_GATEWAY)
             .server("directory")
             .detail("failure")
-            .timestamp(Instant.parse("2025-12-04T00:00:00Z"))
             .path("/directory")
             .build();
-        UserAdminException exception = new UserAdminException(UserAdminBusinessErrorCode.USER_ADMIN_REMOTE_ERROR,
-            "wrap", remote);
 
-        ResponseEntity<PowsyblWsProblemDetail> response = handler.invokeHandleDomainException(exception, request);
+        HttpClientErrorException exception = HttpClientErrorException.create(
+            HttpStatus.BAD_GATEWAY,
+            "coucou",
+            HttpHeaders.EMPTY,
+            OBJECT_MAPPER.writeValueAsBytes(remote),
+            null
+        );
+        ResponseEntity<PowsyblWsProblemDetail> response = handler.invokeHandleRemoteException(exception, request);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_GATEWAY);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().getChain()).hasSize(1);
-        assertEquals("user-admin-server", response.getBody().getChain().getFirst().getFromServer());
     }
 
     @Test
-    void wrapsInvalidRemotePayloadWithDefaultCode() {
+    void wrapsInvalidRemotePayload() {
         MockHttpServletRequest request = new MockHttpServletRequest("DELETE", "/user-admin/remote");
         HttpClientErrorException exception = HttpClientErrorException.create(
             HttpStatus.BAD_GATEWAY,
@@ -83,7 +87,6 @@ class RestResponseEntityExceptionHandlerTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_GATEWAY);
         assertThat(response.getBody()).isNotNull();
-        assertEquals("useradmin.remoteError", response.getBody().getBusinessErrorCode());
     }
 
     @Test
@@ -93,7 +96,6 @@ class RestResponseEntityExceptionHandlerTest {
             .server("directory")
             .businessErrorCode("directory.remoteError")
             .detail("invalid")
-            .timestamp(Instant.parse("2025-12-05T00:00:00Z"))
             .path("/directory")
             .build();
 
@@ -106,6 +108,7 @@ class RestResponseEntityExceptionHandlerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(response.getBody()).isNotNull();
         assertEquals("directory.remoteError", response.getBody().getBusinessErrorCode());
+        assertThat(response.getBody().getChain()).hasSize(1);
     }
 
     private static final class TestRestResponseEntityExceptionHandler extends RestResponseEntityExceptionHandler {

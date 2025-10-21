@@ -6,9 +6,7 @@
  */
 package org.gridsuite.useradmin.server;
 
-import com.powsybl.ws.commons.error.PowsyblWsProblemDetail;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpStatus;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -51,22 +49,5 @@ class UserAdminExceptionTest {
         UserAdminException formatted = UserAdminException.of(UserAdminBusinessErrorCode.USER_ADMIN_USER_NOT_FOUND,
             "User %s missing", "x");
         assertThat(formatted.getMessage()).isEqualTo("User x missing");
-    }
-
-    @Test
-    void remoteErrorIsReturnedWhenPresent() {
-        PowsyblWsProblemDetail remote = PowsyblWsProblemDetail.builder(HttpStatus.BAD_GATEWAY)
-            .server("directory")
-            .detail("failure")
-            .timestamp(Instant.parse("2025-12-03T00:00:00Z"))
-            .path("/directory")
-            .build();
-
-        UserAdminException exception = new UserAdminException(UserAdminBusinessErrorCode.USER_ADMIN_REMOTE_ERROR,
-            "wrapped", remote);
-
-        assertThat(exception.getRemoteError()).contains(remote);
-        assertThat(exception.getBusinessErrorCode())
-            .isEqualTo(UserAdminBusinessErrorCode.USER_ADMIN_REMOTE_ERROR);
     }
 }

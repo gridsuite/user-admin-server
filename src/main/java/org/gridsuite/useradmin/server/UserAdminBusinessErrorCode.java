@@ -22,8 +22,7 @@ public enum UserAdminBusinessErrorCode implements BusinessErrorCode {
     USER_ADMIN_GROUP_NOT_FOUND("useradmin.groupNotFound"),
     USER_ADMIN_GROUP_ALREADY_EXISTS("useradmin.groupAlreadyExists"),
     USER_ADMIN_ANNOUNCEMENT_INVALID_PERIOD("useradmin.announcementInvalidPeriod"),
-    USER_ADMIN_ANNOUNCEMENT_OVERLAP("useradmin.announcementOverlap"),
-    USER_ADMIN_REMOTE_ERROR("useradmin.remoteError");
+    USER_ADMIN_ANNOUNCEMENT_OVERLAP("useradmin.announcementOverlap");
 
     private final String value;
 

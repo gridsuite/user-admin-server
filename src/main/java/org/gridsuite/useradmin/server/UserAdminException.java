@@ -7,11 +7,10 @@
 package org.gridsuite.useradmin.server;
 
 import com.powsybl.ws.commons.error.AbstractBusinessException;
-import com.powsybl.ws.commons.error.PowsyblWsProblemDetail;
+import org.jetbrains.annotations.NotNull;
 
 import java.time.Instant;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.gridsuite.useradmin.server.UserAdminBusinessErrorCode.*;
@@ -24,16 +23,10 @@ import static org.gridsuite.useradmin.server.UserAdminBusinessErrorCode.*;
 public class UserAdminException extends AbstractBusinessException {
 
     private final UserAdminBusinessErrorCode errorCode;
-    private final PowsyblWsProblemDetail remoteError;
 
     public UserAdminException(UserAdminBusinessErrorCode errorCode, String message) {
-        this(errorCode, message, null);
-    }
-
-    public UserAdminException(UserAdminBusinessErrorCode errorCode, String message, PowsyblWsProblemDetail remoteError) {
         super(Objects.requireNonNull(message, "message must not be null"));
         this.errorCode = Objects.requireNonNull(errorCode, "errorCode must not be null");
-        this.remoteError = remoteError;
     }
 
     public static UserAdminException forbidden() {
@@ -82,12 +75,10 @@ public class UserAdminException extends AbstractBusinessException {
         return new UserAdminException(errorCode, args.length == 0 ? message : String.format(message, args));
     }
 
+    @NotNull
     @Override
     public UserAdminBusinessErrorCode getBusinessErrorCode() {
         return errorCode;
     }
 
-    public Optional<PowsyblWsProblemDetail> getRemoteError() {
-        return Optional.ofNullable(remoteError);
-    }
 }

@@ -7,11 +7,10 @@
 package org.gridsuite.useradmin.server;
 
 import com.powsybl.ws.commons.error.AbstractBaseRestExceptionHandler;
-import com.powsybl.ws.commons.error.PowsyblWsProblemDetail;
 import com.powsybl.ws.commons.error.ServerNameProvider;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
-import java.util.Optional;
 
 /**
  * @author Mohamed Ben-rejeb {@literal <mohamed.ben-rejeb at rte-france.com>}
@@ -26,11 +25,7 @@ public class RestResponseEntityExceptionHandler
         super(serverNameProvider);
     }
 
-    @Override
-    protected Optional<PowsyblWsProblemDetail> getRemoteError(UserAdminException ex) {
-        return ex.getRemoteError();
-    }
-
+    @NotNull
     @Override
     protected UserAdminBusinessErrorCode getBusinessCode(UserAdminException ex) {
         return ex.getBusinessErrorCode();
@@ -43,26 +38,11 @@ public class RestResponseEntityExceptionHandler
             case USER_ADMIN_USER_NOT_FOUND,
                  USER_ADMIN_PROFILE_NOT_FOUND,
                  USER_ADMIN_GROUP_NOT_FOUND -> HttpStatus.NOT_FOUND;
-            case USER_ADMIN_REMOTE_ERROR -> HttpStatus.BAD_GATEWAY;
             case USER_ADMIN_USER_ALREADY_EXISTS,
                  USER_ADMIN_PROFILE_ALREADY_EXISTS,
                  USER_ADMIN_GROUP_ALREADY_EXISTS,
                  USER_ADMIN_ANNOUNCEMENT_INVALID_PERIOD,
                  USER_ADMIN_ANNOUNCEMENT_OVERLAP -> HttpStatus.BAD_REQUEST;
         };
-    }
-
-    @Override
-    protected UserAdminBusinessErrorCode defaultRemoteErrorCode() {
-        return UserAdminBusinessErrorCode.USER_ADMIN_REMOTE_ERROR;
-    }
-
-    @Override
-    protected UserAdminException wrapRemote(PowsyblWsProblemDetail remoteError) {
-        return new UserAdminException(
-            UserAdminBusinessErrorCode.USER_ADMIN_REMOTE_ERROR,
-            remoteError.getDetail(),
-            remoteError
-        );
     }
 }
