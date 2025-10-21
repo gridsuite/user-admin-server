@@ -24,6 +24,7 @@ public record UserProfile(
     UUID diagramConfigId
 ) {
     public static final String DEFAULT_PROFILE_NAME = "default profile";
+
     public static UserProfile createDefaultProfile(Integer maxAllowedCases, Integer maxAllowedBuilds) {
         return new UserProfile(
                 null,
