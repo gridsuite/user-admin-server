@@ -147,32 +147,55 @@ public class UserAdminService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<UserProfile> getUserProfile(String sub) {
+    public UserProfile getUserProfile(String sub) {
         return doGetUserProfile(sub);
     }
 
-    private Optional<UserProfile> doGetUserProfile(String sub) {
+    private UserProfile doGetUserProfile(String sub) {
         // this method is not restricted to Admin because it is called by any user to retrieve its own profile
-        UserInfosEntity user = userInfosRepository.findBySub(sub).orElseThrow(() -> UserAdminException.userNotFound(sub));
-        return user.getProfile() == null ? Optional.empty() : userProfileService.getProfile(user.getProfile().getId());
+        Optional<UserInfosEntity> userOpt = userInfosRepository.findBySub(sub);
+
+        if (userOpt.isEmpty()) {
+            return createDefaultProfile();
+        }
+
+        UserInfosEntity user = userOpt.get();
+
+        if (user.getProfile() == null) {
+            return createDefaultProfile();
+        }
+
+        return userProfileService.getProfile(user.getProfile().getId())
+                .orElseGet(this::createDefaultProfile);
     }
 
     @Transactional(readOnly = true)
-    public Optional<List<UserGroup>> getUserGroups(String sub) {
-        // this method is not restricted to Admin because it is called by any user to retrieve its own profile
-        UserInfosEntity user = userInfosRepository.findBySub(sub).orElseThrow(() -> UserAdminException.userNotFound(sub));
-        return user.getGroups() == null ?
-            Optional.empty() :
-            Optional.of(user.getGroups().stream().map(g -> userGroupService.getGroup(g.getId()))
+    public List<UserGroup> getUserGroups(String sub) {
+        // this method is not restricted to Admin because it is called by any user to retrieve its own groups
+        Optional<UserInfosEntity> userOpt = userInfosRepository.findBySub(sub);
+
+        if (userOpt.isEmpty()) {
+            return List.of();
+        }
+
+        UserInfosEntity user = userOpt.get();
+
+        if (user.getGroups() == null || user.getGroups().isEmpty()) {
+            return List.of();
+        }
+
+        return user.getGroups().stream()
+                .map(g -> userGroupService.getGroup(g.getId()))
                 .filter(Optional::isPresent)
-                .map(Optional::get).toList());
+                .map(Optional::get)
+                .toList();
     }
 
     @Transactional(readOnly = true)
     public Integer getUserProfileMaxAllowedCases(String sub) {
-        return doGetUserProfile(sub)
-            .map(UserProfile::maxAllowedCases)
-            .orElse(applicationProps.getDefaultMaxAllowedCases());
+        UserProfile profile = doGetUserProfile(sub);
+        return Optional.ofNullable(profile.maxAllowedCases())
+                .orElse(applicationProps.getDefaultMaxAllowedCases());
     }
 
     public Integer getCasesAlertThreshold() {
@@ -181,8 +204,15 @@ public class UserAdminService {
 
     @Transactional(readOnly = true)
     public Integer getUserProfileMaxAllowedBuilds(String sub) {
-        return doGetUserProfile(sub)
-            .map(UserProfile::maxAllowedBuilds)
-            .orElse(applicationProps.getDefaultMaxAllowedBuilds());
+        UserProfile profile = doGetUserProfile(sub);
+        return Optional.ofNullable(profile.maxAllowedBuilds())
+                .orElse(applicationProps.getDefaultMaxAllowedBuilds());
+    }
+
+    private UserProfile createDefaultProfile() {
+        return UserProfile.createDefaultProfile(
+                applicationProps.getDefaultMaxAllowedCases(),
+                applicationProps.getDefaultMaxAllowedBuilds()
+        );
     }
 }

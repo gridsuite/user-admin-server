@@ -33,9 +33,8 @@ public class UserInfoController {
     @GetMapping(value = "/{sub}/detail", produces = "application/json")
     @Operation(summary = "get detailed user information")
     @ApiResponse(responseCode = "200", description = "The user exist")
-    @ApiResponse(responseCode = "404", description = "The user doesn't exist")
     public ResponseEntity<UserInfos> getUserDetail(@PathVariable("sub") String sub) {
-        return ResponseEntity.of(userInfosService.getUserInfo(sub));
+        return ResponseEntity.ok(userInfosService.getUserInfo(sub));
     }
 }
 
