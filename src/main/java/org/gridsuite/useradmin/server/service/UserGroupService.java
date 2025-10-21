@@ -7,7 +7,7 @@
 package org.gridsuite.useradmin.server.service;
 
 import jakarta.annotation.Nullable;
-import org.gridsuite.useradmin.server.UserAdminException;
+import org.gridsuite.useradmin.server.error.UserAdminException;
 import org.gridsuite.useradmin.server.dto.UserGroup;
 import org.gridsuite.useradmin.server.entity.GroupInfosEntity;
 import org.gridsuite.useradmin.server.entity.UserInfosEntity;

@@ -9,7 +9,7 @@ package org.gridsuite.useradmin.server.service;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.BooleanUtils;
 import org.gridsuite.useradmin.server.UserAdminApplicationProps;
-import org.gridsuite.useradmin.server.UserAdminException;
+import org.gridsuite.useradmin.server.error.UserAdminException;
 import org.gridsuite.useradmin.server.dto.UserProfile;
 import org.gridsuite.useradmin.server.entity.UserProfileEntity;
 import org.gridsuite.useradmin.server.repository.UserProfileRepository;

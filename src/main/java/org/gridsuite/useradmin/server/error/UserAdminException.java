@@ -4,7 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package org.gridsuite.useradmin.server;
+package org.gridsuite.useradmin.server.error;
 
 import com.powsybl.ws.commons.error.AbstractBusinessException;
 import org.jetbrains.annotations.NotNull;
@@ -13,7 +13,7 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
-import static org.gridsuite.useradmin.server.UserAdminBusinessErrorCode.*;
+import static org.gridsuite.useradmin.server.error.UserAdminBusinessErrorCode.*;
 
 /**
  * @author Mohamed Ben-rejeb {@literal <mohamed.ben-rejeb at rte-france.com>}

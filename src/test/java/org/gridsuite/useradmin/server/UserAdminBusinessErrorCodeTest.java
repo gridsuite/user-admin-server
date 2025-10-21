@@ -6,6 +6,7 @@
  */
 package org.gridsuite.useradmin.server;
 
+import org.gridsuite.useradmin.server.error.UserAdminBusinessErrorCode;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 

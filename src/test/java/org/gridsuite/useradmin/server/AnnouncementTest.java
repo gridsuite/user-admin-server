@@ -12,6 +12,7 @@ import org.assertj.core.api.WithAssertions;
 import org.gridsuite.useradmin.server.dto.Announcement;
 import org.gridsuite.useradmin.server.entity.AnnouncementEntity;
 import org.gridsuite.useradmin.server.entity.AnnouncementSeverity;
+import org.gridsuite.useradmin.server.error.UserAdminBusinessErrorCode;
 import org.gridsuite.useradmin.server.repository.AnnouncementRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;

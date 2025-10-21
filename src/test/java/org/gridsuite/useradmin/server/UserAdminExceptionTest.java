@@ -6,6 +6,8 @@
  */
 package org.gridsuite.useradmin.server;
 
+import org.gridsuite.useradmin.server.error.UserAdminBusinessErrorCode;
+import org.gridsuite.useradmin.server.error.UserAdminException;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
