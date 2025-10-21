@@ -256,7 +256,7 @@ class UserAdminTest {
     void testGetUserProfileNotFound() throws Exception {
         UserProfile profile = getUserProfile("BadUser", HttpStatus.OK);
         assertNotNull(profile);
-        assertEquals("default profile", profile.name());
+        assertEquals(UserProfile.DEFAULT_PROFILE_NAME, profile.name());
         assertNull(profile.id());
         assertEquals(userAdminApplicationProps.getDefaultMaxAllowedCases(), profile.maxAllowedCases());
         assertEquals(userAdminApplicationProps.getDefaultMaxAllowedBuilds(), profile.maxAllowedBuilds());

@@ -213,20 +213,9 @@ public class UserAdminService {
     }
 
     private UserProfile createDefaultProfile() {
-        return new UserProfile(
-                null,
-                "default profile",
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
+        return UserProfile.createDefaultProfile(
                 applicationProps.getDefaultMaxAllowedCases(),
-                applicationProps.getDefaultMaxAllowedBuilds(),
-                null,
-                null,
-                null
+                applicationProps.getDefaultMaxAllowedBuilds()
         );
     }
 }

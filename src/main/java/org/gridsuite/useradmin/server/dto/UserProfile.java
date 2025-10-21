@@ -22,4 +22,23 @@ public record UserProfile(
     UUID spreadsheetConfigCollectionId,
     UUID networkVisualizationParameterId,
     UUID diagramConfigId
-) { }
+) {
+    public static final String DEFAULT_PROFILE_NAME = "default profile";
+    public static UserProfile createDefaultProfile(Integer maxAllowedCases, Integer maxAllowedBuilds) {
+        return new UserProfile(
+                null,
+                DEFAULT_PROFILE_NAME,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                maxAllowedCases,
+                maxAllowedBuilds,
+                null,
+                null,
+                null
+        );
+    }
+}
