@@ -18,7 +18,7 @@ public class PropertyServerNameProvider implements ServerNameProvider {
 
     private final String name;
 
-    public PropertyServerNameProvider(@Value("${server.name:user-admin-server}") String name) {
+    public PropertyServerNameProvider(@Value("${spring.application.name:user-admin-server}") String name) {
         this.name = name;
     }
 
