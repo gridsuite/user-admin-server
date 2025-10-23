@@ -68,7 +68,7 @@ public class UserAdminException extends AbstractBusinessException {
 
     public static UserAdminException announcementOverlap(Instant startDate, Instant endDate) {
         return new UserAdminException(USER_ADMIN_ANNOUNCEMENT_OVERLAP,
-            String.format("Announcement period [%s, %s) overlaps with an existing announcement", startDate, endDate));
+            String.format("Announcement period [%s, %s] overlaps with an existing announcement", startDate, endDate));
     }
 
     public static UserAdminException of(UserAdminBusinessErrorCode errorCode, String message, Object... args) {
