@@ -7,7 +7,7 @@
 package org.gridsuite.useradmin.server.service;
 
 import org.gridsuite.useradmin.server.UserAdminApplicationProps;
-import org.gridsuite.useradmin.server.UserAdminException;
+import org.gridsuite.useradmin.server.error.UserAdminException;
 import org.gridsuite.useradmin.server.dto.UserConnection;
 import org.gridsuite.useradmin.server.dto.UserGroup;
 import org.gridsuite.useradmin.server.dto.UserInfos;
@@ -22,9 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static org.gridsuite.useradmin.server.UserAdminException.Type.NOT_FOUND;
-import static org.gridsuite.useradmin.server.UserAdminException.Type.USER_ALREADY_EXISTS;
 
 /**
  * @author Etienne Homer <etienne.homer at rte-france.com>
@@ -79,7 +76,7 @@ public class UserAdminService {
     public void createUser(String sub) {
         adminRightService.assertIsAdmin();
         if (userInfosRepository.existsBySub(sub)) {
-            throw new UserAdminException(USER_ALREADY_EXISTS);
+            throw UserAdminException.userAlreadyExists(sub);
         }
         userInfosRepository.save(new UserInfosEntity(sub));
     }
@@ -93,7 +90,7 @@ public class UserAdminService {
     @Transactional
     public long delete(String sub) {
         adminRightService.assertIsAdmin();
-        UserInfosEntity userInfosEntity = userInfosRepository.findBySub(sub).orElseThrow(() -> new UserAdminException(NOT_FOUND));
+        UserInfosEntity userInfosEntity = userInfosRepository.findBySub(sub).orElseThrow(() -> UserAdminException.userNotFound(sub));
         removeUserFromGroups(userInfosEntity);
         return userInfosRepository.deleteBySub(sub);
     }
@@ -102,7 +99,7 @@ public class UserAdminService {
     public long delete(Collection<String> subs) {
         adminRightService.assertIsAdmin();
         subs.forEach(sub -> {
-            UserInfosEntity userInfosEntity = userInfosRepository.findBySub(sub).orElseThrow(() -> new UserAdminException(NOT_FOUND));
+            UserInfosEntity userInfosEntity = userInfosRepository.findBySub(sub).orElseThrow(() -> UserAdminException.userNotFound(sub));
             removeUserFromGroups(userInfosEntity);
         });
         return userInfosRepository.deleteAllBySubIn(subs);
@@ -111,7 +108,7 @@ public class UserAdminService {
     @Transactional()
     public void updateUser(String sub, UserInfos userInfos) {
         adminRightService.assertIsAdmin();
-        UserInfosEntity user = userInfosRepository.findBySub(sub).orElseThrow(() -> new UserAdminException(NOT_FOUND));
+        UserInfosEntity user = userInfosRepository.findBySub(sub).orElseThrow(() -> UserAdminException.userNotFound(sub));
         Optional<UserProfileEntity> profile = userProfileRepository.findByName(userInfos.profileName());
         user.setSub(userInfos.sub());
         user.setProfile(profile.orElse(null));

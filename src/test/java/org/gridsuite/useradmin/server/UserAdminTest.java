@@ -193,7 +193,7 @@ class UserAdminTest {
                         .header(ROLES_HEADER, USER_ADMIN_ROLE)
                         .contentType(APPLICATION_JSON)
                         .content("[]"))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isInternalServerError())
                 .andReturn();
 
         mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/users")

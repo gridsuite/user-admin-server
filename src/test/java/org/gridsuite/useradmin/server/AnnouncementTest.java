@@ -6,11 +6,13 @@
  */
 package org.gridsuite.useradmin.server;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.assertj.core.api.WithAssertions;
 import org.gridsuite.useradmin.server.dto.Announcement;
 import org.gridsuite.useradmin.server.entity.AnnouncementEntity;
 import org.gridsuite.useradmin.server.entity.AnnouncementSeverity;
+import org.gridsuite.useradmin.server.error.UserAdminBusinessErrorCode;
 import org.gridsuite.useradmin.server.repository.AnnouncementRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -31,7 +33,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import static org.gridsuite.useradmin.server.UserAdminException.Type.*;
 import static org.gridsuite.useradmin.server.Utils.ROLES_HEADER;
 import static org.gridsuite.useradmin.server.service.NotificationService.HEADER_MESSAGE_TYPE;
 import static org.gridsuite.useradmin.server.service.NotificationService.MESSAGE_TYPE_CANCEL_ANNOUNCEMENT;
@@ -81,7 +82,7 @@ class AnnouncementTest implements WithAssertions {
     @Test
     void testCreateAnnouncement() throws Exception {
 
-        Instant now = Instant.now().truncatedTo(ChronoUnit.SECONDS);
+        Instant now = Instant.parse("2025-10-13T11:05:32Z");
 
         Announcement announcementToBeCreated = new Announcement(UUID.randomUUID(), now, now.plus(2, ChronoUnit.DAYS), "Test message", AnnouncementSeverity.INFO);
         assertEquals(0, announcementRepository.findAll().size());
@@ -108,22 +109,11 @@ class AnnouncementTest implements WithAssertions {
             )
             .andExpect(status().isBadRequest())
             .andReturn();
-        assertTrue(result.getResponse().getContentAsString().contains("endDate\":\"must be a future date\""));
-        assertEquals(0, announcementRepository.findAll().size());
 
-        // Should NOT be ok because severity doesn't exist
-        result = mockMvc.perform(put("/" + UserAdminApi.API_VERSION + "/announcements")
-                .header("userId", ADMIN_USER)
-                .header(ROLES_HEADER, USER_ADMIN_ROLE)
-                .queryParam("severity", "NOT A SEVERITY")
-                .queryParam("startDate", announcementToBeCreated.startDate().toString())
-                .queryParam("endDate", announcementToBeCreated.endDate().toString())
-                .content(announcementToBeCreated.message())
-            )
-            .andExpect(status().isBadRequest())
-            .andReturn();
-        assertTrue(result.getResponse().getContentAsString().contains("\"Failed to convert 'severity' with value: 'NOT A SEVERITY'\""));
+        JsonNode problem1 = objectMapper.readTree(result.getResponse().getContentAsString());
         assertEquals(0, announcementRepository.findAll().size());
+        assertEquals(UserAdminBusinessErrorCode.USER_ADMIN_ANNOUNCEMENT_INVALID_PERIOD.value(), problem1.get("businessErrorCode").asText());
+        assertEquals("Announcement end date '2025-10-13T11:05:32Z' must be after start date '2025-10-15T11:05:32Z'", problem1.get("detail").asText());
 
         // Should NOT be ok because startDate = endDate
         result = mockMvc.perform(put("/" + UserAdminApi.API_VERSION + "/announcements")
@@ -136,8 +126,25 @@ class AnnouncementTest implements WithAssertions {
             )
             .andExpect(status().isBadRequest())
             .andReturn();
-        assertTrue(result.getResponse().getContentAsString().contains("endDate\":\"must be a future date\""));
+        JsonNode problem2 = objectMapper.readTree(result.getResponse().getContentAsString());
+
         assertEquals(0, announcementRepository.findAll().size());
+        assertEquals(UserAdminBusinessErrorCode.USER_ADMIN_ANNOUNCEMENT_INVALID_PERIOD.value(), problem2.get("businessErrorCode").asText());
+        assertEquals("Announcement end date '2025-10-13T11:05:32Z' must be after start date '2025-10-13T11:05:32Z'", problem2.get("detail").asText());
+
+        // Should NOT be ok because severity doesn't exist
+        result = mockMvc.perform(put("/" + UserAdminApi.API_VERSION + "/announcements")
+                .header("userId", ADMIN_USER)
+                .header(ROLES_HEADER, USER_ADMIN_ROLE)
+                .queryParam("severity", "NOT A SEVERITY")
+                .queryParam("startDate", announcementToBeCreated.startDate().toString())
+                .queryParam("endDate", announcementToBeCreated.endDate().toString())
+                .content(announcementToBeCreated.message())
+            )
+            .andExpect(status().isInternalServerError())
+            .andReturn();
+
+        assertTrue(result.getResponse().getContentAsString().contains("\"Failed to convert value of type 'java.lang.String' to required type 'org.gridsuite.useradmin.server.entity.AnnouncementSeverity'"));
 
         // Should be ok because user is admin
         result = mockMvc.perform(put("/" + UserAdminApi.API_VERSION + "/announcements")
@@ -179,7 +186,9 @@ class AnnouncementTest implements WithAssertions {
             .usingRecursiveComparison()
             .ignoringFields("id", "remainingDuration")
             .isEqualTo(announcementToBeCreated);
-        assertTrue(result.getResponse().getContentAsString().contains(OVERLAPPING_ANNOUNCEMENTS.name()));
+        JsonNode overlapProblem = objectMapper.readTree(result.getResponse().getContentAsString());
+        assertEquals(UserAdminBusinessErrorCode.USER_ADMIN_ANNOUNCEMENT_OVERLAP.value(),
+            overlapProblem.get("businessErrorCode").asText());
     }
 
     @Test

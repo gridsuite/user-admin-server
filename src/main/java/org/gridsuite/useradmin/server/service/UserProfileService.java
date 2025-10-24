@@ -9,7 +9,7 @@ package org.gridsuite.useradmin.server.service;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.BooleanUtils;
 import org.gridsuite.useradmin.server.UserAdminApplicationProps;
-import org.gridsuite.useradmin.server.UserAdminException;
+import org.gridsuite.useradmin.server.error.UserAdminException;
 import org.gridsuite.useradmin.server.dto.UserProfile;
 import org.gridsuite.useradmin.server.entity.UserProfileEntity;
 import org.gridsuite.useradmin.server.repository.UserProfileRepository;
@@ -19,9 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static org.gridsuite.useradmin.server.UserAdminException.Type.NOT_FOUND;
-import static org.gridsuite.useradmin.server.UserAdminException.Type.PROFILE_ALREADY_EXISTS;
 
 /**
  * @author David Braquart <david.braquart at rte-france.com>
@@ -117,7 +114,8 @@ public class UserProfileService {
     @Transactional()
     public void updateProfile(UUID profileUuid, UserProfile userProfile) {
         adminRightService.assertIsAdmin();
-        UserProfileEntity profile = userProfileRepository.findById(profileUuid).orElseThrow(() -> new UserAdminException(NOT_FOUND));
+        UserProfileEntity profile = userProfileRepository.findById(profileUuid)
+            .orElseThrow(() -> UserAdminException.profileNotFound(profileUuid));
         profile.setName(userProfile.name());
         profile.setLoadFlowParameterId(userProfile.loadFlowParameterId());
         profile.setSecurityAnalysisParameterId(userProfile.securityAnalysisParameterId());
@@ -135,7 +133,7 @@ public class UserProfileService {
     public void createProfile(UserProfile userProfile) {
         adminRightService.assertIsAdmin();
         if (userProfileRepository.findByName(userProfile.name()).isPresent()) {
-            throw new UserAdminException(PROFILE_ALREADY_EXISTS);
+            throw UserAdminException.profileAlreadyExists(userProfile.name());
         }
         UserProfileEntity userProfileEntity = toEntity(userProfile);
         userProfileRepository.save(userProfileEntity);
