@@ -7,7 +7,7 @@
 package org.gridsuite.useradmin.server.error;
 
 import com.powsybl.ws.commons.error.AbstractBusinessException;
-import org.jetbrains.annotations.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import java.time.Instant;
 import java.util.Objects;
