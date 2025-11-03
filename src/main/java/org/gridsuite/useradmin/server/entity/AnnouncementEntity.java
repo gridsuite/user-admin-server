@@ -22,7 +22,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
-@Table(name = "announcement")
+@Table(name = "announcement", indexes = @Index(name = "start_end_date_index", columnList = "startDate, endDate"))
 public class AnnouncementEntity {
 
     @Id
