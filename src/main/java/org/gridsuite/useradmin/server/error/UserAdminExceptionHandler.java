@@ -6,11 +6,15 @@
  */
 package org.gridsuite.useradmin.server.error;
 
-import com.powsybl.ws.commons.error.AbstractBaseRestExceptionHandler;
+import com.powsybl.ws.commons.error.AbstractBusinessExceptionHandler;
+import com.powsybl.ws.commons.error.PowsyblWsProblemDetail;
 import com.powsybl.ws.commons.error.ServerNameProvider;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 
 /**
  * @author Mohamed Ben-rejeb {@literal <mohamed.ben-rejeb at rte-france.com>}
@@ -18,10 +22,10 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
  * Handle exception catch from the {@link org.gridsuite.useradmin.server.controller controllers}.
  */
 @ControllerAdvice
-public class RestResponseEntityExceptionHandler
-    extends AbstractBaseRestExceptionHandler<UserAdminException, UserAdminBusinessErrorCode> {
+public class UserAdminExceptionHandler
+    extends AbstractBusinessExceptionHandler<UserAdminException, UserAdminBusinessErrorCode> {
 
-    public RestResponseEntityExceptionHandler(ServerNameProvider serverNameProvider) {
+    public UserAdminExceptionHandler(ServerNameProvider serverNameProvider) {
         super(serverNameProvider);
     }
 
@@ -44,5 +48,11 @@ public class RestResponseEntityExceptionHandler
                  USER_ADMIN_ANNOUNCEMENT_INVALID_PERIOD,
                  USER_ADMIN_ANNOUNCEMENT_OVERLAP -> HttpStatus.BAD_REQUEST;
         };
+    }
+
+    @ExceptionHandler(UserAdminException.class)
+    protected ResponseEntity<PowsyblWsProblemDetail> handleShortcircuitException(
+        UserAdminException exception, HttpServletRequest request) {
+        return super.handleDomainException(exception, request);
     }
 }
