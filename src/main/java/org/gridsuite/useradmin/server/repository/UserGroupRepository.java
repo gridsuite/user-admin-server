@@ -20,7 +20,7 @@ import java.util.UUID;
  */
 @Repository
 public interface UserGroupRepository extends JpaRepository<GroupInfosEntity, UUID> {
-    Long deleteAllByNameIn(@NonNull List<String> names);
+    long deleteAllByNameIn(@NonNull List<String> names);
 
     Optional<GroupInfosEntity> findByName(@NonNull String name);
 }
