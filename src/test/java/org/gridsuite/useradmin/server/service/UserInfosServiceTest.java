@@ -32,16 +32,10 @@ import static org.mockito.Mockito.when;
 class UserInfosServiceTest {
 
     @Mock
-    private UserInfosService userInfosServiceSelfMock;
-
-    @Mock
     private DirectoryService directoryServiceMock;
 
     @Mock
-    private UserProfileRepository userProfileRepositoryMock;
-
-    @Mock
-    private AdminRightService adminRightServiceMock;
+    private UserIdentityService userIdentityServiceMock;
 
     @Mock
     private UserAdminApplicationProps applicationPropsMock;
@@ -75,10 +69,13 @@ class UserInfosServiceTest {
         when(applicationPropsMock.getDefaultMaxAllowedCases()).thenReturn(20);
         when(applicationPropsMock.getDefaultMaxAllowedBuilds()).thenReturn(10);
         when(userInfosRepositoryMock.findBySub("nonExistent")).thenReturn(Optional.empty());
+        when(userIdentityServiceMock.getIdentity("nonExistent")).thenReturn(Optional.empty());
 
         UserInfos userInfos = userInfosService.getUserInfo("nonExistent");
         assertNotNull(userInfos);
         assertEquals("nonExistent", userInfos.sub());
+        assertNull(userInfos.firstName());
+        assertNull(userInfos.lastName());
         assertNull(userInfos.profileName());
         assertEquals(20, userInfos.maxAllowedCases());
         assertEquals(0, userInfos.numberCasesUsed());

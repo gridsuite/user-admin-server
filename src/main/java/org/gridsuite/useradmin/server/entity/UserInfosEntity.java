@@ -53,7 +53,7 @@ public class UserInfosEntity {
                                   Integer maxAllowedBuilds) {
         String profileName = getProfile() == null ? null : getProfile().getName();
         Set<String> groupNames = getGroups() == null ? null : getGroups().stream().map(GroupInfosEntity::getName).collect(Collectors.toSet());
-        return new UserInfos(getSub(), profileName, maxAllowedCases, numberCasesUsed, maxAllowedBuilds, groupNames);
+        return new UserInfos(getSub(), null, null, profileName, maxAllowedCases, numberCasesUsed, maxAllowedBuilds, groupNames);
     }
 
     public static UserInfos toDto(@Nullable final UserInfosEntity entity) {
