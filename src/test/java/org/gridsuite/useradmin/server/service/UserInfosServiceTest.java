@@ -12,7 +12,6 @@ import org.gridsuite.useradmin.server.dto.UserInfos;
 import org.gridsuite.useradmin.server.entity.UserInfosEntity;
 import org.gridsuite.useradmin.server.entity.UserProfileEntity;
 import org.gridsuite.useradmin.server.repository.UserInfosRepository;
-import org.gridsuite.useradmin.server.repository.UserProfileRepository;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;

@@ -24,7 +24,7 @@ class DtoConverterTest implements WithAssertions {
             // no profile and no group
             assertThat(UserInfosEntity.toDto(new UserInfosEntity(uuid, "sub_user", null, null)))
                     .as("dto result")
-                    .isEqualTo(new UserInfos("sub_user",null, null, null, null, null, null, null));
+                    .isEqualTo(new UserInfos("sub_user", null, null, null, null, null, null, null));
 
             // with profile but without group
             UserProfileEntity profile = new UserProfileEntity(UUID.randomUUID(), "a profile", null, null, null, null, null, 5, 6, null, null, null);
