@@ -219,7 +219,7 @@ class UserAdminTest {
         createGroup(GROUP_2);
 
         // udpate the user: change its name and link it to the profile and to the first group
-        UserInfos userInfo = new UserInfos(USER_SUB2, PROFILE_1, null, null, null, Set.of(GROUP_1));
+        UserInfos userInfo = new UserInfos(USER_SUB2, null, null, PROFILE_1, null, null, null, Set.of(GROUP_1));
         updateUserWithAdmin(USER_SUB, userInfo, HttpStatus.OK);
 
         // Get and check user profile
@@ -233,7 +233,7 @@ class UserAdminTest {
         assertEquals(GROUP_1, userGroups.get(0).name());
 
         // udpate the user: change groups
-        userInfo = new UserInfos(USER_SUB2, PROFILE_1, null, null, null, Set.of(GROUP_2));
+        userInfo = new UserInfos(USER_SUB2, PROFILE_1, null, null, null, null, null, Set.of(GROUP_2));
         updateUserWithAdmin(USER_SUB2, userInfo, HttpStatus.OK);
 
         // Get and check user groups
@@ -244,12 +244,12 @@ class UserAdminTest {
 
     @Test
     void testUpdateUserNotFound() throws Exception {
-        updateUserWithAdmin("nofFound", new UserInfos("nofFound", "prof", null, null, null, null), HttpStatus.NOT_FOUND);
+        updateUserWithAdmin("nofFound", new UserInfos("nofFound", null, null, "prof", null, null, null, null), HttpStatus.NOT_FOUND);
     }
 
     @Test
     void testUpdateUserForbidden() throws Exception {
-        updateUserWithNotAdmin("dummy", new UserInfos("dummy", "prof", null, null, null, null));
+        updateUserWithNotAdmin("dummy", new UserInfos("dummy", null, null, "prof", null, null, null, null));
     }
 
     @Test

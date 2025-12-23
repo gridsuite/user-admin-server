@@ -13,3 +13,5 @@ gridsuite:
   services:
     directory-server:
       base-uri: http://localhost:5026
+    user-identity-server:
+      base-uri: http://localhost:5034
