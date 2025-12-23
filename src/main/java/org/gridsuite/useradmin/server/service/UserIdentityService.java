@@ -33,7 +33,8 @@ public class UserIdentityService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UserIdentityService.class);
     private static final String USER_IDENTITY_API_VERSION = "v1";
-    private static final String IDENTITIES_PATH = "/" + USER_IDENTITY_API_VERSION + "/users/identities";
+    private static final String DELIMITER = "/";
+    private static final String IDENTITIES_PATH = DELIMITER + USER_IDENTITY_API_VERSION + "/users/identities";
 
     private final RestTemplate restTemplate;
     private final String userIdentityServerBaseUri;
