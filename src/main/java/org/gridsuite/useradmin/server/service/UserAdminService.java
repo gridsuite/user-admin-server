@@ -7,13 +7,14 @@
 package org.gridsuite.useradmin.server.service;
 
 import org.gridsuite.useradmin.server.UserAdminApplicationProps;
-import org.gridsuite.useradmin.server.error.UserAdminException;
 import org.gridsuite.useradmin.server.dto.UserConnection;
 import org.gridsuite.useradmin.server.dto.UserGroup;
+import org.gridsuite.useradmin.server.dto.UserIdentity;
 import org.gridsuite.useradmin.server.dto.UserInfos;
 import org.gridsuite.useradmin.server.dto.UserProfile;
 import org.gridsuite.useradmin.server.entity.UserInfosEntity;
 import org.gridsuite.useradmin.server.entity.UserProfileEntity;
+import org.gridsuite.useradmin.server.error.UserAdminException;
 import org.gridsuite.useradmin.server.repository.UserGroupRepository;
 import org.gridsuite.useradmin.server.repository.UserInfosRepository;
 import org.gridsuite.useradmin.server.repository.UserProfileRepository;
@@ -34,6 +35,7 @@ public class UserAdminService {
     private final AdminRightService adminRightService;
     private final UserProfileService userProfileService;
     private final UserGroupService userGroupService;
+    private final UserIdentityService userIdentityService;
 
     private final UserAdminApplicationProps applicationProps;
     private final UserGroupRepository userGroupRepository;
@@ -44,6 +46,7 @@ public class UserAdminService {
                             final AdminRightService adminRightService,
                             final UserProfileService userProfileService,
                             final UserGroupService userGroupService,
+                            final UserIdentityService userIdentityService,
                             final UserAdminApplicationProps applicationProps,
                             final UserGroupRepository userGroupRepository) {
         this.userInfosRepository = Objects.requireNonNull(userInfosRepository);
@@ -52,6 +55,7 @@ public class UserAdminService {
         this.adminRightService = Objects.requireNonNull(adminRightService);
         this.userProfileService = Objects.requireNonNull(userProfileService);
         this.userGroupService = Objects.requireNonNull(userGroupService);
+        this.userIdentityService = Objects.requireNonNull(userIdentityService);
         this.applicationProps = Objects.requireNonNull(applicationProps);
         this.userGroupRepository = userGroupRepository;
     }
@@ -63,7 +67,11 @@ public class UserAdminService {
     @Transactional(readOnly = true)
     public List<UserInfos> getUsers() {
         adminRightService.assertIsAdmin();
-        return userInfosRepository.findAll().stream().map(this::toDtoUserInfo).toList();
+        List<UserInfosEntity> entities = userInfosRepository.findAll();
+        List<UserInfos> users = entities.stream().map(this::toDtoUserInfo).toList();
+
+        // Enrich with identity information (firstName, lastName)
+        return enrichWithIdentities(users);
     }
 
     @Transactional(readOnly = true)
@@ -143,7 +151,9 @@ public class UserAdminService {
     @Transactional(readOnly = true)
     public Optional<UserInfos> getUser(String sub) {
         adminRightService.assertIsAdmin();
-        return userInfosRepository.findBySub(sub).map(this::toDtoUserInfo);
+        return userInfosRepository.findBySub(sub)
+                .map(this::toDtoUserInfo)
+                .map(this::enrichWithIdentity);
     }
 
     @Transactional(readOnly = true)
@@ -214,5 +224,41 @@ public class UserAdminService {
                 applicationProps.getDefaultMaxAllowedCases(),
                 applicationProps.getDefaultMaxAllowedBuilds()
         );
+    }
+
+    /**
+     * Enriches a single user with identity information (firstName, lastName).
+     * Fails silently if identity cannot be fetched.
+     */
+    private UserInfos enrichWithIdentity(UserInfos userInfos) {
+        if (userInfos == null) {
+            return null;
+        }
+        Optional<UserIdentity> identity = userIdentityService.getIdentity(userInfos.sub());
+        return identity.map(userInfos::withIdentity).orElse(userInfos);
+    }
+
+    /**
+     * Enriches a list of users with identity information (firstName, lastName).
+     * Uses batch fetching for efficiency. Fails silently if identities cannot be fetched.
+     */
+    private List<UserInfos> enrichWithIdentities(List<UserInfos> users) {
+        if (users == null || users.isEmpty()) {
+            return users;
+        }
+
+        List<String> subs = users.stream()
+                .map(UserInfos::sub)
+                .filter(Objects::nonNull)
+                .toList();
+
+        Map<String, UserIdentity> identities = userIdentityService.getIdentities(subs);
+
+        return users.stream()
+                .map(user -> {
+                    UserIdentity identity = identities.get(user.sub());
+                    return identity != null ? user.withIdentity(identity) : user;
+                })
+                .toList();
     }
 }

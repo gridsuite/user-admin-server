@@ -143,7 +143,7 @@ class NoQuotaTest {
     }
 
     private void associateProfileToUser(String userSub, String profileName) throws Exception {
-        UserInfos userInfos = new UserInfos(userSub, profileName, null, null, null, null);
+        UserInfos userInfos = new UserInfos(userSub, null, null, profileName, null, null, null, null);
         performPut(API_BASE_PATH + "/users/" + userSub, userInfos);
     }
 
