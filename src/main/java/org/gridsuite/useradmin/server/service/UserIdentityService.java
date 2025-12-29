@@ -59,7 +59,9 @@ public class UserIdentityService {
         }
 
         try {
-            String url = userIdentityServerBaseUri + IDENTITIES_PATH + "/" + sub;
+            String url = UriComponentsBuilder.fromUriString(userIdentityServerBaseUri + IDENTITIES_PATH)
+                    .pathSegment(sub)
+                    .toUriString();
             UserIdentity identity = restTemplate.getForObject(url, UserIdentity.class);
             return Optional.ofNullable(identity);
         } catch (Exception e) {
