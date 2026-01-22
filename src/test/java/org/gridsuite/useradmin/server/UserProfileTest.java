@@ -118,6 +118,7 @@ class UserProfileTest {
         assertNull(userProfiles.get(0).securityAnalysisParameterId());
         assertNull(userProfiles.get(0).sensitivityAnalysisParameterId());
         assertNull(userProfiles.get(0).shortcircuitParameterId());
+        assertNull(userProfiles.get(0).pccminParameterId());
         assertNull(userProfiles.get(0).voltageInitParameterId());
         assertNull(userProfiles.get(0).allLinksValid());
         assertEquals(10, userProfiles.get(0).maxAllowedCases());
@@ -155,7 +156,7 @@ class UserProfileTest {
 
     @Test
     void testProfileUpdateNotFound() throws Exception {
-        updateProfile(new UserProfile(UUID.randomUUID(), PROFILE_2, null, null, null, null, null, null, null, null, null, null, null),
+        updateProfile(new UserProfile(UUID.randomUUID(), PROFILE_2, null, null, null, null, null, null, null, null, null, null, null, null),
                 ADMIN_USER,
                 USER_ADMIN_ROLE,
                 HttpStatus.NOT_FOUND);
@@ -163,7 +164,7 @@ class UserProfileTest {
 
     @Test
     void testProfileUpdateForbidden() throws Exception {
-        updateProfile(new UserProfile(UUID.randomUUID(), PROFILE_2, null, null, null, null, null, null, null, null, null, null, null),
+        updateProfile(new UserProfile(UUID.randomUUID(), PROFILE_2, null, null, null, null, null, null, null, null, null, null, null, null),
                 NOT_ADMIN,
                 "USER",
                 HttpStatus.FORBIDDEN);
@@ -181,7 +182,7 @@ class UserProfileTest {
 
     @Test
     void testGetProfileMaxAllowedCases() throws Exception {
-        UserProfileEntity userProfileEntity = new UserProfileEntity(UUID.randomUUID(), "profileName", null, null, null, null, null, 15, null, null, null, null);
+        UserProfileEntity userProfileEntity = new UserProfileEntity(UUID.randomUUID(), "profileName", null, null, null, null, null, null, 15, null, null, null, null);
         UserInfosEntity userInfosEntity = new UserInfosEntity(UUID.randomUUID(), ADMIN_USER, userProfileEntity, null);
         userProfileRepository.save(userProfileEntity);
         userInfosRepository.save(userInfosEntity);
@@ -197,7 +198,7 @@ class UserProfileTest {
 
     @Test
     void testGetProfileMaxAllowedBuilds() throws Exception {
-        UserProfileEntity userProfileEntity = new UserProfileEntity(UUID.randomUUID(), "profileName", null, null, null, null, null, null, 15, null, null, null);
+        UserProfileEntity userProfileEntity = new UserProfileEntity(UUID.randomUUID(), "profileName", null, null, null, null, null, null, null, 15, null, null, null);
         UserInfosEntity userInfosEntity = new UserInfosEntity(UUID.randomUUID(), ADMIN_USER, userProfileEntity, null);
         userProfileRepository.save(userProfileEntity);
         userInfosRepository.save(userInfosEntity);
@@ -246,12 +247,13 @@ class UserProfileTest {
         UUID securityAnalysisParametersUuid = UUID.fromString("22222222-9594-4e55-8ec7-07ea965d24eb");
         UUID sensitivityAnalysisParametersUuid = UUID.fromString("33333333-9594-4e55-8ec7-07ea965d24eb");
         UUID shortcircuitParametersUuid = UUID.fromString("44444444-9594-4e55-8ec7-07ea965d24eb");
-        UUID voltageInitParametersUuid = UUID.fromString("55555555-9594-4e55-8ec7-07ea965d24eb");
-        UUID spreadsheetConfigCollectionUuid = UUID.fromString("66666666-9594-4e55-8ec7-07ea965d24eb");
-        UUID networkVisualizationParametersUuid = UUID.fromString("77777777-9594-4e55-8ec7-07ea965d24eb");
-        UUID diagramConfigUuid = UUID.fromString("88888888-9594-4e55-8ec7-07ea965d24eb");
+        UUID pccminParametersUuid = UUID.fromString("55555555-9594-4e55-8ec7-07ea965d24eb");
+        UUID voltageInitParametersUuid = UUID.fromString("66666666-9594-4e55-8ec7-07ea965d24eb");
+        UUID spreadsheetConfigCollectionUuid = UUID.fromString("77777777-9594-4e55-8ec7-07ea965d24eb");
+        UUID networkVisualizationParametersUuid = UUID.fromString("88888888-9594-4e55-8ec7-07ea965d24eb");
+        UUID diagramConfigUuid = UUID.fromString("9999999-9594-4e55-8ec7-07ea965d24eb");
         List<UUID> elementsUuids = List.of(loadFlowParametersUuid, securityAnalysisParametersUuid,
-            sensitivityAnalysisParametersUuid, shortcircuitParametersUuid, voltageInitParametersUuid, spreadsheetConfigCollectionUuid, networkVisualizationParametersUuid, diagramConfigUuid);
+            sensitivityAnalysisParametersUuid, shortcircuitParametersUuid, pccminParametersUuid, voltageInitParametersUuid, spreadsheetConfigCollectionUuid, networkVisualizationParametersUuid, diagramConfigUuid);
 
         // stub for parameters and spreadsheet config collection elements existence check
         final String urlPath = "/v1/elements";
@@ -260,6 +262,7 @@ class UserProfileTest {
             new ElementAttributes(securityAnalysisParametersUuid, "securityAnalysisParams", "SECURITY_ANALYSIS_PARAMETERS"),
             new ElementAttributes(sensitivityAnalysisParametersUuid, "sensitivityAnalysisParams", "SENSITIVITY_PARAMETERS"),
             new ElementAttributes(shortcircuitParametersUuid, "shortcircuitParams", "SHORT_CIRCUIT_PARAMETERS"),
+            new ElementAttributes(pccminParametersUuid, "pccminParams", "PCC_MIN_PARAMETERS"),
             new ElementAttributes(voltageInitParametersUuid, "voltageInitParams", "VOLTAGE_INIT_PARAMETERS"),
             new ElementAttributes(spreadsheetConfigCollectionUuid, "spreadsheetConfigCollection", "SPREADSHEET_CONFIG_COLLECTION"),
             new ElementAttributes(networkVisualizationParametersUuid, "networkVisualizationParams", "NETWORK_VISUALIZATION_PARAMETERS"),
@@ -274,7 +277,7 @@ class UserProfileTest {
 
         // udpate the profile: change name and set its parameters, maxAllowedCases, maxAllowedBuilds and spreadsheet config collection
         UserProfile userProfile = new UserProfile(profileUuid, PROFILE_2, loadFlowParametersUuid, securityAnalysisParametersUuid,
-            sensitivityAnalysisParametersUuid, shortcircuitParametersUuid, voltageInitParametersUuid, null, 10, 11, spreadsheetConfigCollectionUuid, networkVisualizationParametersUuid, diagramConfigUuid);
+            sensitivityAnalysisParametersUuid, shortcircuitParametersUuid, pccminParametersUuid, voltageInitParametersUuid, null, 10, 11, spreadsheetConfigCollectionUuid, networkVisualizationParametersUuid, diagramConfigUuid);
         updateProfile(userProfile, ADMIN_USER, USER_ADMIN_ROLE, HttpStatus.OK);
 
         // profiles list (with validity flag)
@@ -285,6 +288,7 @@ class UserProfileTest {
         assertEquals(securityAnalysisParametersUuid, userProfiles.get(0).securityAnalysisParameterId());
         assertEquals(sensitivityAnalysisParametersUuid, userProfiles.get(0).sensitivityAnalysisParameterId());
         assertEquals(shortcircuitParametersUuid, userProfiles.get(0).shortcircuitParameterId());
+        assertEquals(pccminParametersUuid, userProfiles.get(0).pccminParameterId());
         assertEquals(voltageInitParametersUuid, userProfiles.get(0).voltageInitParameterId());
         assertEquals(validParameters, userProfiles.get(0).allLinksValid());
         assertEquals(10, userProfiles.get(0).maxAllowedCases());
@@ -304,7 +308,7 @@ class UserProfileTest {
     }
 
     private UUID createProfile(String profileName, String userName, String userRole, Integer maxAllowedCases, Integer maxAllowedBuilds, HttpStatusCode status) throws Exception {
-        UserProfile profileInfo = new UserProfile(null, profileName, null, null, null, null, null, false, maxAllowedCases, maxAllowedBuilds, null, null, null);
+        UserProfile profileInfo = new UserProfile(null, profileName, null, null, null, null, null, null, false, maxAllowedCases, maxAllowedBuilds, null, null, null);
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/profiles")
                         .content(objectWriter.writeValueAsString(profileInfo))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -329,6 +333,7 @@ class UserProfileTest {
             assertNull(profile1.get().getSecurityAnalysisParameterId()); // no security analysis params by dft
             assertNull(profile1.get().getSensitivityAnalysisParameterId()); // no sensitivity analysis params by dft
             assertNull(profile1.get().getShortcircuitParameterId()); // no shortcircuit params by dft
+            assertNull(profile1.get().getPccminParameterId()); // no pccmin params by dft
             assertNull(profile1.get().getVoltageInitParameterId()); // no voltage init params by dft
             assertNull(profile1.get().getSpreadsheetConfigCollectionId()); // no spreadsheet config collection by dft
             assertNull(profile1.get().getNetworkVisualizationParameterId()); // no network visualization params by dft
@@ -384,6 +389,7 @@ class UserProfileTest {
             assertEquals(newData.securityAnalysisParameterId(), updatedProfile.securityAnalysisParameterId());
             assertEquals(newData.sensitivityAnalysisParameterId(), updatedProfile.sensitivityAnalysisParameterId());
             assertEquals(newData.shortcircuitParameterId(), updatedProfile.shortcircuitParameterId());
+            assertEquals(newData.pccminParameterId(), updatedProfile.pccminParameterId());
             assertEquals(newData.voltageInitParameterId(), updatedProfile.voltageInitParameterId());
             assertEquals(newData.maxAllowedCases(), updatedProfile.maxAllowedCases());
             assertNull(updatedProfile.allLinksValid()); // validity not set in this case

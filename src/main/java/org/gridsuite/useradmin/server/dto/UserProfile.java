@@ -15,6 +15,7 @@ public record UserProfile(
     UUID securityAnalysisParameterId,
     UUID sensitivityAnalysisParameterId,
     UUID shortcircuitParameterId,
+    UUID pccminParameterId,
     UUID voltageInitParameterId,
     Boolean allLinksValid,
     Integer maxAllowedCases,
@@ -29,6 +30,7 @@ public record UserProfile(
         return new UserProfile(
                 null,
                 DEFAULT_PROFILE_NAME,
+                null,
                 null,
                 null,
                 null,

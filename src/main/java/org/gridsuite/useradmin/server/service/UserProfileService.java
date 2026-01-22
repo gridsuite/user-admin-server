@@ -62,6 +62,7 @@ public class UserProfileService {
                 e.getSecurityAnalysisParameterId(),
                 e.getSensitivityAnalysisParameterId(),
                 e.getShortcircuitParameterId(),
+                e.getPccminParameterId(),
                 e.getVoltageInitParameterId(),
                 e.getSpreadsheetConfigCollectionId(),
                 e.getNetworkVisualizationParameterId(),
@@ -87,6 +88,9 @@ public class UserProfileService {
                     }
                     if (BooleanUtils.toBooleanDefaultIfNull(allLinksValid, true) && p.getShortcircuitParameterId() != null) {
                         allLinksValid = !missingUuids.contains(p.getShortcircuitParameterId());
+                    }
+                    if (BooleanUtils.toBooleanDefaultIfNull(allLinksValid, true) && p.getPccminParameterId() != null) {
+                        allLinksValid = !missingUuids.contains(p.getPccminParameterId());
                     }
                     if (BooleanUtils.toBooleanDefaultIfNull(allLinksValid, true) && p.getVoltageInitParameterId() != null) {
                         allLinksValid = !missingUuids.contains(p.getVoltageInitParameterId());
@@ -121,6 +125,7 @@ public class UserProfileService {
         profile.setSecurityAnalysisParameterId(userProfile.securityAnalysisParameterId());
         profile.setSensitivityAnalysisParameterId(userProfile.sensitivityAnalysisParameterId());
         profile.setShortcircuitParameterId(userProfile.shortcircuitParameterId());
+        profile.setPccminParameterId(userProfile.pccminParameterId());
         profile.setVoltageInitParameterId(userProfile.voltageInitParameterId());
         profile.setMaxAllowedCases(userProfile.maxAllowedCases());
         profile.setMaxAllowedBuilds(userProfile.maxAllowedBuilds());
@@ -159,7 +164,7 @@ public class UserProfileService {
         }
         return new UserProfile(entity.getId(), entity.getName(), entity.getLoadFlowParameterId(),
                                entity.getSecurityAnalysisParameterId(), entity.getSensitivityAnalysisParameterId(),
-                               entity.getShortcircuitParameterId(), entity.getVoltageInitParameterId(),
+                               entity.getShortcircuitParameterId(), entity.getPccminParameterId(), entity.getVoltageInitParameterId(),
                                allLinksValid, entity.getMaxAllowedCases(), entity.getMaxAllowedBuilds(), entity.getSpreadsheetConfigCollectionId(),
                                entity.getNetworkVisualizationParameterId(), entity.getDiagramConfigId());
     }
@@ -173,6 +178,7 @@ public class UserProfileService {
             userProfile.securityAnalysisParameterId(),
             userProfile.sensitivityAnalysisParameterId(),
             userProfile.shortcircuitParameterId(),
+            userProfile.pccminParameterId(),
             userProfile.voltageInitParameterId(),
             Optional.ofNullable(userProfile.maxAllowedCases()).orElse(applicationProps.getDefaultMaxAllowedCases()),
             Optional.ofNullable(userProfile.maxAllowedBuilds()).orElse(applicationProps.getDefaultMaxAllowedBuilds()),
