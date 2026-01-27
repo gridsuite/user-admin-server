@@ -124,7 +124,6 @@ class UserProfileTest {
         assertEquals(15, userProfiles.get(0).maxAllowedBuilds());
         assertNull(userProfiles.get(0).spreadsheetConfigCollectionId());
         assertNull(userProfiles.get(0).networkVisualizationParameterId());
-        assertNull(userProfiles.get(0).diagramConfigId());
 
         createProfile(PROFILE_2, ADMIN_USER, USER_ADMIN_ROLE, null, null, HttpStatus.CREATED);
         createProfile(PROFILE_1, ADMIN_USER, USER_ADMIN_ROLE, null, null, HttpStatus.BAD_REQUEST);  // profile already exists
@@ -291,7 +290,6 @@ class UserProfileTest {
         assertEquals(11, userProfiles.get(0).maxAllowedBuilds());
         assertEquals(spreadsheetConfigCollectionUuid, userProfiles.get(0).spreadsheetConfigCollectionId());
         assertEquals(networkVisualizationParametersUuid, userProfiles.get(0).networkVisualizationParameterId());
-        assertEquals(diagramConfigUuid, userProfiles.get(0).diagramConfigId());
 
         // profiles list (without validity flag)
         userProfiles = getProfileList(false);
@@ -332,7 +330,6 @@ class UserProfileTest {
             assertNull(profile1.get().getVoltageInitParameterId()); // no voltage init params by dft
             assertNull(profile1.get().getSpreadsheetConfigCollectionId()); // no spreadsheet config collection by dft
             assertNull(profile1.get().getNetworkVisualizationParameterId()); // no network visualization params by dft
-            assertNull(profile1.get().getDiagramConfigId()); // no diagram config by dft
             return profile1.get().getId();
         }
         return null;
@@ -389,7 +386,6 @@ class UserProfileTest {
             assertNull(updatedProfile.allLinksValid()); // validity not set in this case
             assertEquals(newData.spreadsheetConfigCollectionId(), updatedProfile.spreadsheetConfigCollectionId());
             assertEquals(newData.networkVisualizationParameterId(), updatedProfile.networkVisualizationParameterId());
-            assertEquals(newData.diagramConfigId(), updatedProfile.diagramConfigId());
         }
     }
 }

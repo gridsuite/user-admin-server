@@ -268,7 +268,6 @@ class UserAdminTest {
         assertNull(profile.allLinksValid());
         assertNull(profile.spreadsheetConfigCollectionId());
         assertNull(profile.networkVisualizationParameterId());
-        assertNull(profile.diagramConfigId());
     }
 
     @Test
