@@ -264,7 +264,7 @@ class UserAdminTest {
         assertNull(profile.securityAnalysisParameterId());
         assertNull(profile.sensitivityAnalysisParameterId());
         assertNull(profile.shortcircuitParameterId());
-        assertNull(profile.pccminParameterId());
+        assertNull(profile.pccMinParameterId());
         assertNull(profile.voltageInitParameterId());
         assertNull(profile.allLinksValid());
         assertNull(profile.spreadsheetConfigCollectionId());

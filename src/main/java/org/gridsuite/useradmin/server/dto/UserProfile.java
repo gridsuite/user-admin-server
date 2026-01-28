@@ -15,7 +15,7 @@ public record UserProfile(
     UUID securityAnalysisParameterId,
     UUID sensitivityAnalysisParameterId,
     UUID shortcircuitParameterId,
-    UUID pccminParameterId,
+    UUID pccMinParameterId,
     UUID voltageInitParameterId,
     Boolean allLinksValid,
     Integer maxAllowedCases,

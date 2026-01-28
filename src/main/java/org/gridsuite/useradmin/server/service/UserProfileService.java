@@ -125,7 +125,7 @@ public class UserProfileService {
         profile.setSecurityAnalysisParameterId(userProfile.securityAnalysisParameterId());
         profile.setSensitivityAnalysisParameterId(userProfile.sensitivityAnalysisParameterId());
         profile.setShortcircuitParameterId(userProfile.shortcircuitParameterId());
-        profile.setPccminParameterId(userProfile.pccminParameterId());
+        profile.setPccminParameterId(userProfile.pccMinParameterId());
         profile.setVoltageInitParameterId(userProfile.voltageInitParameterId());
         profile.setMaxAllowedCases(userProfile.maxAllowedCases());
         profile.setMaxAllowedBuilds(userProfile.maxAllowedBuilds());
@@ -178,7 +178,7 @@ public class UserProfileService {
             userProfile.securityAnalysisParameterId(),
             userProfile.sensitivityAnalysisParameterId(),
             userProfile.shortcircuitParameterId(),
-            userProfile.pccminParameterId(),
+            userProfile.pccMinParameterId(),
             userProfile.voltageInitParameterId(),
             Optional.ofNullable(userProfile.maxAllowedCases()).orElse(applicationProps.getDefaultMaxAllowedCases()),
             Optional.ofNullable(userProfile.maxAllowedBuilds()).orElse(applicationProps.getDefaultMaxAllowedBuilds()),

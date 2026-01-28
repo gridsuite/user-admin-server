@@ -118,7 +118,7 @@ class UserProfileTest {
         assertNull(userProfiles.get(0).securityAnalysisParameterId());
         assertNull(userProfiles.get(0).sensitivityAnalysisParameterId());
         assertNull(userProfiles.get(0).shortcircuitParameterId());
-        assertNull(userProfiles.get(0).pccminParameterId());
+        assertNull(userProfiles.getFirst().pccMinParameterId());
         assertNull(userProfiles.get(0).voltageInitParameterId());
         assertNull(userProfiles.get(0).allLinksValid());
         assertEquals(10, userProfiles.get(0).maxAllowedCases());
@@ -288,7 +288,7 @@ class UserProfileTest {
         assertEquals(securityAnalysisParametersUuid, userProfiles.get(0).securityAnalysisParameterId());
         assertEquals(sensitivityAnalysisParametersUuid, userProfiles.get(0).sensitivityAnalysisParameterId());
         assertEquals(shortcircuitParametersUuid, userProfiles.get(0).shortcircuitParameterId());
-        assertEquals(pccminParametersUuid, userProfiles.get(0).pccminParameterId());
+        assertEquals(pccminParametersUuid, userProfiles.get(0).pccMinParameterId());
         assertEquals(voltageInitParametersUuid, userProfiles.get(0).voltageInitParameterId());
         assertEquals(validParameters, userProfiles.get(0).allLinksValid());
         assertEquals(10, userProfiles.get(0).maxAllowedCases());
@@ -389,7 +389,7 @@ class UserProfileTest {
             assertEquals(newData.securityAnalysisParameterId(), updatedProfile.securityAnalysisParameterId());
             assertEquals(newData.sensitivityAnalysisParameterId(), updatedProfile.sensitivityAnalysisParameterId());
             assertEquals(newData.shortcircuitParameterId(), updatedProfile.shortcircuitParameterId());
-            assertEquals(newData.pccminParameterId(), updatedProfile.pccminParameterId());
+            assertEquals(newData.pccMinParameterId(), updatedProfile.pccMinParameterId());
             assertEquals(newData.voltageInitParameterId(), updatedProfile.voltageInitParameterId());
             assertEquals(newData.maxAllowedCases(), updatedProfile.maxAllowedCases());
             assertNull(updatedProfile.allLinksValid()); // validity not set in this case

@@ -44,7 +44,7 @@ public class UserProfileEntity {
     @Column(name = "shortcircuitParameterId")
     private UUID shortcircuitParameterId;
 
-    @Column(name = "pccminParameterId")
+    @Column(name = "pccMinParameterId")
     private UUID pccminParameterId;
 
     @Column(name = "voltageInitParameterId")
