@@ -50,7 +50,7 @@ class UserInfosServiceTest {
         // get number of cases used mock
         when(directoryServiceMock.getCasesCount("user_A")).thenReturn(3);
         // create user and profile
-        UserProfileEntity profile = new UserProfileEntity(UUID.randomUUID(), "profile_A", null, null, null, null, null, 5, 6, null, null, null);
+        UserProfileEntity profile = new UserProfileEntity(UUID.randomUUID(), "profile_A", null, null, null, null, null, null, 5, 6, null, null, null);
         UserInfosEntity user = new UserInfosEntity(UUID.randomUUID(), "user_A", profile, null);
 
         when(userInfosRepositoryMock.findBySub("user_A")).thenReturn(Optional.of(user));
