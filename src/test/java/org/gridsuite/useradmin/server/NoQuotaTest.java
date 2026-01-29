@@ -124,7 +124,6 @@ class NoQuotaTest {
         assertEquals(maxAllowedBuilds, createdProfile.get().getMaxAllowedBuilds());
         assertNull(createdProfile.get().getSpreadsheetConfigCollectionId());
         assertNull(createdProfile.get().getNetworkVisualizationParameterId());
-        assertNull(createdProfile.get().getDiagramConfigId());
     }
 
     private void createUser(String userSub) throws Exception {

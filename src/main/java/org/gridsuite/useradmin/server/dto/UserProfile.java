@@ -21,7 +21,7 @@ public record UserProfile(
     Integer maxAllowedBuilds,
     UUID spreadsheetConfigCollectionId,
     UUID networkVisualizationParameterId,
-    UUID diagramConfigId
+    UUID workspaceId
 ) {
     public static final String DEFAULT_PROFILE_NAME = "default profile";
 

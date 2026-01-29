@@ -59,7 +59,7 @@ public class UserProfileEntity {
     @Column(name = "networkVisualizationParameterId")
     private UUID networkVisualizationParameterId;
 
-    @Column(name = "diagramConfigId")
-    private UUID diagramConfigId;
+    @Column(name = "workspaceId")
+    private UUID workspaceId;
 }
 
