@@ -264,6 +264,7 @@ class UserAdminTest {
         assertNull(profile.securityAnalysisParameterId());
         assertNull(profile.sensitivityAnalysisParameterId());
         assertNull(profile.shortcircuitParameterId());
+        assertNull(profile.pccMinParameterId());
         assertNull(profile.voltageInitParameterId());
         assertNull(profile.allLinksValid());
         assertNull(profile.spreadsheetConfigCollectionId());
@@ -367,7 +368,7 @@ class UserAdminTest {
 
     private void createProfile(String profileName) throws Exception {
         ObjectWriter objectWriter = objectMapper.writer().withDefaultPrettyPrinter();
-        UserProfile profileInfo = new UserProfile(null, profileName, null, null, null, null, null, false, null, null, null, null, null);
+        UserProfile profileInfo = new UserProfile(null, profileName, null, null, null, null, null, null, false, null, null, null, null, null);
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/profiles")
                         .content(objectWriter.writeValueAsString(profileInfo))
                         .contentType(MediaType.APPLICATION_JSON)
