@@ -27,6 +27,4 @@ public interface UserInfosRepository extends JpaRepository<UserInfosEntity, UUID
     long deleteBySub(@NonNull String sub);
 
     long deleteAllBySubIn(@NonNull Collection<String> subs);
-
-    boolean existsByProfileName(@NonNull String name);
 }

@@ -75,7 +75,6 @@ public class UserProfileController {
     @Operation(summary = "delete the profiles", description = "Access restricted to users of type: `admin`")
     @ApiResponse(responseCode = "204", description = "Profiles deleted")
     @ApiResponse(responseCode = "404", description = "One or more profile(s) not found")
-    @ApiResponse(responseCode = "422", description = "Integrity issue when a profile is still referenced by users")
     public ResponseEntity<Void> deleteProfiles(@RequestBody @NotEmpty List<String> names) {
         if (service.deleteProfiles(names) > 0L) {
             return ResponseEntity.noContent().build();

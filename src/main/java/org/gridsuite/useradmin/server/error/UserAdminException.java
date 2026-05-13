@@ -49,14 +49,6 @@ public class UserAdminException extends AbstractBusinessException {
         return new UserAdminException(USER_ADMIN_PROFILE_NOT_FOUND, String.format("Profile '%s' was not found", profileId));
     }
 
-    public static UserAdminException profileNotFound(String name) {
-        return new UserAdminException(USER_ADMIN_PROFILE_NOT_FOUND, String.format("Profile '%s' was not found", name));
-    }
-
-    public static UserAdminException profileStillReferenced(String name) {
-        return new UserAdminException(USER_ADMIN_PROFILE_STILL_REFERENCED, String.format("Profile `%s` is still referenced by users", name));
-    }
-
     public static UserAdminException groupAlreadyExists(String name) {
         return new UserAdminException(USER_ADMIN_GROUP_ALREADY_EXISTS, String.format("Group '%s' already exists", name));
     }
