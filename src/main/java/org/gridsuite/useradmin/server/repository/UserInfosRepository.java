@@ -8,8 +8,6 @@ package org.gridsuite.useradmin.server.repository;
 
 import org.gridsuite.useradmin.server.entity.UserInfosEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
@@ -30,6 +28,5 @@ public interface UserInfosRepository extends JpaRepository<UserInfosEntity, UUID
 
     long deleteAllBySubIn(@NonNull Collection<String> subs);
 
-    @Query("SELECT COUNT(u) > 0 FROM UserInfosEntity u WHERE u.profile.name = :name")
-    boolean existsByProfileName(@Param("name") @NonNull String name);
+    boolean existsByProfileName(@NonNull String name);
 }
