@@ -13,7 +13,6 @@ import jakarta.validation.constraints.NotEmpty;
 import org.gridsuite.useradmin.server.UserAdminApi;
 import org.gridsuite.useradmin.server.dto.UserGroup;
 import org.gridsuite.useradmin.server.service.UserGroupService;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -85,14 +84,10 @@ public class UserGroupController {
     @ApiResponse(responseCode = "404", description = "One or more group(s) not found")
     @ApiResponse(responseCode = "422", description = "Integrity issue when a group is still referenced by users")
     public ResponseEntity<Void> deleteGroups(@RequestBody @NotEmpty List<String> names) {
-        try {
-            if (service.deleteGroups(names) > 0L) {
-                return ResponseEntity.noContent().build();
-            } else {
-                return ResponseEntity.notFound().build();
-            }
-        } catch (DataIntegrityViolationException e) {
-            return ResponseEntity.unprocessableEntity().build();
+        if (service.deleteGroups(names) > 0L) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
         }
     }
 }

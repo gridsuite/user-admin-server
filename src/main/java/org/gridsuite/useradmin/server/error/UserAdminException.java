@@ -61,6 +61,10 @@ public class UserAdminException extends AbstractBusinessException {
         return new UserAdminException(USER_ADMIN_GROUP_NOT_FOUND, String.format("Group '%s' was not found", name));
     }
 
+    public static UserAdminException groupStillReferenced(String name) {
+        return new UserAdminException(USER_ADMIN_GROUP_STILL_REFERENCED, String.format("Group `%s` is still referenced by users", name));
+    }
+
     public static UserAdminException announcementInvalidPeriod(Instant startDate, Instant endDate) {
         return new UserAdminException(USER_ADMIN_ANNOUNCEMENT_INVALID_PERIOD,
             String.format("Announcement end date '%s' must be after start date '%s'", endDate, startDate));

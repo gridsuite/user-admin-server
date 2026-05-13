@@ -13,7 +13,6 @@ import org.gridsuite.useradmin.server.entity.GroupInfosEntity;
 import org.gridsuite.useradmin.server.entity.UserInfosEntity;
 import org.gridsuite.useradmin.server.repository.UserGroupRepository;
 import org.gridsuite.useradmin.server.repository.UserInfosRepository;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -109,7 +108,7 @@ public class UserGroupService {
             GroupInfosEntity group = userGroupRepository.findByName(name)
                 .orElseThrow(() -> UserAdminException.groupNotFound(name));
             if (!CollectionUtils.isEmpty(group.getUsers())) {
-                throw new DataIntegrityViolationException("Group " + name + " contains users !");
+                throw UserAdminException.groupStillReferenced(name);
             }
         });
         return userGroupRepository.deleteAllByNameIn(names);
