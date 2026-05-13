@@ -19,6 +19,7 @@ public enum UserAdminBusinessErrorCode implements BusinessErrorCode {
     USER_ADMIN_USER_ALREADY_EXISTS("useradmin.userAlreadyExists"),
     USER_ADMIN_PROFILE_NOT_FOUND("useradmin.profileNotFound"),
     USER_ADMIN_PROFILE_ALREADY_EXISTS("useradmin.profileAlreadyExists"),
+    USER_ADMIN_PROFILE_STILL_REFERENCED("useradmin.profileStillReferenced"),
     USER_ADMIN_GROUP_NOT_FOUND("useradmin.groupNotFound"),
     USER_ADMIN_GROUP_ALREADY_EXISTS("useradmin.groupAlreadyExists"),
     USER_ADMIN_GROUP_STILL_REFERENCED("useradmin.groupStillReferenced"),

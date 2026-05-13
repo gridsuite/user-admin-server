@@ -14,7 +14,6 @@ import jakarta.validation.constraints.NotEmpty;
 import org.gridsuite.useradmin.server.UserAdminApi;
 import org.gridsuite.useradmin.server.dto.UserProfile;
 import org.gridsuite.useradmin.server.service.UserProfileService;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -78,14 +77,10 @@ public class UserProfileController {
     @ApiResponse(responseCode = "404", description = "One or more profile(s) not found")
     @ApiResponse(responseCode = "422", description = "Integrity issue when a profile is still referenced by users")
     public ResponseEntity<Void> deleteProfiles(@RequestBody @NotEmpty List<String> names) {
-        try {
-            if (service.deleteProfiles(names) > 0L) {
-                return ResponseEntity.noContent().build();
-            } else {
-                return ResponseEntity.notFound().build();
-            }
-        } catch (DataIntegrityViolationException e) {
-            return ResponseEntity.unprocessableEntity().build();
+        if (service.deleteProfiles(names) > 0L) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
         }
     }
 }

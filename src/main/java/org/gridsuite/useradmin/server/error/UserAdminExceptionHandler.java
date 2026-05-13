@@ -47,7 +47,8 @@ public class UserAdminExceptionHandler
                  USER_ADMIN_GROUP_ALREADY_EXISTS,
                  USER_ADMIN_ANNOUNCEMENT_INVALID_PERIOD,
                  USER_ADMIN_ANNOUNCEMENT_OVERLAP -> HttpStatus.BAD_REQUEST;
-            case USER_ADMIN_GROUP_STILL_REFERENCED -> HttpStatus.UNPROCESSABLE_ENTITY;
+            case USER_ADMIN_GROUP_STILL_REFERENCED,
+                 USER_ADMIN_PROFILE_STILL_REFERENCED -> HttpStatus.UNPROCESSABLE_ENTITY;
         };
     }
 

@@ -12,6 +12,7 @@ import org.gridsuite.useradmin.server.UserAdminApplicationProps;
 import org.gridsuite.useradmin.server.error.UserAdminException;
 import org.gridsuite.useradmin.server.dto.UserProfile;
 import org.gridsuite.useradmin.server.entity.UserProfileEntity;
+import org.gridsuite.useradmin.server.repository.UserInfosRepository;
 import org.gridsuite.useradmin.server.repository.UserProfileRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,15 +27,18 @@ import java.util.stream.Stream;
 @Service
 public class UserProfileService {
     private final UserProfileRepository userProfileRepository;
+    private final UserInfosRepository userInfosRepository;
     private final DirectoryService directoryService;
     private final AdminRightService adminRightService;
     private final UserAdminApplicationProps applicationProps;
 
     public UserProfileService(final UserProfileRepository userProfileRepository,
+                              final UserInfosRepository userInfosRepository,
                               final AdminRightService adminRightService,
                               final DirectoryService directoryService,
                               final UserAdminApplicationProps applicationProps) {
         this.userProfileRepository = Objects.requireNonNull(userProfileRepository);
+        this.userInfosRepository = Objects.requireNonNull(userInfosRepository);
         this.adminRightService = Objects.requireNonNull(adminRightService);
         this.directoryService = Objects.requireNonNull(directoryService);
         this.applicationProps = Objects.requireNonNull(applicationProps);
@@ -147,6 +151,15 @@ public class UserProfileService {
     @Transactional
     public long deleteProfiles(List<String> names) {
         adminRightService.assertIsAdmin();
+
+        // check if profile is still referenced by users
+        names.forEach(name -> {
+            userProfileRepository.findByName(name)
+                .orElseThrow(() -> UserAdminException.profileNotFound(name));
+            if (userInfosRepository.existsByProfileName(name)) {
+                throw UserAdminException.profileStillReferenced(name);
+            }
+        });
         return userProfileRepository.deleteAllByNameIn(names);
     }
 
