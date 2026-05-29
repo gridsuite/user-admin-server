@@ -107,6 +107,7 @@ class ScheduledAnnouncementCheckerTest implements WithAssertions {
         assertEquals(expectedMessage, new String(message.getPayload()));
     }
 
+    @SuppressWarnings("checkstyle:IllegalCatch")
     private static void assertQueuesEmptyThenClear(List<String> destinations, OutputDestination output) {
         try {
             destinations.forEach(destination -> assertNull(output.receive(TIMEOUT, destination), "Should not be any messages in queue " + destination + " : "));

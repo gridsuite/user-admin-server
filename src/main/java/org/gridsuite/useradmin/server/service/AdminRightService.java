@@ -16,7 +16,7 @@ import java.util.Set;
 import static org.gridsuite.useradmin.server.Utils.getCurrentUserRoles;
 
 /**
- * @author David Braquart <david.braquart at rte-france.com
+ * @author David Braquart <david.braquart at rte-france.com>
  */
 @Service
 public class AdminRightService {

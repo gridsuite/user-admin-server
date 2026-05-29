@@ -29,18 +29,16 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Set;
-
 import static org.gridsuite.useradmin.server.Utils.ROLES_HEADER;
+import static org.gridsuite.useradmin.server.utils.TestConstants.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.gridsuite.useradmin.server.utils.TestConstants.*;
 
 /**
  * @author Etienne Homer <etienne.homer at rte-france.com>

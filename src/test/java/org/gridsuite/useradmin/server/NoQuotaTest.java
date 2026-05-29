@@ -13,9 +13,6 @@ import org.gridsuite.useradmin.server.dto.UserProfile;
 import org.gridsuite.useradmin.server.entity.UserProfileEntity;
 import org.gridsuite.useradmin.server.repository.UserInfosRepository;
 import org.gridsuite.useradmin.server.repository.UserProfileRepository;
-
-import static org.gridsuite.useradmin.server.Utils.ROLES_HEADER;
-import static org.gridsuite.useradmin.server.utils.TestConstants.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,9 +22,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-
 import java.util.Optional;
-
+import static org.gridsuite.useradmin.server.Utils.ROLES_HEADER;
+import static org.gridsuite.useradmin.server.utils.TestConstants.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;

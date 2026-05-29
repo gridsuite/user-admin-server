@@ -7,14 +7,13 @@
 package org.gridsuite.useradmin.server;
 
 import com.powsybl.ws.commons.error.PowsyblWsProblemDetail;
-import org.gridsuite.useradmin.server.error.UserAdminExceptionHandler;
 import org.gridsuite.useradmin.server.error.UserAdminException;
+import org.gridsuite.useradmin.server.error.UserAdminExceptionHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

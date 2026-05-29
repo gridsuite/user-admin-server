@@ -7,16 +7,15 @@
 package org.gridsuite.useradmin.server.service;
 
 import jakarta.annotation.Nullable;
-import org.gridsuite.useradmin.server.error.UserAdminException;
 import org.gridsuite.useradmin.server.dto.UserGroup;
 import org.gridsuite.useradmin.server.entity.GroupInfosEntity;
 import org.gridsuite.useradmin.server.entity.UserInfosEntity;
+import org.gridsuite.useradmin.server.error.UserAdminException;
 import org.gridsuite.useradmin.server.repository.UserGroupRepository;
 import org.gridsuite.useradmin.server.repository.UserInfosRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
