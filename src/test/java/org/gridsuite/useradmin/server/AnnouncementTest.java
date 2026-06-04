@@ -72,8 +72,6 @@ class AnnouncementTest implements WithAssertions {
     private void assertQueuesEmptyThenClear(List<String> destinations, OutputDestination output) {
         try {
             destinations.forEach(destination -> assertNull(output.receive(TIMEOUT, destination), "Should not be any messages in queue " + destination + " : "));
-        } catch (NullPointerException e) {
-            // Ignoring
         } finally {
             output.clear(); // purge in order to not fail the other tests
         }
@@ -144,7 +142,8 @@ class AnnouncementTest implements WithAssertions {
             .andExpect(status().isInternalServerError())
             .andReturn();
 
-        assertTrue(result.getResponse().getContentAsString().contains("Failed to convert value of type 'java.lang.String' to required type 'org.gridsuite.useradmin.server.entity.AnnouncementSeverity'"));
+        assertTrue(result.getResponse().getContentAsString().contains(
+                "Failed to convert value of type 'java.lang.String' to required type 'org.gridsuite.useradmin.server.entity.AnnouncementSeverity'"));
 
         // Should be ok because user is admin
         result = mockMvc.perform(put("/" + UserAdminApi.API_VERSION + "/announcements")

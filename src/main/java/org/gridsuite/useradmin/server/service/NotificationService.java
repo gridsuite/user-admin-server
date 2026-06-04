@@ -16,7 +16,7 @@ import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 
 /**
- * @author Abdelsalem Hedhili <abdelsalem.hedhili at rte-france.com
+ * @author Abdelsalem Hedhili <abdelsalem.hedhili at rte-france.com>
  */
 @Service
 @AllArgsConstructor

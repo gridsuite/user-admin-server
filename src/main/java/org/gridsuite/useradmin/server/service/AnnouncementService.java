@@ -7,13 +7,12 @@
 package org.gridsuite.useradmin.server.service;
 
 import lombok.AllArgsConstructor;
-import org.gridsuite.useradmin.server.error.UserAdminException;
 import org.gridsuite.useradmin.server.dto.Announcement;
 import org.gridsuite.useradmin.server.entity.AnnouncementEntity;
 import org.gridsuite.useradmin.server.entity.AnnouncementSeverity;
+import org.gridsuite.useradmin.server.error.UserAdminException;
 import org.gridsuite.useradmin.server.repository.AnnouncementRepository;
 import org.springframework.stereotype.Service;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;

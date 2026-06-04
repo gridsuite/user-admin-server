@@ -9,13 +9,12 @@ package org.gridsuite.useradmin.server.service;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.BooleanUtils;
 import org.gridsuite.useradmin.server.UserAdminApplicationProps;
-import org.gridsuite.useradmin.server.error.UserAdminException;
 import org.gridsuite.useradmin.server.dto.UserProfile;
 import org.gridsuite.useradmin.server.entity.UserProfileEntity;
+import org.gridsuite.useradmin.server.error.UserAdminException;
 import org.gridsuite.useradmin.server.repository.UserProfileRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -41,6 +40,7 @@ public class UserProfileService {
     }
 
     @Transactional(readOnly = true)
+    @SuppressWarnings("checkstyle:LambdaBodyLength")
     public List<UserProfile> getProfiles(String userId, boolean checkLinksValidity) {
         adminRightService.assertIsAdmin();
         List<UserProfileEntity> profiles = userProfileRepository.findAll().stream().toList();
