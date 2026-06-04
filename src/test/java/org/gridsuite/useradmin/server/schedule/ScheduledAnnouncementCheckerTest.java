@@ -111,8 +111,6 @@ class ScheduledAnnouncementCheckerTest implements WithAssertions {
     private static void assertQueuesEmptyThenClear(List<String> destinations, OutputDestination output) {
         try {
             destinations.forEach(destination -> assertNull(output.receive(TIMEOUT, destination), "Should not be any messages in queue " + destination + " : "));
-        } catch (NullPointerException e) {
-            // Ignoring
         } finally {
             output.clear(); // purge in order to not fail the other tests
         }
