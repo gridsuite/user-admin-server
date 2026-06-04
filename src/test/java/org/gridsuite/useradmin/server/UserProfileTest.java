@@ -252,8 +252,8 @@ class UserProfileTest {
         UUID networkVisualizationParametersUuid = UUID.fromString("88888888-9594-4e55-8ec7-07ea965d24eb");
         UUID diagramConfigUuid = UUID.fromString("9999999-9594-4e55-8ec7-07ea965d24eb");
         List<UUID> elementsUuids = List.of(loadFlowParametersUuid, securityAnalysisParametersUuid,
-            sensitivityAnalysisParametersUuid, shortcircuitParametersUuid, pccminParametersUuid, voltageInitParametersUuid, spreadsheetConfigCollectionUuid, networkVisualizationParametersUuid,
-                    diagramConfigUuid);
+            sensitivityAnalysisParametersUuid, shortcircuitParametersUuid, pccminParametersUuid, voltageInitParametersUuid,
+                spreadsheetConfigCollectionUuid, networkVisualizationParametersUuid, diagramConfigUuid);
 
         // stub for parameters and spreadsheet config collection elements existence check
         final String urlPath = "/v1/elements";
@@ -277,8 +277,8 @@ class UserProfileTest {
 
         // udpate the profile: change name and set its parameters, maxAllowedCases, maxAllowedBuilds and spreadsheet config collection
         UserProfile userProfile = new UserProfile(profileUuid, PROFILE_2, loadFlowParametersUuid, securityAnalysisParametersUuid,
-            sensitivityAnalysisParametersUuid, shortcircuitParametersUuid, pccminParametersUuid, voltageInitParametersUuid, null, 10, 11, spreadsheetConfigCollectionUuid,
-                    networkVisualizationParametersUuid, diagramConfigUuid);
+            sensitivityAnalysisParametersUuid, shortcircuitParametersUuid, pccminParametersUuid, voltageInitParametersUuid, null,
+                10, 11, spreadsheetConfigCollectionUuid, networkVisualizationParametersUuid, diagramConfigUuid);
         updateProfile(userProfile, ADMIN_USER, USER_ADMIN_ROLE, HttpStatus.OK);
 
         // profiles list (with validity flag)
