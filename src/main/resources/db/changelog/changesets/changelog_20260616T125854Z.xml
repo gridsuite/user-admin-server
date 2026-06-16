@@ -1,0 +1,58 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet author="lesoteti (generated)" id="1781614744540-2">
+        <addColumn tableName="user_profile">
+            <column name="max_allowed_balance_adjustement" type="INTEGER"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="lesoteti (generated)" id="1781614744540-3">
+        <addColumn tableName="user_profile">
+            <column name="max_allowed_dynamic_margin" type="INTEGER"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="lesoteti (generated)" id="1781614744540-4">
+        <addColumn tableName="user_profile">
+            <column name="max_allowed_dynamic_security" type="INTEGER"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="lesoteti (generated)" id="1781614744540-5">
+        <addColumn tableName="user_profile">
+            <column name="max_allowed_dynamic_simulation" type="INTEGER"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="lesoteti (generated)" id="1781614744540-6">
+        <addColumn tableName="user_profile">
+            <column name="max_allowed_loadflow" type="INTEGER"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="lesoteti (generated)" id="1781614744540-7">
+        <addColumn tableName="user_profile">
+            <column name="max_allowed_pcc_min" type="INTEGER"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="lesoteti (generated)" id="1781614744540-8">
+        <addColumn tableName="user_profile">
+            <column name="max_allowed_security" type="INTEGER"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="lesoteti (generated)" id="1781614744540-9">
+        <addColumn tableName="user_profile">
+            <column name="max_allowed_sensitivity" type="INTEGER"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="lesoteti (generated)" id="1781614744540-10">
+        <addColumn tableName="user_profile">
+            <column name="max_allowed_short_circuit" type="INTEGER"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="lesoteti (generated)" id="1781614744540-11">
+        <addColumn tableName="user_profile">
+            <column name="max_allowed_state_estimation" type="INTEGER"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="lesoteti (generated)" id="1781614744540-12">
+        <addColumn tableName="user_profile">
+            <column name="max_allowed_voltage_init" type="INTEGER"/>
+        </addColumn>
+    </changeSet>
+</databaseChangeLog>

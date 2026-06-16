@@ -155,7 +155,12 @@ class UserProfileTest {
 
     @Test
     void testProfileUpdateNotFound() throws Exception {
-        updateProfile(new UserProfile(UUID.randomUUID(), PROFILE_2, null, null, null, null, null, null, null, null, null, null, null, null),
+        updateProfile(new UserProfile(UUID.randomUUID(), PROFILE_2, null, null,
+                        null, null, null, null, null,
+                        null, null, null, null, null,
+                        null, null, null, null,
+                        null, null, null,
+                        null, null, null, null),
                 ADMIN_USER,
                 USER_ADMIN_ROLE,
                 HttpStatus.NOT_FOUND);
@@ -163,7 +168,12 @@ class UserProfileTest {
 
     @Test
     void testProfileUpdateForbidden() throws Exception {
-        updateProfile(new UserProfile(UUID.randomUUID(), PROFILE_2, null, null, null, null, null, null, null, null, null, null, null, null),
+        updateProfile(new UserProfile(UUID.randomUUID(), PROFILE_2, null, null,
+                        null, null, null, null, null,
+                        null, null, null, null, null,
+                        null, null, null, null,
+                        null, null, null,
+                        null, null, null, null),
                 NOT_ADMIN,
                 "USER",
                 HttpStatus.FORBIDDEN);
@@ -181,7 +191,9 @@ class UserProfileTest {
 
     @Test
     void testGetProfileMaxAllowedCases() throws Exception {
-        UserProfileEntity userProfileEntity = new UserProfileEntity(UUID.randomUUID(), "profileName", null, null, null, null, null, null, 15, null, null, null, null);
+        UserProfileEntity userProfileEntity = new UserProfileEntity(UUID.randomUUID(), "profileName", null, null, null, null, null, null, 15, null, null, null, null, null, null,
+                null, null, null, null, null,
+                null, null, null, null);
         UserInfosEntity userInfosEntity = new UserInfosEntity(UUID.randomUUID(), ADMIN_USER, userProfileEntity, null);
         userProfileRepository.save(userProfileEntity);
         userInfosRepository.save(userInfosEntity);
@@ -197,7 +209,11 @@ class UserProfileTest {
 
     @Test
     void testGetProfileMaxAllowedBuilds() throws Exception {
-        UserProfileEntity userProfileEntity = new UserProfileEntity(UUID.randomUUID(), "profileName", null, null, null, null, null, null, null, 15, null, null, null);
+        UserProfileEntity userProfileEntity = new UserProfileEntity(UUID.randomUUID(), "profileName", null, null,
+                null, null, null, null, null, 15,
+                null, null, null, null, null,
+                null, null, null, null, null,
+                null, null, null, null);
         UserInfosEntity userInfosEntity = new UserInfosEntity(UUID.randomUUID(), ADMIN_USER, userProfileEntity, null);
         userProfileRepository.save(userProfileEntity);
         userInfosRepository.save(userInfosEntity);
@@ -278,7 +294,10 @@ class UserProfileTest {
         // udpate the profile: change name and set its parameters, maxAllowedCases, maxAllowedBuilds and spreadsheet config collection
         UserProfile userProfile = new UserProfile(profileUuid, PROFILE_2, loadFlowParametersUuid, securityAnalysisParametersUuid,
             sensitivityAnalysisParametersUuid, shortcircuitParametersUuid, pccminParametersUuid, voltageInitParametersUuid, null,
-                10, 11, spreadsheetConfigCollectionUuid, networkVisualizationParametersUuid, diagramConfigUuid);
+                10, 11, null, null, null,
+                null, null, null, null, null,
+                null, null, null,
+                spreadsheetConfigCollectionUuid, networkVisualizationParametersUuid, diagramConfigUuid);
         updateProfile(userProfile, ADMIN_USER, USER_ADMIN_ROLE, HttpStatus.OK);
 
         // profiles list (with validity flag)
@@ -308,7 +327,11 @@ class UserProfileTest {
     }
 
     private UUID createProfile(String profileName, String userName, String userRole, Integer maxAllowedCases, Integer maxAllowedBuilds, HttpStatusCode status) throws Exception {
-        UserProfile profileInfo = new UserProfile(null, profileName, null, null, null, null, null, null, false, maxAllowedCases, maxAllowedBuilds, null, null, null);
+        UserProfile profileInfo = new UserProfile(null, profileName, null, null, null,
+                null, null, null, false, maxAllowedCases, maxAllowedBuilds,
+                null, null, null, null, null,
+                null, null, null, null, null,
+                null, null, null, null);
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/profiles")
                         .content(objectWriter.writeValueAsString(profileInfo))
                         .contentType(MediaType.APPLICATION_JSON)

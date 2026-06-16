@@ -165,7 +165,12 @@ public class UserProfileService {
         return new UserProfile(entity.getId(), entity.getName(), entity.getLoadFlowParameterId(),
                                entity.getSecurityAnalysisParameterId(), entity.getSensitivityAnalysisParameterId(),
                                entity.getShortcircuitParameterId(), entity.getPccminParameterId(), entity.getVoltageInitParameterId(),
-                               allLinksValid, entity.getMaxAllowedCases(), entity.getMaxAllowedBuilds(), entity.getSpreadsheetConfigCollectionId(),
+                               allLinksValid, entity.getMaxAllowedCases(), entity.getMaxAllowedBuilds(),
+                               entity.getMaxAllowedLoadflow(), entity.getMaxAllowedSecurity(), entity.getMaxAllowedSensitivity(),
+                               entity.getMaxAllowedShortCircuit(), entity.getMaxAllowedVoltageInit(), entity.getMaxAllowedPccMin(),
+                               entity.getMaxAllowedStateEstimation(), entity.getMaxAllowedBalanceAdjustement(), entity.getMaxAllowedDynamicSimulation(),
+                               entity.getMaxAllowedDynamicSecurity(), entity.getMaxAllowedDynamicMargin(),
+                               entity.getSpreadsheetConfigCollectionId(),
                                entity.getNetworkVisualizationParameterId(), entity.getWorkspaceId());
     }
 
@@ -182,6 +187,17 @@ public class UserProfileService {
             userProfile.voltageInitParameterId(),
             Optional.ofNullable(userProfile.maxAllowedCases()).orElse(applicationProps.getDefaultMaxAllowedCases()),
             Optional.ofNullable(userProfile.maxAllowedBuilds()).orElse(applicationProps.getDefaultMaxAllowedBuilds()),
+            Optional.ofNullable(userProfile.maxAllowedLoadflow()).orElse(applicationProps.getDefaultMaxAllowedLoadflow()),
+            Optional.ofNullable(userProfile.maxAllowedSecurity()).orElse(applicationProps.getDefaultMaxAllowedSecurity()),
+            Optional.ofNullable(userProfile.maxAllowedSensitivity()).orElse(applicationProps.getDefaultMaxAllowedSensitivity()),
+            Optional.ofNullable(userProfile.maxAllowedShortCircuit()).orElse(applicationProps.getDefaultMaxAllowedShortCircuit()),
+            Optional.ofNullable(userProfile.maxAllowedVoltageInit()).orElse(applicationProps.getDefaultMaxAllowedVoltageInit()),
+            Optional.ofNullable(userProfile.maxAllowedPccMin()).orElse(applicationProps.getDefaultMaxAllowedPccMin()),
+            Optional.ofNullable(userProfile.maxAllowedStateEstimation()).orElse(applicationProps.getDefaultMaxAllowedStateEstimation()),
+            Optional.ofNullable(userProfile.maxAllowedBalanceAdjustement()).orElse(applicationProps.getDefaultMaxAllowedBalanceAdjustement()),
+            Optional.ofNullable(userProfile.maxAllowedDynamicSimulation()).orElse(applicationProps.getDefaultMaxAllowedDynamicSimulation()),
+            Optional.ofNullable(userProfile.maxAllowedDynamicSecurity()).orElse(applicationProps.getDefaultMaxAllowedDynamicSecurity()),
+            Optional.ofNullable(userProfile.maxAllowedDynamicMargin()).orElse(applicationProps.getDefaultMaxAllowedDynamicMargin()),
             userProfile.spreadsheetConfigCollectionId(),
             userProfile.networkVisualizationParameterId(),
             userProfile.workspaceId()

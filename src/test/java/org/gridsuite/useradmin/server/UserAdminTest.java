@@ -29,10 +29,12 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Set;
+
 import static org.gridsuite.useradmin.server.Utils.ROLES_HEADER;
 import static org.gridsuite.useradmin.server.utils.TestConstants.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -95,7 +97,8 @@ class UserAdminTest {
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),
-                new TypeReference<>() { });
+                new TypeReference<>() {
+                });
 
         assertEquals(0, userInfos.size());
 
@@ -118,7 +121,8 @@ class UserAdminTest {
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),
-                new TypeReference<>() { });
+                new TypeReference<>() {
+                });
 
         assertEquals(1, userInfos.size());
 
@@ -158,7 +162,8 @@ class UserAdminTest {
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),
-                new TypeReference<>() { });
+                new TypeReference<>() {
+                });
         assertEquals(0, userInfos.size());
 
         mockMvc.perform(delete("/" + UserAdminApi.API_VERSION + "/users/{sub}", USER_SUB)
@@ -217,7 +222,10 @@ class UserAdminTest {
         createGroup(GROUP_2);
 
         // udpate the user: change its name and link it to the profile and to the first group
-        UserInfos userInfo = new UserInfos(USER_SUB2, null, null, PROFILE_1, null, null, null, Set.of(GROUP_1));
+        UserInfos userInfo = new UserInfos(USER_SUB2, null, null, PROFILE_1, null, null,
+                null, null, null, null, null,
+                null, null, null, null, null,
+                null, null, Set.of(GROUP_1));
         updateUserWithAdmin(USER_SUB, userInfo, HttpStatus.OK);
 
         // Get and check user profile
@@ -231,7 +239,9 @@ class UserAdminTest {
         assertEquals(GROUP_1, userGroups.get(0).name());
 
         // udpate the user: change groups
-        userInfo = new UserInfos(USER_SUB2, PROFILE_1, null, null, null, null, null, Set.of(GROUP_2));
+        userInfo = new UserInfos(USER_SUB2, PROFILE_1, null, null, null, null, null, null, null, null,
+                null, null, null, null, null,
+                null, null, null, Set.of(GROUP_2));
         updateUserWithAdmin(USER_SUB2, userInfo, HttpStatus.OK);
 
         // Get and check user groups
@@ -242,12 +252,17 @@ class UserAdminTest {
 
     @Test
     void testUpdateUserNotFound() throws Exception {
-        updateUserWithAdmin("nofFound", new UserInfos("nofFound", null, null, "prof", null, null, null, null), HttpStatus.NOT_FOUND);
+        updateUserWithAdmin("nofFound", new UserInfos("nofFound", null, null, "prof", null, null, null, null, null, null, null, null,
+                null, null, null, null, null,
+                null, null), HttpStatus.NOT_FOUND);
     }
 
     @Test
     void testUpdateUserForbidden() throws Exception {
-        updateUserWithNotAdmin("dummy", new UserInfos("dummy", null, null, "prof", null, null, null, null));
+        updateUserWithNotAdmin("dummy", new UserInfos("dummy", null, null, "prof", null,
+                null, null, null, null, null, null,
+                null, null, null, null, null,
+                null, null, null));
     }
 
     @Test
@@ -292,7 +307,8 @@ class UserAdminTest {
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),
-                new TypeReference<>() { });
+                new TypeReference<>() {
+                });
 
         assertEquals(2, userInfos.size());
 
@@ -313,7 +329,8 @@ class UserAdminTest {
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),
-                new TypeReference<>() { });
+                new TypeReference<>() {
+                });
 
         assertEquals(2, connectionEntities.size());
 
@@ -328,7 +345,8 @@ class UserAdminTest {
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),
-                new TypeReference<>() { });
+                new TypeReference<>() {
+                });
         assertEquals(2, connectionEntities.size());
 
         mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/connections")
@@ -351,7 +369,8 @@ class UserAdminTest {
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),
-                new TypeReference<>() { });
+                new TypeReference<>() {
+                });
         // the new user has no profile by default
         assertNotNull(userInfos);
         assertNull(userInfos.profileName());
@@ -361,12 +380,18 @@ class UserAdminTest {
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/users/{sub}", userName)
                         .header("userId", ADMIN_USER)
                         .header(ROLES_HEADER, USER_ADMIN_ROLE))
-            .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest());
     }
 
     private void createProfile(String profileName) throws Exception {
         ObjectWriter objectWriter = objectMapper.writer().withDefaultPrettyPrinter();
-        UserProfile profileInfo = new UserProfile(null, profileName, null, null, null, null, null, null, false, null, null, null, null, null);
+        UserProfile profileInfo = new UserProfile(null, profileName, null, null,
+                null, null, null, null,
+                false, null, null, null, null,
+                null, null, null, null,
+                null, null, null,
+                null, null, null,
+                null, null);
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/profiles")
                         .content(objectWriter.writeValueAsString(profileInfo))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -391,7 +416,8 @@ class UserAdminTest {
                                 .contentType(APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString(),
-                new TypeReference<>() { });
+                new TypeReference<>() {
+                });
         // the new group has no users by default
         assertNotNull(groupInfos);
         assertTrue(CollectionUtils.isEmpty(groupInfos.users()));
@@ -414,7 +440,8 @@ class UserAdminTest {
                                     .contentType(APPLICATION_JSON))
                             .andExpect(status().isOk())
                             .andReturn().getResponse().getContentAsString(),
-                    new TypeReference<>() { });
+                    new TypeReference<>() {
+                    });
             // the new user has the new name and profile
             assertNotNull(updatedUserInfos);
             assertEquals(userInfos.sub(), updatedUserInfos.sub());
@@ -433,22 +460,24 @@ class UserAdminTest {
 
     private UserProfile getUserProfile(String userName, HttpStatusCode status) throws Exception {
         String response = mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users/" + userName + "/profile")
-                                .contentType(APPLICATION_JSON))
-                        .andExpect(status().is(status.value()))
-                        .andReturn().getResponse().getContentAsString();
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().is(status.value()))
+                .andReturn().getResponse().getContentAsString();
         if (status == HttpStatus.OK) {
-            return objectMapper.readValue(response, new TypeReference<>() { });
+            return objectMapper.readValue(response, new TypeReference<>() {
+            });
         }
         return null;
     }
 
     private List<UserGroup> getUserGroups(String userName, HttpStatusCode status) throws Exception {
         String response = mockMvc.perform(get("/" + UserAdminApi.API_VERSION + "/users/" + userName + "/groups")
-                .contentType(APPLICATION_JSON))
-            .andExpect(status().is(status.value()))
-            .andReturn().getResponse().getContentAsString();
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().is(status.value()))
+                .andReturn().getResponse().getContentAsString();
         if (status == HttpStatus.OK) {
-            return objectMapper.readValue(response, new TypeReference<>() { });
+            return objectMapper.readValue(response, new TypeReference<>() {
+            });
         }
         return null;
     }

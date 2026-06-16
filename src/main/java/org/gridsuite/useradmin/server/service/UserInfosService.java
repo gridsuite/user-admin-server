@@ -40,7 +40,55 @@ public class UserInfosService {
         Integer maxAllowedBuilds = Optional.ofNullable(userInfosEntity.getProfile())
                 .map(UserProfileEntity::getMaxAllowedBuilds)
                 .orElse(applicationProps.getDefaultMaxAllowedBuilds());
-        return UserInfosEntity.toDtoWithDetail(userInfosEntity, maxAllowedCases, casesUsed, maxAllowedBuilds);
+
+        Integer maxAllowedLoadflow = Optional.ofNullable(userInfosEntity.getProfile())
+                .map(UserProfileEntity::getMaxAllowedLoadflow)
+                .orElse(applicationProps.getDefaultMaxAllowedLoadflow());
+
+        Integer maxAllowedSecurity = Optional.ofNullable(userInfosEntity.getProfile())
+                .map(UserProfileEntity::getMaxAllowedSecurity)
+                .orElse(applicationProps.getDefaultMaxAllowedSecurity());
+
+        Integer maxAllowedSensitivity = Optional.ofNullable(userInfosEntity.getProfile())
+                .map(UserProfileEntity::getMaxAllowedSensitivity)
+                .orElse(applicationProps.getDefaultMaxAllowedSensitivity());
+
+        Integer maxAllowedShortCircuit = Optional.ofNullable(userInfosEntity.getProfile())
+                .map(UserProfileEntity::getMaxAllowedShortCircuit)
+                .orElse(applicationProps.getDefaultMaxAllowedShortCircuit());
+
+        Integer maxAllowedVoltageInit = Optional.ofNullable(userInfosEntity.getProfile())
+                .map(UserProfileEntity::getMaxAllowedVoltageInit)
+                .orElse(applicationProps.getDefaultMaxAllowedVoltageInit());
+
+        Integer maxAllowedPccMin = Optional.ofNullable(userInfosEntity.getProfile())
+                .map(UserProfileEntity::getMaxAllowedPccMin)
+                .orElse(applicationProps.getDefaultMaxAllowedPccMin());
+
+        Integer maxAllowedStateEstimation = Optional.ofNullable(userInfosEntity.getProfile())
+                .map(UserProfileEntity::getMaxAllowedStateEstimation)
+                .orElse(applicationProps.getDefaultMaxAllowedStateEstimation());
+
+        Integer maxAllowedBalanceAdjustement = Optional.ofNullable(userInfosEntity.getProfile())
+                .map(UserProfileEntity::getMaxAllowedBalanceAdjustement)
+                .orElse(applicationProps.getDefaultMaxAllowedBalanceAdjustement());
+
+        Integer maxAllowedDynamicSimulation = Optional.ofNullable(userInfosEntity.getProfile())
+                .map(UserProfileEntity::getMaxAllowedDynamicSimulation)
+                .orElse(applicationProps.getDefaultMaxAllowedDynamicSimulation());
+
+        Integer maxAllowedDynamicSecurity = Optional.ofNullable(userInfosEntity.getProfile())
+                .map(UserProfileEntity::getMaxAllowedDynamicSecurity)
+                .orElse(applicationProps.getDefaultMaxAllowedDynamicSecurity());
+
+        Integer maxAllowedDynamicMargin = Optional.ofNullable(userInfosEntity.getProfile())
+                .map(UserProfileEntity::getMaxAllowedDynamicMargin)
+                .orElse(applicationProps.getDefaultMaxAllowedDynamicMargin());
+
+        return UserInfosEntity.toDtoWithDetail(userInfosEntity, maxAllowedCases, casesUsed, maxAllowedBuilds,
+                maxAllowedLoadflow, maxAllowedSecurity, maxAllowedSensitivity, maxAllowedShortCircuit, maxAllowedVoltageInit,
+                maxAllowedPccMin, maxAllowedStateEstimation, maxAllowedBalanceAdjustement,
+                maxAllowedDynamicSimulation, maxAllowedDynamicSecurity, maxAllowedDynamicMargin);
     }
 
     @Transactional(readOnly = true)
@@ -69,6 +117,17 @@ public class UserInfosService {
                 applicationProps.getDefaultMaxAllowedCases(),
                 casesUsed,
                 applicationProps.getDefaultMaxAllowedBuilds(),
+                applicationProps.getDefaultMaxAllowedLoadflow(),
+                applicationProps.getDefaultMaxAllowedSecurity(),
+                applicationProps.getDefaultMaxAllowedSensitivity(),
+                applicationProps.getDefaultMaxAllowedShortCircuit(),
+                applicationProps.getDefaultMaxAllowedVoltageInit(),
+                applicationProps.getDefaultMaxAllowedPccMin(),
+                applicationProps.getDefaultMaxAllowedStateEstimation(),
+                applicationProps.getDefaultMaxAllowedBalanceAdjustement(),
+                applicationProps.getDefaultMaxAllowedDynamicSimulation(),
+                applicationProps.getDefaultMaxAllowedDynamicSecurity(),
+                applicationProps.getDefaultMaxAllowedDynamicMargin(),
                 Set.of()
         );
     }

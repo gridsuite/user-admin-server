@@ -50,17 +50,42 @@ public class UserInfosEntity {
 
     private UserInfos toUserInfos(Integer maxAllowedCases,
                                   Integer numberCasesUsed,
-                                  Integer maxAllowedBuilds) {
+                                  Integer maxAllowedBuilds,
+                                  Integer maxAllowedLoadflow,
+                                  Integer maxAllowedSecurity,
+                                  Integer maxAllowedSensitivity,
+                                  Integer maxAllowedShortCircuit,
+                                  Integer maxAllowedVoltageInit,
+                                  Integer maxAllowedPccMin,
+                                  Integer maxAllowedStateEstimation,
+                                  Integer maxAllowedBalanceAdjustement,
+                                  Integer maxAllowedDynamicSimulation,
+                                  Integer maxAllowedDynamicSecurity,
+                                  Integer maxAllowedDynamicMargin
+                                  ) {
         String profileName = getProfile() == null ? null : getProfile().getName();
         Set<String> groupNames = getGroups() == null ? null : getGroups().stream().map(GroupInfosEntity::getName).collect(Collectors.toSet());
-        return new UserInfos(getSub(), null, null, profileName, maxAllowedCases, numberCasesUsed, maxAllowedBuilds, groupNames);
+        return new UserInfos(getSub(), null, null, profileName, maxAllowedCases, numberCasesUsed, maxAllowedBuilds,
+                maxAllowedLoadflow, maxAllowedSecurity, maxAllowedSensitivity, maxAllowedShortCircuit, maxAllowedVoltageInit,
+                maxAllowedPccMin, maxAllowedStateEstimation, maxAllowedBalanceAdjustement, maxAllowedDynamicSimulation,
+                maxAllowedDynamicSecurity, maxAllowedDynamicMargin, groupNames);
     }
 
     public static UserInfos toDto(@Nullable final UserInfosEntity entity) {
-        return entity == null ? null : entity.toUserInfos(null, null, null);
+        return entity == null ? null : entity.toUserInfos(null, null, null,
+                null, null, null, null,
+                null, null, null, null,
+                null, null, null);
     }
 
-    public static UserInfos toDtoWithDetail(@Nullable final UserInfosEntity entity, Integer maxAllowedCases, Integer numberCasesUsed, Integer maxAllowedBuilds) {
-        return entity == null ? null : entity.toUserInfos(maxAllowedCases, numberCasesUsed, maxAllowedBuilds);
+    public static UserInfos toDtoWithDetail(@Nullable final UserInfosEntity entity, Integer maxAllowedCases, Integer numberCasesUsed,
+                                            Integer maxAllowedBuilds, Integer maxAllowedLoadflow, Integer maxAllowedSecurity,
+                                            Integer maxAllowedSensitivity, Integer maxAllowedShortCircuit, Integer maxAllowedVoltageInit,
+                                            Integer maxAllowedPccMin, Integer maxAllowedStateEstimation, Integer maxAllowedBalanceAdjustement,
+                                            Integer maxAllowedDynamicSimulation, Integer maxAllowedDynamicSecurity, Integer maxAllowedDynamicMargin) {
+        return entity == null ? null : entity.toUserInfos(maxAllowedCases, numberCasesUsed, maxAllowedBuilds,
+                maxAllowedLoadflow, maxAllowedSecurity, maxAllowedSensitivity, maxAllowedShortCircuit, maxAllowedVoltageInit,
+                maxAllowedPccMin, maxAllowedStateEstimation, maxAllowedBalanceAdjustement, maxAllowedDynamicSimulation,
+                maxAllowedDynamicSecurity, maxAllowedDynamicMargin);
     }
 }

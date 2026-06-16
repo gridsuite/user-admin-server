@@ -56,6 +56,39 @@ public class UserProfileEntity {
     @Column(name = "maxAllowedBuilds")
     private Integer maxAllowedBuilds;
 
+    @Column(name = "maxAllowedLoadflow")
+    private Integer maxAllowedLoadflow;
+
+    @Column(name = "maxAllowedSecurity")
+    private Integer maxAllowedSecurity;
+
+    @Column(name = "maxAllowedSensitivity")
+    private Integer maxAllowedSensitivity;
+
+    @Column(name = "maxAllowedShortCircuit")
+    Integer maxAllowedShortCircuit;
+
+    @Column(name = "maxAllowedVoltageInit")
+    Integer maxAllowedVoltageInit;
+
+    @Column(name = "maxAllowedPccMin")
+    Integer maxAllowedPccMin;
+
+    @Column(name = "maxAllowedStateEstimation")
+    Integer maxAllowedStateEstimation;
+
+    @Column(name = "maxAllowedBalanceAdjustement")
+    Integer maxAllowedBalanceAdjustement;
+
+    @Column(name = "maxAllowedDynamicSimulation")
+    Integer maxAllowedDynamicSimulation;
+
+    @Column(name = "maxAllowedDynamicSecurity")
+    Integer maxAllowedDynamicSecurity;
+
+    @Column(name = "maxAllowedDynamicMargin")
+    Integer maxAllowedDynamicMargin;
+
     @Column(name = "spreadsheetConfigCollectionId")
     private UUID spreadsheetConfigCollectionId;
 

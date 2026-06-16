@@ -38,6 +38,61 @@ public class UserAdminApplicationProps {
     private Integer defaultMaxAllowedBuilds;
 
     /**
+     * Default value of {@link org.gridsuite.useradmin.server.dto.UserInfos#maxAllowedLoadflow()} if {@code null}.
+     */
+    private Integer defaultMaxAllowedLoadflow;
+
+    /**
+     * Default value of {@link org.gridsuite.useradmin.server.dto.UserInfos#maxAllowedSecurity()} if {@code null}.
+     */
+    private Integer defaultMaxAllowedSecurity;
+
+    /**
+     * Default value of {@link org.gridsuite.useradmin.server.dto.UserInfos#maxAllowedSensitivity()} if {@code null}.
+     */
+    private Integer defaultMaxAllowedSensitivity;
+
+    /**
+     * Default value of {@link org.gridsuite.useradmin.server.dto.UserInfos#maxAllowedShortCircuit()} if {@code null}.
+     */
+    private Integer defaultMaxAllowedShortCircuit;
+
+    /**
+     * Default value of {@link org.gridsuite.useradmin.server.dto.UserInfos#maxAllowedVoltageInit()} if {@code null}.
+     */
+    private Integer defaultMaxAllowedVoltageInit;
+
+    /**
+     * Default value of {@link org.gridsuite.useradmin.server.dto.UserInfos#maxAllowedPccMin()} if {@code null}.
+     */
+    private Integer defaultMaxAllowedPccMin;
+
+    /**
+     * Default value of {@link org.gridsuite.useradmin.server.dto.UserInfos#maxAllowedStateEstimation()} if {@code null}.
+     */
+    private Integer defaultMaxAllowedStateEstimation;
+
+    /**
+     * Default value of {@link org.gridsuite.useradmin.server.dto.UserInfos#maxAllowedBalanceAdjustement()} if {@code null}.
+     */
+    private Integer defaultMaxAllowedBalanceAdjustement;
+
+    /**
+     * Default value of {@link org.gridsuite.useradmin.server.dto.UserInfos#maxAllowedDynamicSimulation()} if {@code null}.
+     */
+    private Integer defaultMaxAllowedDynamicSimulation;
+
+    /**
+     * Default value of {@link org.gridsuite.useradmin.server.dto.UserInfos#maxAllowedDynamicSecurity()} if {@code null}.
+     */
+    private Integer defaultMaxAllowedDynamicSecurity;
+
+    /**
+     * Default value of {@link org.gridsuite.useradmin.server.dto.UserInfos#maxAllowedDynamicMargin()} if {@code null}.
+     */
+    private Integer defaultMaxAllowedDynamicMargin;
+
+    /**
      * Cron jobs expression in UTC.
      */
     private Cron cron = new Cron();

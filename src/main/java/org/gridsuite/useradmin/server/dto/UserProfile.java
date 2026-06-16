@@ -20,13 +20,28 @@ public record UserProfile(
     Boolean allLinksValid,
     Integer maxAllowedCases,
     Integer maxAllowedBuilds,
+    Integer maxAllowedLoadflow,
+    Integer maxAllowedSecurity,
+    Integer maxAllowedSensitivity,
+    Integer maxAllowedShortCircuit,
+    Integer maxAllowedVoltageInit,
+    Integer maxAllowedPccMin,
+    Integer maxAllowedStateEstimation,
+    Integer maxAllowedBalanceAdjustement,
+    Integer maxAllowedDynamicSimulation,
+    Integer maxAllowedDynamicSecurity,
+    Integer maxAllowedDynamicMargin,
     UUID spreadsheetConfigCollectionId,
     UUID networkVisualizationParameterId,
     UUID workspaceId
 ) {
     public static final String DEFAULT_PROFILE_NAME = "default profile";
 
-    public static UserProfile createDefaultProfile(Integer maxAllowedCases, Integer maxAllowedBuilds) {
+    public static UserProfile createDefaultProfile(Integer maxAllowedCases, Integer maxAllowedBuilds, Integer maxAllowedLoadflow,
+                                                   Integer maxAllowedSecurity, Integer maxAllowedSensitivity, Integer maxAllowedShortCircuit,
+                                                   Integer maxAllowedVoltageInit, Integer maxAllowedPccMin, Integer maxAllowedStateEstimation,
+                                                   Integer maxAllowedBalanceAdjustement, Integer maxAllowedDynamicSimulation, Integer maxAllowedDynamicSecurity,
+                                                   Integer maxAllowedDynamicMargin) {
         return new UserProfile(
                 null,
                 DEFAULT_PROFILE_NAME,
@@ -39,6 +54,17 @@ public record UserProfile(
                 null,
                 maxAllowedCases,
                 maxAllowedBuilds,
+                maxAllowedLoadflow,
+                maxAllowedSecurity,
+                maxAllowedSensitivity,
+                maxAllowedShortCircuit,
+                maxAllowedVoltageInit,
+                maxAllowedPccMin,
+                maxAllowedStateEstimation,
+                maxAllowedBalanceAdjustement,
+                maxAllowedDynamicSimulation,
+                maxAllowedDynamicSecurity,
+                maxAllowedDynamicMargin,
                 null,
                 null,
                 null

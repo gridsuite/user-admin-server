@@ -219,10 +219,98 @@ public class UserAdminService {
                 .orElse(applicationProps.getDefaultMaxAllowedBuilds());
     }
 
+    @Transactional(readOnly = true)
+    public Integer getUserProfileMaxAllowedLoadflows(String sub) {
+        UserProfile profile = doGetUserProfile(sub);
+        return Optional.ofNullable(profile.maxAllowedLoadflow())
+                .orElse(applicationProps.getDefaultMaxAllowedLoadflow());
+    }
+
+    @Transactional(readOnly = true)
+    public Integer getUserProfileMaxAllowedSecurity(String sub) {
+        UserProfile profile = doGetUserProfile(sub);
+        return Optional.ofNullable(profile.maxAllowedSecurity())
+                .orElse(applicationProps.getDefaultMaxAllowedSecurity());
+    }
+
+    @Transactional(readOnly = true)
+    public Integer getUserProfileMaxAllowedSensitivity(String sub) {
+        UserProfile profile = doGetUserProfile(sub);
+        return Optional.ofNullable(profile.maxAllowedSensitivity())
+                .orElse(applicationProps.getDefaultMaxAllowedSensitivity());
+    }
+
+    @Transactional(readOnly = true)
+    public Integer getUserProfileMaxAllowedShortCircuit(String sub) {
+        UserProfile profile = doGetUserProfile(sub);
+        return Optional.ofNullable(profile.maxAllowedShortCircuit())
+                .orElse(applicationProps.getDefaultMaxAllowedShortCircuit());
+    }
+
+    @Transactional(readOnly = true)
+    public Integer getUserProfileMaxAllowedVoltageInit(String sub) {
+        UserProfile profile = doGetUserProfile(sub);
+        return Optional.ofNullable(profile.maxAllowedVoltageInit())
+                .orElse(applicationProps.getDefaultMaxAllowedVoltageInit());
+    }
+
+    @Transactional(readOnly = true)
+    public Integer getUserProfileMaxAllowedPccMin(String sub) {
+        UserProfile profile = doGetUserProfile(sub);
+        return Optional.ofNullable(profile.maxAllowedPccMin())
+                .orElse(applicationProps.getDefaultMaxAllowedPccMin());
+    }
+
+    @Transactional(readOnly = true)
+    public Integer getUserProfileMaxAllowedStateEstimation(String sub) {
+        UserProfile profile = doGetUserProfile(sub);
+        return Optional.ofNullable(profile.maxAllowedStateEstimation())
+                .orElse(applicationProps.getDefaultMaxAllowedStateEstimation());
+    }
+
+    @Transactional(readOnly = true)
+    public Integer getUserProfileMaxAllowedBalanceAdjustement(String sub) {
+        UserProfile profile = doGetUserProfile(sub);
+        return Optional.ofNullable(profile.maxAllowedBalanceAdjustement())
+                .orElse(applicationProps.getDefaultMaxAllowedBalanceAdjustement());
+    }
+
+    @Transactional(readOnly = true)
+    public Integer getUserProfileMaxAllowedDynamicSimulation(String sub) {
+        UserProfile profile = doGetUserProfile(sub);
+        return Optional.ofNullable(profile.maxAllowedDynamicSimulation())
+                .orElse(applicationProps.getDefaultMaxAllowedDynamicSimulation());
+    }
+
+    @Transactional(readOnly = true)
+    public Integer getUserProfileMaxAllowedDynamicSecurity(String sub) {
+        UserProfile profile = doGetUserProfile(sub);
+        return Optional.ofNullable(profile.maxAllowedDynamicSecurity())
+                .orElse(applicationProps.getDefaultMaxAllowedDynamicSecurity());
+    }
+
+    @Transactional(readOnly = true)
+    public Integer getUserProfileMaxAllowedDynamicMargin(String sub) {
+        UserProfile profile = doGetUserProfile(sub);
+        return Optional.ofNullable(profile.maxAllowedDynamicMargin())
+                .orElse(applicationProps.getDefaultMaxAllowedDynamicMargin());
+    }
+
     private UserProfile createDefaultProfile() {
         return UserProfile.createDefaultProfile(
                 applicationProps.getDefaultMaxAllowedCases(),
-                applicationProps.getDefaultMaxAllowedBuilds()
+                applicationProps.getDefaultMaxAllowedBuilds(),
+                applicationProps.getDefaultMaxAllowedLoadflow(),
+                applicationProps.getDefaultMaxAllowedSecurity(),
+                applicationProps.getDefaultMaxAllowedSensitivity(),
+                applicationProps.getDefaultMaxAllowedShortCircuit(),
+                applicationProps.getDefaultMaxAllowedVoltageInit(),
+                applicationProps.getDefaultMaxAllowedPccMin(),
+                applicationProps.getDefaultMaxAllowedStateEstimation(),
+                applicationProps.getDefaultMaxAllowedBalanceAdjustement(),
+                applicationProps.getDefaultMaxAllowedDynamicSimulation(),
+                applicationProps.getDefaultMaxAllowedDynamicSecurity(),
+                applicationProps.getDefaultMaxAllowedDynamicMargin()
         );
     }
 
