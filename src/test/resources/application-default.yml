@@ -25,3 +25,14 @@ powsybl-ws:
 useradmin:
   defaultMaxAllowedCases: 20
   defaultMaxAllowedBuilds: 10
+  defaultMaxAllowedLoadflow: 2
+  defaultMaxAllowedSecurity: 2
+  defaultMaxAllowedSensitivity: 1
+  defaultMaxAllowedShortCircuit: 1
+  defaultMaxAllowedVoltageInit: 2
+  defaultMaxAllowedPccMin: 1
+  defaultMaxAllowedStateEstimation: 1
+  defaultMaxAllowedBalanceAdjustement: 1
+  defaultMaxAllowedDynamicSimulation: 1
+  defaultMaxAllowedDynamicSecurity: 1
+  defaultMaxAllowedDynamicMargin: 1
