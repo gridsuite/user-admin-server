@@ -20,4 +20,15 @@ useradmin:
     announcement-clean: 0 0 2 * * ?
   defaultMaxAllowedCases: 20   # Default allowed cases for a user
   defaultMaxAllowedBuilds: 20  # Default allowed builds for a user
+  defaultMaxAllowedLoadflow: 2
+  defaultMaxAllowedSecurity: 2
+  defaultMaxAllowedSensitivity: 1
+  defaultMaxAllowedShortCircuit: 1
+  defaultMaxAllowedVoltageInit: 2
+  defaultMaxAllowedPccMin: 1
+  defaultMaxAllowedStateEstimation: 1
+  defaultMaxAllowedBalanceAdjustement: 1
+  defaultMaxAllowedDynamicSimulation: 1
+  defaultMaxAllowedDynamicSecurity: 1
+  defaultMaxAllowedDynamicMargin: 1
   casesAlertThreshold: 90      # Default usage threshold (percentage) when user gets a warning when uploading cases

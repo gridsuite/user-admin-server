@@ -129,6 +129,17 @@ public class UserProfileService {
         profile.setVoltageInitParameterId(userProfile.voltageInitParameterId());
         profile.setMaxAllowedCases(userProfile.maxAllowedCases());
         profile.setMaxAllowedBuilds(userProfile.maxAllowedBuilds());
+        profile.setMaxAllowedLoadflow(userProfile.maxAllowedLoadflow());
+        profile.setMaxAllowedSecurity(userProfile.maxAllowedSecurity());
+        profile.setMaxAllowedSensitivity(userProfile.maxAllowedSensitivity());
+        profile.setMaxAllowedShortCircuit(userProfile.maxAllowedShortCircuit());
+        profile.setMaxAllowedVoltageInit(userProfile.maxAllowedVoltageInit());
+        profile.setMaxAllowedPccMin(userProfile.maxAllowedPccMin());
+        profile.setMaxAllowedStateEstimation(userProfile.maxAllowedStateEstimation());
+        profile.setMaxAllowedBalanceAdjustement(userProfile.maxAllowedBalanceAdjustement());
+        profile.setMaxAllowedDynamicSimulation(userProfile.maxAllowedDynamicSimulation());
+        profile.setMaxAllowedDynamicSecurity(userProfile.maxAllowedDynamicSecurity());
+        profile.setMaxAllowedDynamicMargin(userProfile.maxAllowedDynamicMargin());
         profile.setSpreadsheetConfigCollectionId(userProfile.spreadsheetConfigCollectionId());
         profile.setNetworkVisualizationParameterId(userProfile.networkVisualizationParameterId());
         profile.setWorkspaceId(userProfile.workspaceId());
