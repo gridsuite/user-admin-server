@@ -32,10 +32,12 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
 import static org.gridsuite.useradmin.server.Utils.ROLES_HEADER;
+import static org.gridsuite.useradmin.server.dto.UserProfile.*;
 import static org.gridsuite.useradmin.server.utils.TestConstants.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -217,7 +219,7 @@ class UserAdminTest {
     @Test
     void testUpdateUser() throws Exception {
         createUser(USER_SUB);
-        createProfile(PROFILE_1);
+        createProfile();
         createGroup(GROUP_1);
         createGroup(GROUP_2);
 
@@ -271,8 +273,8 @@ class UserAdminTest {
         assertNotNull(profile);
         assertEquals(UserProfile.DEFAULT_PROFILE_NAME, profile.name());
         assertNull(profile.id());
-        assertEquals(userAdminApplicationProps.getDefaultMaxAllowedCases(), profile.maxAllowedCases());
-        assertEquals(userAdminApplicationProps.getDefaultMaxAllowedBuilds(), profile.maxAllowedBuilds());
+        assertEquals(userAdminApplicationProps.getDefaultMaxAllowedCases(), profile.maxAllowValuesMap().get(MAX_ALLOWED_CASES));
+        assertEquals(userAdminApplicationProps.getDefaultMaxAllowedBuilds(), profile.maxAllowValuesMap().get(MAX_ALLOWED_BUILD));
         assertNull(profile.loadFlowParameterId());
         assertNull(profile.securityAnalysisParameterId());
         assertNull(profile.sensitivityAnalysisParameterId());
@@ -383,15 +385,11 @@ class UserAdminTest {
                 .andExpect(status().isBadRequest());
     }
 
-    private void createProfile(String profileName) throws Exception {
+    private void createProfile() throws Exception {
         ObjectWriter objectWriter = objectMapper.writer().withDefaultPrettyPrinter();
-        UserProfile profileInfo = new UserProfile(null, profileName, null, null,
+        UserProfile profileInfo = new UserProfile(null, UserAdminTest.PROFILE_1, null, null,
                 null, null, null, null,
-                false, null, null, null, null,
-                null, null, null, null,
-                null, null, null,
-                null, null, null,
-                null, null);
+                false, new HashMap<>(), null, null, null);
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/profiles")
                         .content(objectWriter.writeValueAsString(profileInfo))
                         .contentType(MediaType.APPLICATION_JSON)

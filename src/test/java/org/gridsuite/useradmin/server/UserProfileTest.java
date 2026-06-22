@@ -33,14 +33,13 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.gridsuite.useradmin.server.Utils.ROLES_HEADER;
+import static org.gridsuite.useradmin.server.dto.UserProfile.MAX_ALLOWED_BUILD;
+import static org.gridsuite.useradmin.server.dto.UserProfile.MAX_ALLOWED_CASES;
 import static org.gridsuite.useradmin.server.utils.TestConstants.USER_ADMIN_ROLE;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -121,8 +120,8 @@ class UserProfileTest {
         assertNull(userProfiles.getFirst().pccMinParameterId());
         assertNull(userProfiles.get(0).voltageInitParameterId());
         assertNull(userProfiles.get(0).allLinksValid());
-        assertEquals(10, userProfiles.get(0).maxAllowedCases());
-        assertEquals(15, userProfiles.get(0).maxAllowedBuilds());
+        assertEquals(10, userProfiles.get(0).maxAllowValuesMap().get(MAX_ALLOWED_CASES));
+        assertEquals(15, userProfiles.get(0).maxAllowValuesMap().get(MAX_ALLOWED_BUILD));
         assertNull(userProfiles.get(0).spreadsheetConfigCollectionId());
         assertNull(userProfiles.get(0).networkVisualizationParameterId());
 
@@ -157,9 +156,6 @@ class UserProfileTest {
     void testProfileUpdateNotFound() throws Exception {
         updateProfile(new UserProfile(UUID.randomUUID(), PROFILE_2, null, null,
                         null, null, null, null, null,
-                        null, null, null, null, null,
-                        null, null, null, null,
-                        null, null, null,
                         null, null, null, null),
                 ADMIN_USER,
                 USER_ADMIN_ROLE,
@@ -170,9 +166,6 @@ class UserProfileTest {
     void testProfileUpdateForbidden() throws Exception {
         updateProfile(new UserProfile(UUID.randomUUID(), PROFILE_2, null, null,
                         null, null, null, null, null,
-                        null, null, null, null, null,
-                        null, null, null, null,
-                        null, null, null,
                         null, null, null, null),
                 NOT_ADMIN,
                 "USER",
@@ -292,12 +285,12 @@ class UserProfileTest {
         UUID profileUuid = createProfile(PROFILE_1, ADMIN_USER, USER_ADMIN_ROLE, null, 0, HttpStatus.CREATED);
 
         // udpate the profile: change name and set its parameters, maxAllowedCases, maxAllowedBuilds and spreadsheet config collection
+        Map<String, Integer> maxAllowedValues = new HashMap<>();
+        maxAllowedValues.put(MAX_ALLOWED_CASES, 10);
+        maxAllowedValues.put(MAX_ALLOWED_BUILD, 11);
         UserProfile userProfile = new UserProfile(profileUuid, PROFILE_2, loadFlowParametersUuid, securityAnalysisParametersUuid,
             sensitivityAnalysisParametersUuid, shortcircuitParametersUuid, pccminParametersUuid, voltageInitParametersUuid, null,
-                10, 11, null, null, null,
-                null, null, null, null, null,
-                null, null, null,
-                spreadsheetConfigCollectionUuid, networkVisualizationParametersUuid, diagramConfigUuid);
+                maxAllowedValues, spreadsheetConfigCollectionUuid, networkVisualizationParametersUuid, diagramConfigUuid);
         updateProfile(userProfile, ADMIN_USER, USER_ADMIN_ROLE, HttpStatus.OK);
 
         // profiles list (with validity flag)
@@ -311,8 +304,8 @@ class UserProfileTest {
         assertEquals(pccminParametersUuid, userProfiles.get(0).pccMinParameterId());
         assertEquals(voltageInitParametersUuid, userProfiles.get(0).voltageInitParameterId());
         assertEquals(validParameters, userProfiles.get(0).allLinksValid());
-        assertEquals(10, userProfiles.get(0).maxAllowedCases());
-        assertEquals(11, userProfiles.get(0).maxAllowedBuilds());
+        assertEquals(10, userProfiles.get(0).maxAllowValuesMap().get(MAX_ALLOWED_CASES));
+        assertEquals(11, userProfiles.get(0).maxAllowValuesMap().get(MAX_ALLOWED_BUILD));
         assertEquals(spreadsheetConfigCollectionUuid, userProfiles.get(0).spreadsheetConfigCollectionId());
         assertEquals(networkVisualizationParametersUuid, userProfiles.get(0).networkVisualizationParameterId());
 
@@ -327,11 +320,12 @@ class UserProfileTest {
     }
 
     private UUID createProfile(String profileName, String userName, String userRole, Integer maxAllowedCases, Integer maxAllowedBuilds, HttpStatusCode status) throws Exception {
+        Map<String, Integer> maxAllowedValues = new HashMap<>();
+        maxAllowedValues.put(MAX_ALLOWED_CASES, maxAllowedCases);
+        maxAllowedValues.put(MAX_ALLOWED_BUILD, maxAllowedBuilds);
         UserProfile profileInfo = new UserProfile(null, profileName, null, null, null,
-                null, null, null, false, maxAllowedCases, maxAllowedBuilds,
-                null, null, null, null, null,
-                null, null, null, null, null,
-                null, null, null, null);
+                null, null, null, false, maxAllowedValues,
+                null, null, null);
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/profiles")
                         .content(objectWriter.writeValueAsString(profileInfo))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -413,7 +407,7 @@ class UserProfileTest {
             assertEquals(newData.shortcircuitParameterId(), updatedProfile.shortcircuitParameterId());
             assertEquals(newData.pccMinParameterId(), updatedProfile.pccMinParameterId());
             assertEquals(newData.voltageInitParameterId(), updatedProfile.voltageInitParameterId());
-            assertEquals(newData.maxAllowedCases(), updatedProfile.maxAllowedCases());
+            assertEquals(newData.maxAllowValuesMap().get(MAX_ALLOWED_BUILD), updatedProfile.maxAllowValuesMap().get(MAX_ALLOWED_BUILD));
             assertNull(updatedProfile.allLinksValid()); // validity not set in this case
             assertEquals(newData.spreadsheetConfigCollectionId(), updatedProfile.spreadsheetConfigCollectionId());
             assertEquals(newData.networkVisualizationParameterId(), updatedProfile.networkVisualizationParameterId());

@@ -13,6 +13,7 @@ import org.gridsuite.useradmin.server.dto.UserProfile;
 import org.gridsuite.useradmin.server.entity.UserProfileEntity;
 import org.gridsuite.useradmin.server.repository.UserInfosRepository;
 import org.gridsuite.useradmin.server.repository.UserProfileRepository;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,9 +24,12 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.gridsuite.useradmin.server.Utils.ROLES_HEADER;
+import static org.gridsuite.useradmin.server.dto.UserProfile.*;
 import static org.gridsuite.useradmin.server.utils.TestConstants.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -76,14 +80,9 @@ class NoQuotaTest {
 
     @Test
     void testProfileCreation() throws Exception {
-        createProfile(PROFILE_ONE, null, null, null,
-                null, null, null, null,
-                null, null, null,
-                null, null, null);
+        createProfile();
         // test with quotas
-        createProfile(PROFILE_TWO, 10, 20, 2, 2, 1,
-                1, 2, 1, 1,
-                1, 1, 1, 1);
+        createProfile(PROFILE_TWO, createMaxAllowedCases());
     }
 
     @Test
@@ -91,21 +90,18 @@ class NoQuotaTest {
         createUser(USER_SUB);
 
         assertTrue(getMaxAllowedBuilds(USER_SUB).isEmpty());
-        assertTrue(getMaxAllowedCases(USER_SUB).isEmpty());
+        assertTrue(createMaxAllowedCases(USER_SUB).isEmpty());
     }
 
     @Test
     void testUserCreationWithProfile() throws Exception {
         //profile with no quotas
-        createProfile(PROFILE_ONE, null, null, null,
-                null, null, null, null,
-                null, null, null,
-                null, null, null);
+        createProfile();
         createUser(USER_SUB);
         associateProfileToUser(USER_SUB, PROFILE_ONE);
 
         assertTrue(getMaxAllowedBuilds(USER_SUB).isEmpty());
-        assertTrue(getMaxAllowedCases(USER_SUB).isEmpty());
+        assertTrue(createMaxAllowedCases(USER_SUB).isEmpty());
         assertTrue(getMaxAllowedLoadflow(USER_SUB).isEmpty());
         assertTrue(getMaxAllowedSecurity(USER_SUB).isEmpty());
         assertTrue(getMaxAllowedSensitivity(USER_SUB).isEmpty());
@@ -118,14 +114,14 @@ class NoQuotaTest {
         assertTrue(getMaxAllowedDynamicSecurity(USER_SUB).isEmpty());
         assertTrue(getMaxAllowedDynamicMargin(USER_SUB).isEmpty());
 
+        Map<String, Integer> maxAllowedCases = createMaxAllowedCases();
+
         //profile with quotas
-        createProfile(PROFILE_TWO, 10, 20, 2, 2, 1,
-                1, 2, 1, 1,
-                1, 1, 1, 1);
+        createProfile(PROFILE_TWO, maxAllowedCases);
         createUser(USER_SUB_TWO);
         associateProfileToUser(USER_SUB_TWO, PROFILE_TWO);
 
-        assertEquals("10", getMaxAllowedCases(USER_SUB_TWO));
+        assertEquals("10", createMaxAllowedCases(USER_SUB_TWO));
         assertEquals("20", getMaxAllowedBuilds(USER_SUB_TWO));
         assertEquals("2", getMaxAllowedLoadflow(USER_SUB_TWO));
         assertEquals("2", getMaxAllowedSecurity(USER_SUB_TWO));
@@ -140,16 +136,32 @@ class NoQuotaTest {
         assertEquals("1", getMaxAllowedDynamicMargin(USER_SUB_TWO));
     }
 
-    private void createProfile(String profileName, Integer maxAllowedCases, Integer maxAllowedBuilds, Integer maxAllowedLoadflow,
-                               Integer maxAllowedSecurity, Integer maxAllowedSensitivity, Integer maxAllowedShortCircuit,
-                               Integer maxAllowedVoltageInit, Integer maxAllowedPccMin, Integer maxAllowedStateEstimation,
-                               Integer maxAllowedBalanceAdjustement, Integer maxAllowedDynamicSimulation, Integer maxAllowedDynamicSecurity,
-                               Integer maxAllowedDynamicMargin) throws Exception {
+    private static @NonNull Map<String, Integer> createMaxAllowedCases() {
+        Map<String, Integer> maxAllowedCases = new HashMap<>();
+        maxAllowedCases.put(MAX_ALLOWED_CASES, 10);
+        maxAllowedCases.put(MAX_ALLOWED_BUILD, 20);
+        maxAllowedCases.put(MAX_ALLOWED_LOADFLOW, 2);
+        maxAllowedCases.put(MAX_ALLOWED_SECURITY, 2);
+        maxAllowedCases.put(MAX_ALLOWED_SENSITIVITY, 1);
+        maxAllowedCases.put(MAX_ALLOWED_SHORT_CIRCUIT, 1);
+        maxAllowedCases.put(MAX_ALLOWED_VOLTAGE_INIT, 2);
+        maxAllowedCases.put(MAX_ALLOWED_PCC_MIN, 1);
+        maxAllowedCases.put(MAX_ALLOWED_STATE_ESTIMATION, 1);
+        maxAllowedCases.put(MAX_ALLOWED_BALANCE_ADJUSTEMENT, 1);
+        maxAllowedCases.put(MAX_ALLOWED_DYNAMIC_SIMULATION, 1);
+        maxAllowedCases.put(MAX_ALLOWED_DYNAMIC_SECURITY, 1);
+        maxAllowedCases.put(MAX_ALLOWED_DYNAMIC_MARGIN, 1);
+        return maxAllowedCases;
+    }
+
+    private void createProfile() throws Exception {
+        createProfile(NoQuotaTest.PROFILE_ONE, new HashMap<>());
+    }
+
+    private void createProfile(String profileName, Map<String, Integer> maxAllowedValues) throws Exception {
         UserProfile profileInfo = new UserProfile(null, profileName, null, null,
                 null, null, null, null, false,
-                maxAllowedCases, maxAllowedBuilds, maxAllowedLoadflow, maxAllowedSecurity, maxAllowedSensitivity, maxAllowedShortCircuit,
-                maxAllowedVoltageInit, maxAllowedPccMin, maxAllowedStateEstimation, maxAllowedBalanceAdjustement, maxAllowedDynamicSimulation,
-                maxAllowedDynamicSecurity, maxAllowedDynamicMargin, null, null, null);
+               maxAllowedValues, null, null, null);
         performPost(API_BASE_PATH + "/profiles", profileInfo);
 
         Optional<UserProfileEntity> createdProfile = userProfileRepository.findByName(profileName);
@@ -160,8 +172,19 @@ class NoQuotaTest {
         assertNull(createdProfile.get().getShortcircuitParameterId());
         assertNull(createdProfile.get().getPccminParameterId());
         assertNull(createdProfile.get().getVoltageInitParameterId());
-        assertEquals(maxAllowedCases, createdProfile.get().getMaxAllowedCases());
-        assertEquals(maxAllowedBuilds, createdProfile.get().getMaxAllowedBuilds());
+        assertEquals(maxAllowedValues.get(MAX_ALLOWED_BUILD), createdProfile.get().getMaxAllowedBuilds());
+        assertEquals(maxAllowedValues.get(MAX_ALLOWED_CASES), createdProfile.get().getMaxAllowedCases());
+        assertEquals(maxAllowedValues.get(MAX_ALLOWED_LOADFLOW), createdProfile.get().getMaxAllowedLoadflow());
+        assertEquals(maxAllowedValues.get(MAX_ALLOWED_SECURITY), createdProfile.get().getMaxAllowedSecurity());
+        assertEquals(maxAllowedValues.get(MAX_ALLOWED_SENSITIVITY), createdProfile.get().getMaxAllowedSensitivity());
+        assertEquals(maxAllowedValues.get(MAX_ALLOWED_SHORT_CIRCUIT), createdProfile.get().getMaxAllowedShortCircuit());
+        assertEquals(maxAllowedValues.get(MAX_ALLOWED_VOLTAGE_INIT), createdProfile.get().getMaxAllowedVoltageInit());
+        assertEquals(maxAllowedValues.get(MAX_ALLOWED_PCC_MIN), createdProfile.get().getMaxAllowedPccMin());
+        assertEquals(maxAllowedValues.get(MAX_ALLOWED_STATE_ESTIMATION), createdProfile.get().getMaxAllowedStateEstimation());
+        assertEquals(maxAllowedValues.get(MAX_ALLOWED_BALANCE_ADJUSTEMENT), createdProfile.get().getMaxAllowedBalanceAdjustement());
+        assertEquals(maxAllowedValues.get(MAX_ALLOWED_DYNAMIC_SIMULATION), createdProfile.get().getMaxAllowedDynamicSimulation());
+        assertEquals(maxAllowedValues.get(MAX_ALLOWED_DYNAMIC_SECURITY), createdProfile.get().getMaxAllowedDynamicSecurity());
+        assertEquals(maxAllowedValues.get(MAX_ALLOWED_DYNAMIC_MARGIN), createdProfile.get().getMaxAllowedDynamicMargin());
         assertNull(createdProfile.get().getSpreadsheetConfigCollectionId());
         assertNull(createdProfile.get().getNetworkVisualizationParameterId());
     }
@@ -194,7 +217,7 @@ class NoQuotaTest {
         return getMaxAllowedElement(userSub, "max-builds");
     }
 
-    private String getMaxAllowedCases(String userSub) throws Exception {
+    private String createMaxAllowedCases(String userSub) throws Exception {
         return getMaxAllowedElement(userSub, "max-cases");
     }
 
