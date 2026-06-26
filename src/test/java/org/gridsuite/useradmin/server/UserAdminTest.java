@@ -233,7 +233,7 @@ class UserAdminTest {
         // Get and check user profile
         UserProfile userProfile = getUserProfile(USER_SUB2, HttpStatus.OK);
         assertNotNull(userProfile);
-        assertEquals(PROFILE_1, userProfile.name());
+        assertEquals(PROFILE_1, userProfile.getName());
 
         // Get and check user groups
         List<UserGroup> userGroups = getUserGroups(USER_SUB2, HttpStatus.OK);
@@ -271,19 +271,19 @@ class UserAdminTest {
     void testGetUserProfileNotFound() throws Exception {
         UserProfile profile = getUserProfile("BadUser", HttpStatus.OK);
         assertNotNull(profile);
-        assertEquals(UserProfile.DEFAULT_PROFILE_NAME, profile.name());
-        assertNull(profile.id());
-        assertEquals(userAdminApplicationProps.getDefaultMaxAllowedCases(), profile.maxAllowValuesMap().get(MAX_ALLOWED_CASES));
-        assertEquals(userAdminApplicationProps.getDefaultMaxAllowedBuilds(), profile.maxAllowValuesMap().get(MAX_ALLOWED_BUILD));
-        assertNull(profile.loadFlowParameterId());
-        assertNull(profile.securityAnalysisParameterId());
-        assertNull(profile.sensitivityAnalysisParameterId());
-        assertNull(profile.shortcircuitParameterId());
-        assertNull(profile.pccMinParameterId());
-        assertNull(profile.voltageInitParameterId());
-        assertNull(profile.allLinksValid());
-        assertNull(profile.spreadsheetConfigCollectionId());
-        assertNull(profile.networkVisualizationParameterId());
+        assertEquals(UserProfile.DEFAULT_PROFILE_NAME, profile.getName());
+        assertNull(profile.getId());
+        assertEquals(userAdminApplicationProps.getDefaultMaxAllowedCases(), profile.getMaxAllowValuesMap().get(MAX_ALLOWED_CASES));
+        assertEquals(userAdminApplicationProps.getDefaultMaxAllowedBuilds(), profile.getMaxAllowValuesMap().get(MAX_ALLOWED_BUILD));
+        assertNull(profile.getLoadFlowParameterId());
+        assertNull(profile.getSecurityAnalysisParameterId());
+        assertNull(profile.getSensitivityAnalysisParameterId());
+        assertNull(profile.getShortcircuitParameterId());
+        assertNull(profile.getPccMinParameterId());
+        assertNull(profile.getVoltageInitParameterId());
+        assertNull(profile.getAllLinksValid());
+        assertNull(profile.getSpreadsheetConfigCollectionId());
+        assertNull(profile.getNetworkVisualizationParameterId());
     }
 
     @Test
@@ -387,9 +387,7 @@ class UserAdminTest {
 
     private void createProfile() throws Exception {
         ObjectWriter objectWriter = objectMapper.writer().withDefaultPrettyPrinter();
-        UserProfile profileInfo = new UserProfile(null, UserAdminTest.PROFILE_1, null, null,
-                null, null, null, null,
-                false, new HashMap<>(), null, null, null);
+        UserProfile profileInfo = UserProfile.builder().name(UserAdminTest.PROFILE_1).allLinksValid(false).maxAllowValuesMap(new HashMap<>()).build();
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/profiles")
                         .content(objectWriter.writeValueAsString(profileInfo))
                         .contentType(MediaType.APPLICATION_JSON)

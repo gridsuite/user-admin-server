@@ -122,36 +122,36 @@ public class UserProfileService {
         adminRightService.assertIsAdmin();
         UserProfileEntity profile = userProfileRepository.findById(profileUuid)
             .orElseThrow(() -> UserAdminException.profileNotFound(profileUuid));
-        profile.setName(userProfile.name());
-        profile.setLoadFlowParameterId(userProfile.loadFlowParameterId());
-        profile.setSecurityAnalysisParameterId(userProfile.securityAnalysisParameterId());
-        profile.setSensitivityAnalysisParameterId(userProfile.sensitivityAnalysisParameterId());
-        profile.setShortcircuitParameterId(userProfile.shortcircuitParameterId());
-        profile.setPccminParameterId(userProfile.pccMinParameterId());
-        profile.setVoltageInitParameterId(userProfile.voltageInitParameterId());
-        profile.setMaxAllowedCases(userProfile.maxAllowValuesMap().get(MAX_ALLOWED_CASES));
-        profile.setMaxAllowedBuilds(userProfile.maxAllowValuesMap().get(MAX_ALLOWED_BUILD));
-        profile.setMaxAllowedLoadflow(userProfile.maxAllowValuesMap().get(MAX_ALLOWED_LOADFLOW));
-        profile.setMaxAllowedSecurity(userProfile.maxAllowValuesMap().get(MAX_ALLOWED_SECURITY));
-        profile.setMaxAllowedSensitivity(userProfile.maxAllowValuesMap().get(MAX_ALLOWED_SENSITIVITY));
-        profile.setMaxAllowedShortCircuit(userProfile.maxAllowValuesMap().get(MAX_ALLOWED_SHORT_CIRCUIT));
-        profile.setMaxAllowedVoltageInit(userProfile.maxAllowValuesMap().get(MAX_ALLOWED_VOLTAGE_INIT));
-        profile.setMaxAllowedPccMin(userProfile.maxAllowValuesMap().get(MAX_ALLOWED_PCC_MIN));
-        profile.setMaxAllowedStateEstimation(userProfile.maxAllowValuesMap().get(MAX_ALLOWED_STATE_ESTIMATION));
-        profile.setMaxAllowedBalanceAdjustement(userProfile.maxAllowValuesMap().get(MAX_ALLOWED_BALANCE_ADJUSTEMENT));
-        profile.setMaxAllowedDynamicSimulation(userProfile.maxAllowValuesMap().get(MAX_ALLOWED_DYNAMIC_SIMULATION));
-        profile.setMaxAllowedDynamicSecurity(userProfile.maxAllowValuesMap().get(MAX_ALLOWED_DYNAMIC_SECURITY));
-        profile.setMaxAllowedDynamicMargin(userProfile.maxAllowValuesMap().get(MAX_ALLOWED_DYNAMIC_MARGIN));
-        profile.setSpreadsheetConfigCollectionId(userProfile.spreadsheetConfigCollectionId());
-        profile.setNetworkVisualizationParameterId(userProfile.networkVisualizationParameterId());
-        profile.setWorkspaceId(userProfile.workspaceId());
+        profile.setName(userProfile.getName());
+        profile.setLoadFlowParameterId(userProfile.getLoadFlowParameterId());
+        profile.setSecurityAnalysisParameterId(userProfile.getSecurityAnalysisParameterId());
+        profile.setSensitivityAnalysisParameterId(userProfile.getSensitivityAnalysisParameterId());
+        profile.setShortcircuitParameterId(userProfile.getShortcircuitParameterId());
+        profile.setPccminParameterId(userProfile.getPccMinParameterId());
+        profile.setVoltageInitParameterId(userProfile.getVoltageInitParameterId());
+        profile.setMaxAllowedCases(userProfile.getMaxAllowValuesMap().get(MAX_ALLOWED_CASES));
+        profile.setMaxAllowedBuilds(userProfile.getMaxAllowValuesMap().get(MAX_ALLOWED_BUILD));
+        profile.setMaxAllowedLoadflow(userProfile.getMaxAllowValuesMap().get(MAX_ALLOWED_LOADFLOW));
+        profile.setMaxAllowedSecurity(userProfile.getMaxAllowValuesMap().get(MAX_ALLOWED_SECURITY));
+        profile.setMaxAllowedSensitivity(userProfile.getMaxAllowValuesMap().get(MAX_ALLOWED_SENSITIVITY));
+        profile.setMaxAllowedShortCircuit(userProfile.getMaxAllowValuesMap().get(MAX_ALLOWED_SHORT_CIRCUIT));
+        profile.setMaxAllowedVoltageInit(userProfile.getMaxAllowValuesMap().get(MAX_ALLOWED_VOLTAGE_INIT));
+        profile.setMaxAllowedPccMin(userProfile.getMaxAllowValuesMap().get(MAX_ALLOWED_PCC_MIN));
+        profile.setMaxAllowedStateEstimation(userProfile.getMaxAllowValuesMap().get(MAX_ALLOWED_STATE_ESTIMATION));
+        profile.setMaxAllowedBalanceAdjustement(userProfile.getMaxAllowValuesMap().get(MAX_ALLOWED_BALANCE_ADJUSTEMENT));
+        profile.setMaxAllowedDynamicSimulation(userProfile.getMaxAllowValuesMap().get(MAX_ALLOWED_DYNAMIC_SIMULATION));
+        profile.setMaxAllowedDynamicSecurity(userProfile.getMaxAllowValuesMap().get(MAX_ALLOWED_DYNAMIC_SECURITY));
+        profile.setMaxAllowedDynamicMargin(userProfile.getMaxAllowValuesMap().get(MAX_ALLOWED_DYNAMIC_MARGIN));
+        profile.setSpreadsheetConfigCollectionId(userProfile.getSpreadsheetConfigCollectionId());
+        profile.setNetworkVisualizationParameterId(userProfile.getNetworkVisualizationParameterId());
+        profile.setWorkspaceId(userProfile.getWorkspaceId());
     }
 
     @Transactional
     public void createProfile(UserProfile userProfile) {
         adminRightService.assertIsAdmin();
-        if (userProfileRepository.findByName(userProfile.name()).isPresent()) {
-            throw UserAdminException.profileAlreadyExists(userProfile.name());
+        if (userProfileRepository.findByName(userProfile.getName()).isPresent()) {
+            throw UserAdminException.profileAlreadyExists(userProfile.getName());
         }
         UserProfileEntity userProfileEntity = toEntity(userProfile);
         userProfileRepository.save(userProfileEntity);
@@ -189,42 +189,50 @@ public class UserProfileService {
         maxAllowedValues.put(MAX_ALLOWED_DYNAMIC_SIMULATION, entity.getMaxAllowedDynamicSimulation());
         maxAllowedValues.put(MAX_ALLOWED_DYNAMIC_SECURITY, entity.getMaxAllowedDynamicSecurity());
         maxAllowedValues.put(MAX_ALLOWED_DYNAMIC_MARGIN, entity.getMaxAllowedDynamicMargin());
-
-        return new UserProfile(entity.getId(), entity.getName(), entity.getLoadFlowParameterId(),
-                               entity.getSecurityAnalysisParameterId(), entity.getSensitivityAnalysisParameterId(),
-                               entity.getShortcircuitParameterId(), entity.getPccminParameterId(), entity.getVoltageInitParameterId(),
-                               allLinksValid, maxAllowedValues,
-                               entity.getSpreadsheetConfigCollectionId(),
-                               entity.getNetworkVisualizationParameterId(), entity.getWorkspaceId());
+        return UserProfile.builder()
+                .id(entity.getId())
+                .name(entity.getName())
+                .loadFlowParameterId(entity.getLoadFlowParameterId())
+                .securityAnalysisParameterId(entity.getSecurityAnalysisParameterId())
+                .sensitivityAnalysisParameterId(entity.getSensitivityAnalysisParameterId())
+                .shortcircuitParameterId(entity.getShortcircuitParameterId())
+                .pccMinParameterId(entity.getPccminParameterId())
+                .voltageInitParameterId(entity.getVoltageInitParameterId())
+                .allLinksValid(allLinksValid)
+                .maxAllowValuesMap(maxAllowedValues)
+                .spreadsheetConfigCollectionId(entity.getSpreadsheetConfigCollectionId())
+                .networkVisualizationParameterId(entity.getNetworkVisualizationParameterId())
+                .workspaceId(entity.getWorkspaceId())
+                .build();
     }
 
     private UserProfileEntity toEntity(final UserProfile userProfile) {
         Objects.requireNonNull(userProfile);
         return new UserProfileEntity(
             UUID.randomUUID(),
-            userProfile.name(),
-            userProfile.loadFlowParameterId(),
-            userProfile.securityAnalysisParameterId(),
-            userProfile.sensitivityAnalysisParameterId(),
-            userProfile.shortcircuitParameterId(),
-            userProfile.pccMinParameterId(),
-            userProfile.voltageInitParameterId(),
-            Optional.ofNullable(userProfile.maxAllowValuesMap().get(MAX_ALLOWED_CASES)).orElse(applicationProps.getDefaultMaxAllowedCases()),
-            Optional.ofNullable(userProfile.maxAllowValuesMap().get(MAX_ALLOWED_BUILD)).orElse(applicationProps.getDefaultMaxAllowedBuilds()),
-            Optional.ofNullable(userProfile.maxAllowValuesMap().get(MAX_ALLOWED_LOADFLOW)).orElse(applicationProps.getDefaultMaxAllowedLoadflow()),
-            Optional.ofNullable(userProfile.maxAllowValuesMap().get(MAX_ALLOWED_SECURITY)).orElse(applicationProps.getDefaultMaxAllowedSecurity()),
-            Optional.ofNullable(userProfile.maxAllowValuesMap().get(MAX_ALLOWED_SENSITIVITY)).orElse(applicationProps.getDefaultMaxAllowedSensitivity()),
-            Optional.ofNullable(userProfile.maxAllowValuesMap().get(MAX_ALLOWED_SHORT_CIRCUIT)).orElse(applicationProps.getDefaultMaxAllowedShortCircuit()),
-            Optional.ofNullable(userProfile.maxAllowValuesMap().get(MAX_ALLOWED_VOLTAGE_INIT)).orElse(applicationProps.getDefaultMaxAllowedVoltageInit()),
-            Optional.ofNullable(userProfile.maxAllowValuesMap().get(MAX_ALLOWED_PCC_MIN)).orElse(applicationProps.getDefaultMaxAllowedPccMin()),
-            Optional.ofNullable(userProfile.maxAllowValuesMap().get(MAX_ALLOWED_STATE_ESTIMATION)).orElse(applicationProps.getDefaultMaxAllowedStateEstimation()),
-            Optional.ofNullable(userProfile.maxAllowValuesMap().get(MAX_ALLOWED_BALANCE_ADJUSTEMENT)).orElse(applicationProps.getDefaultMaxAllowedBalanceAdjustement()),
-            Optional.ofNullable(userProfile.maxAllowValuesMap().get(MAX_ALLOWED_DYNAMIC_SIMULATION)).orElse(applicationProps.getDefaultMaxAllowedDynamicSimulation()),
-            Optional.ofNullable(userProfile.maxAllowValuesMap().get(MAX_ALLOWED_DYNAMIC_SECURITY)).orElse(applicationProps.getDefaultMaxAllowedDynamicSecurity()),
-            Optional.ofNullable(userProfile.maxAllowValuesMap().get(MAX_ALLOWED_DYNAMIC_MARGIN)).orElse(applicationProps.getDefaultMaxAllowedDynamicMargin()),
-            userProfile.spreadsheetConfigCollectionId(),
-            userProfile.networkVisualizationParameterId(),
-            userProfile.workspaceId()
+            userProfile.getName(),
+            userProfile.getLoadFlowParameterId(),
+            userProfile.getSecurityAnalysisParameterId(),
+            userProfile.getSensitivityAnalysisParameterId(),
+            userProfile.getShortcircuitParameterId(),
+            userProfile.getPccMinParameterId(),
+            userProfile.getVoltageInitParameterId(),
+            Optional.ofNullable(userProfile.getMaxAllowValuesMap().get(MAX_ALLOWED_CASES)).orElse(applicationProps.getDefaultMaxAllowedCases()),
+            Optional.ofNullable(userProfile.getMaxAllowValuesMap().get(MAX_ALLOWED_BUILD)).orElse(applicationProps.getDefaultMaxAllowedBuilds()),
+            Optional.ofNullable(userProfile.getMaxAllowValuesMap().get(MAX_ALLOWED_LOADFLOW)).orElse(applicationProps.getDefaultMaxAllowedLoadflow()),
+            Optional.ofNullable(userProfile.getMaxAllowValuesMap().get(MAX_ALLOWED_SECURITY)).orElse(applicationProps.getDefaultMaxAllowedSecurity()),
+            Optional.ofNullable(userProfile.getMaxAllowValuesMap().get(MAX_ALLOWED_SENSITIVITY)).orElse(applicationProps.getDefaultMaxAllowedSensitivity()),
+            Optional.ofNullable(userProfile.getMaxAllowValuesMap().get(MAX_ALLOWED_SHORT_CIRCUIT)).orElse(applicationProps.getDefaultMaxAllowedShortCircuit()),
+            Optional.ofNullable(userProfile.getMaxAllowValuesMap().get(MAX_ALLOWED_VOLTAGE_INIT)).orElse(applicationProps.getDefaultMaxAllowedVoltageInit()),
+            Optional.ofNullable(userProfile.getMaxAllowValuesMap().get(MAX_ALLOWED_PCC_MIN)).orElse(applicationProps.getDefaultMaxAllowedPccMin()),
+            Optional.ofNullable(userProfile.getMaxAllowValuesMap().get(MAX_ALLOWED_STATE_ESTIMATION)).orElse(applicationProps.getDefaultMaxAllowedStateEstimation()),
+            Optional.ofNullable(userProfile.getMaxAllowValuesMap().get(MAX_ALLOWED_BALANCE_ADJUSTEMENT)).orElse(applicationProps.getDefaultMaxAllowedBalanceAdjustement()),
+            Optional.ofNullable(userProfile.getMaxAllowValuesMap().get(MAX_ALLOWED_DYNAMIC_SIMULATION)).orElse(applicationProps.getDefaultMaxAllowedDynamicSimulation()),
+            Optional.ofNullable(userProfile.getMaxAllowValuesMap().get(MAX_ALLOWED_DYNAMIC_SECURITY)).orElse(applicationProps.getDefaultMaxAllowedDynamicSecurity()),
+            Optional.ofNullable(userProfile.getMaxAllowValuesMap().get(MAX_ALLOWED_DYNAMIC_MARGIN)).orElse(applicationProps.getDefaultMaxAllowedDynamicMargin()),
+            userProfile.getSpreadsheetConfigCollectionId(),
+            userProfile.getNetworkVisualizationParameterId(),
+            userProfile.getWorkspaceId()
         );
     }
 }

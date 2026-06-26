@@ -159,9 +159,7 @@ class NoQuotaTest {
     }
 
     private void createProfile(String profileName, Map<String, Integer> maxAllowedValues) throws Exception {
-        UserProfile profileInfo = new UserProfile(null, profileName, null, null,
-                null, null, null, null, false,
-               maxAllowedValues, null, null, null);
+        UserProfile profileInfo = UserProfile.builder().name(profileName).allLinksValid(false).maxAllowValuesMap(maxAllowedValues).build();
         performPost(API_BASE_PATH + "/profiles", profileInfo);
 
         Optional<UserProfileEntity> createdProfile = userProfileRepository.findByName(profileName);
