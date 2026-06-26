@@ -9,6 +9,8 @@ package org.gridsuite.useradmin.server.dto;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -45,6 +47,41 @@ public final class UserProfile {
     private final UUID spreadsheetConfigCollectionId;
     private final UUID networkVisualizationParameterId;
     private final UUID workspaceId;
+
+    public UserProfile(
+            UUID id,
+            String name,
+            UUID loadFlowParameterId,
+            UUID securityAnalysisParameterId,
+            UUID sensitivityAnalysisParameterId,
+            UUID shortcircuitParameterId,
+            UUID pccMinParameterId,
+            UUID voltageInitParameterId,
+            Boolean allLinksValid,
+            Map<String, Integer> maxAllowValuesMap,
+            UUID spreadsheetConfigCollectionId,
+            UUID networkVisualizationParameterId,
+            UUID workspaceId
+    ) {
+        this.id = id;
+        this.name = name;
+        this.loadFlowParameterId = loadFlowParameterId;
+        this.securityAnalysisParameterId = securityAnalysisParameterId;
+        this.sensitivityAnalysisParameterId = sensitivityAnalysisParameterId;
+        this.shortcircuitParameterId = shortcircuitParameterId;
+        this.pccMinParameterId = pccMinParameterId;
+        this.voltageInitParameterId = voltageInitParameterId;
+        this.allLinksValid = allLinksValid;
+        this.maxAllowValuesMap = maxAllowValuesMap == null ? new HashMap<>() : new HashMap<>(maxAllowValuesMap);
+        this.spreadsheetConfigCollectionId = spreadsheetConfigCollectionId;
+        this.networkVisualizationParameterId = networkVisualizationParameterId;
+        this.workspaceId = workspaceId;
+
+    }
+
+    public Map<String, Integer> getMaxAllowValuesMap() {
+        return Collections.unmodifiableMap(maxAllowValuesMap);
+    }
 
     public static UserProfile createDefaultProfile(Map<String, Integer> maxAllowValues) {
         return UserProfile.builder().name(DEFAULT_PROFILE_NAME).maxAllowValuesMap(maxAllowValues).build();
