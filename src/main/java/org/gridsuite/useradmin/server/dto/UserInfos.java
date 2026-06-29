@@ -19,6 +19,17 @@ public record UserInfos(
     Integer maxAllowedCases,
     Integer numberCasesUsed,
     Integer maxAllowedBuilds,
+    Integer maxAllowedLoadflow,
+    Integer maxAllowedSecurity,
+    Integer maxAllowedSensitivity,
+    Integer maxAllowedShortCircuit,
+    Integer maxAllowedVoltageInit,
+    Integer maxAllowedPccMin,
+    Integer maxAllowedStateEstimation,
+    Integer maxAllowedBalanceAdjustement,
+    Integer maxAllowedDynamicSimulation,
+    Integer maxAllowedDynamicSecurity,
+    Integer maxAllowedDynamicMargin,
     Set<String> groups
 ) {
     /**
@@ -39,6 +50,17 @@ public record UserInfos(
                 maxAllowedCases,
                 numberCasesUsed,
                 maxAllowedBuilds,
+                maxAllowedLoadflow,
+                maxAllowedSecurity,
+                maxAllowedSensitivity,
+                maxAllowedShortCircuit,
+                maxAllowedVoltageInit,
+                maxAllowedPccMin,
+                maxAllowedStateEstimation,
+                maxAllowedBalanceAdjustement,
+                maxAllowedDynamicSimulation,
+                maxAllowedDynamicSecurity,
+                maxAllowedDynamicMargin,
                 groups
         );
     }

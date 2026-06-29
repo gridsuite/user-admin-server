@@ -1,3 +1,14 @@
 useradmin:
   defaultMaxAllowedCases:
   defaultMaxAllowedBuilds:
+  defaultMaxAllowedLoadflow:
+  defaultMaxAllowedSecurity:
+  defaultMaxAllowedSensitivity:
+  defaultMaxAllowedShortCircuit:
+  defaultMaxAllowedVoltageInit:
+  defaultMaxAllowedPccMin:
+  defaultMaxAllowedStateEstimation:
+  defaultMaxAllowedBalanceAdjustement:
+  defaultMaxAllowedDynamicSimulation:
+  defaultMaxAllowedDynamicSecurity:
+  defaultMaxAllowedDynamicMargin:

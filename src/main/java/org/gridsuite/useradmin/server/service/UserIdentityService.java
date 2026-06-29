@@ -92,7 +92,8 @@ public class UserIdentityService {
                     url,
                     HttpMethod.GET,
                     null,
-                    new ParameterizedTypeReference<UserIdentitiesResult>() { }
+                    new ParameterizedTypeReference<UserIdentitiesResult>() {
+                    }
             ).getBody();
 
             if (result == null || result.data() == null) {
