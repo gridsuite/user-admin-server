@@ -10,6 +10,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import org.apache.commons.collections4.CollectionUtils;
+import org.gridsuite.useradmin.server.dto.QuotaType;
 import org.gridsuite.useradmin.server.dto.UserGroup;
 import org.gridsuite.useradmin.server.dto.UserInfos;
 import org.gridsuite.useradmin.server.dto.UserProfile;
@@ -32,12 +33,11 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Set;
 
 import static org.gridsuite.useradmin.server.Utils.ROLES_HEADER;
-import static org.gridsuite.useradmin.server.dto.UserProfile.*;
 import static org.gridsuite.useradmin.server.utils.TestConstants.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -273,8 +273,8 @@ class UserAdminTest {
         assertNotNull(profile);
         assertEquals(UserProfile.DEFAULT_PROFILE_NAME, profile.getName());
         assertNull(profile.getId());
-        assertEquals(userAdminApplicationProps.getDefaultMaxAllowedCases(), profile.getMaxAllowValuesMap().get(MAX_ALLOWED_CASES));
-        assertEquals(userAdminApplicationProps.getDefaultMaxAllowedBuilds(), profile.getMaxAllowValuesMap().get(MAX_ALLOWED_BUILD));
+        assertEquals(userAdminApplicationProps.getDefaultMaxAllowedCases(), profile.getMaxOperationQuota().get(QuotaType.CASES));
+        assertEquals(userAdminApplicationProps.getDefaultMaxAllowedBuilds(), profile.getMaxOperationQuota().get(QuotaType.BUILD));
         assertNull(profile.getLoadFlowParameterId());
         assertNull(profile.getSecurityAnalysisParameterId());
         assertNull(profile.getSensitivityAnalysisParameterId());
@@ -387,7 +387,7 @@ class UserAdminTest {
 
     private void createProfile() throws Exception {
         ObjectWriter objectWriter = objectMapper.writer().withDefaultPrettyPrinter();
-        UserProfile profileInfo = UserProfile.builder().name(UserAdminTest.PROFILE_1).allLinksValid(false).maxAllowValuesMap(new HashMap<>()).build();
+        UserProfile profileInfo = UserProfile.builder().name(UserAdminTest.PROFILE_1).allLinksValid(false).maxOperationQuota(new EnumMap<>(QuotaType.class)).build();
         mockMvc.perform(post("/" + UserAdminApi.API_VERSION + "/profiles")
                         .content(objectWriter.writeValueAsString(profileInfo))
                         .contentType(MediaType.APPLICATION_JSON)

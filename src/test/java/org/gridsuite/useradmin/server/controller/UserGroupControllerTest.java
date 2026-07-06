@@ -164,9 +164,9 @@ class UserGroupControllerTest {
         when(directoryService.getCasesCount(USER_A)).thenReturn(5);
 
         // Create users USER_A, USER_B, USER_C in database
-        userInfosRepository.save(new UserInfosEntity(UUID.randomUUID(), USER_A, null, null));
-        userInfosRepository.save(new UserInfosEntity(UUID.randomUUID(), USER_B, null, null));
-        userInfosRepository.save(new UserInfosEntity(UUID.randomUUID(), USER_C, null, null));
+        userInfosRepository.save(new UserInfosEntity(UUID.randomUUID(), USER_A, null, null, null));
+        userInfosRepository.save(new UserInfosEntity(UUID.randomUUID(), USER_B, null, null, null));
+        userInfosRepository.save(new UserInfosEntity(UUID.randomUUID(), USER_C, null, null, null));
 
         // create new group GROUP
         createGroup(GROUP);
@@ -193,8 +193,8 @@ class UserGroupControllerTest {
         checkUserGroup(USER_C, GROUP);
 
         // update the group with new name and new users : USER_A, USER_D, USER_E
-        userInfosRepository.save(new UserInfosEntity(UUID.randomUUID(), USER_D, null, null));
-        userInfosRepository.save(new UserInfosEntity(UUID.randomUUID(), USER_E, null, null));
+        userInfosRepository.save(new UserInfosEntity(UUID.randomUUID(), USER_D, null, null, null));
+        userInfosRepository.save(new UserInfosEntity(UUID.randomUUID(), USER_E, null, null, null));
 
         updateGroup(group.id(), GROUP_NEW_NAME, Set.of(USER_A, USER_D, USER_E));
 
