@@ -103,8 +103,8 @@ class UserIdentityIntegrationTest {
     @Test
     void testGetUsersWithIdentityEnrichment() throws Exception {
         // Create users in database
-        userInfosRepository.save(new UserInfosEntity(UUID.randomUUID(), USER_SUB_1, null, null, null));
-        userInfosRepository.save(new UserInfosEntity(UUID.randomUUID(), USER_SUB_2, null, null, null));
+        userInfosRepository.save(new UserInfosEntity(UUID.randomUUID(), USER_SUB_1, null, null));
+        userInfosRepository.save(new UserInfosEntity(UUID.randomUUID(), USER_SUB_2, null, null));
 
         // Mock user-identity-server response
         UserIdentity identity1 = new UserIdentity(USER_SUB_1, "John", "Doe");
@@ -152,7 +152,7 @@ class UserIdentityIntegrationTest {
     @Test
     void testGetUserWithIdentityEnrichment() throws Exception {
         // Create user in database
-        userInfosRepository.save(new UserInfosEntity(UUID.randomUUID(), USER_SUB_1, null, null, null));
+        userInfosRepository.save(new UserInfosEntity(UUID.randomUUID(), USER_SUB_1, null, null));
 
         // Mock user-identity-server response for single user
         UserIdentity identity = new UserIdentity(USER_SUB_1, "John", "Doe");
@@ -181,7 +181,7 @@ class UserIdentityIntegrationTest {
     @Test
     void testGetUsersWhenIdentityServiceFails() throws Exception {
         // Create user in database
-        userInfosRepository.save(new UserInfosEntity(UUID.randomUUID(), USER_SUB_1, null, null, null));
+        userInfosRepository.save(new UserInfosEntity(UUID.randomUUID(), USER_SUB_1, null, null));
 
         // Mock user-identity-server to return 500 error
         wireMockServer.stubFor(WireMock.get(urlPathEqualTo("/v1/users/identities"))
@@ -207,7 +207,7 @@ class UserIdentityIntegrationTest {
     @Test
     void testGetUserWhenIdentityServiceReturns404() throws Exception {
         // Create user in database
-        userInfosRepository.save(new UserInfosEntity(UUID.randomUUID(), USER_SUB_1, null, null, null));
+        userInfosRepository.save(new UserInfosEntity(UUID.randomUUID(), USER_SUB_1, null, null));
 
         // Mock user-identity-server to return 404 (user not found in identity service)
         wireMockServer.stubFor(WireMock.get(urlEqualTo("/v1/users/identities/" + USER_SUB_1))

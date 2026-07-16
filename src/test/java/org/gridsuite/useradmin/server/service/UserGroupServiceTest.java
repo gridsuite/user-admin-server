@@ -51,7 +51,7 @@ class UserGroupServiceTest {
     void toDtoUserGroupTest() {
         // create user and group
         GroupInfosEntity group = new GroupInfosEntity("group_A");
-        UserInfosEntity user = new UserInfosEntity(UUID.randomUUID(), "user_A", null, null, Set.of(group));
+        UserInfosEntity user = new UserInfosEntity(UUID.randomUUID(), "user_A", null, Set.of(group));
         group.setUsers(Set.of(user));
 
         when(userGroupRepositoryMock.findByName("group_A")).thenReturn(Optional.of(group));

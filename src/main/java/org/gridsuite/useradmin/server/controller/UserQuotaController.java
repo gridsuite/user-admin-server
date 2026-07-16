@@ -35,7 +35,6 @@ public class UserQuotaController {
     @GetMapping(value = "/users/{sub}/quota/max")
     @Operation(summary = "Get the user's quota")
     @ApiResponse(responseCode = "200", description = "The user max quota")
-    @ApiResponse(responseCode = "404", description = "The user doesn't exist")
     public ResponseEntity<Map<QuotaType, Integer>> getUserProfileMaxQuota(@PathVariable("sub") String sub) {
         Map<QuotaType, Integer> userMaxQuota = userQuotaService.getUserMaxQuota(sub);
         return ResponseEntity.ok().body(userMaxQuota);
@@ -44,7 +43,6 @@ public class UserQuotaController {
     @GetMapping(value = "/users/{sub}/quota/current")
     @Operation(summary = "Get the user's current quota usage")
     @ApiResponse(responseCode = "200", description = "The user current quota usage")
-    @ApiResponse(responseCode = "404", description = "The user doesn't exist")
     public ResponseEntity<Map<QuotaType, Integer>> getUserCurrentQuotaUsage(@PathVariable("sub") String sub) {
         Map<QuotaType, Integer> userCurrentQuotaUsage = userQuotaService.getUserCurrentQuotaUsage(sub);
         return ResponseEntity.ok().body(userCurrentQuotaUsage);

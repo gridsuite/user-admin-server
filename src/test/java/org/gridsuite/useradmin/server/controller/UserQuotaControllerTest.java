@@ -9,8 +9,8 @@ package org.gridsuite.useradmin.server.controller;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.gridsuite.useradmin.server.dto.QuotaType;
-import org.gridsuite.useradmin.server.entity.UserInfosEntity;
 import org.gridsuite.useradmin.server.repository.UserInfosRepository;
+import org.gridsuite.useradmin.server.repository.UserOperationRepository;
 import org.gridsuite.useradmin.server.repository.UserProfileRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -52,21 +52,23 @@ class UserQuotaControllerTest {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private UserInfosRepository userInfosRepository;
+    private UserOperationRepository userOperationRepository;
 
     @Autowired
-    private UserProfileRepository userProfileRepository;
+    private UserInfosRepository userProfileRepository;
+
+    @Autowired
+    private UserProfileRepository userInfosRepository;
 
     @AfterEach
     void cleanDB() {
+        userOperationRepository.deleteAll();
         userInfosRepository.deleteAll();
         userProfileRepository.deleteAll();
     }
 
     @Test
     void getUserMaxQuotaReturnsDefaultQuotaWhenUserHasNoProfile() throws Exception {
-        userInfosRepository.save(new UserInfosEntity(UUID.randomUUID(), USER_A, null, null, null));
-
         MvcResult result = mockMvc.perform(get(API_BASE_PATH + "/users/{sub}/quota/max", USER_A)
                         .header("userId", ADMIN_USER)
                         .header(ROLES_HEADER, USER_ADMIN_ROLE)
@@ -96,8 +98,6 @@ class UserQuotaControllerTest {
 
     @Test
     void getUserCurrentQuotaUsageReturnsEmptyMapWhenNoOperationsRegistered() throws Exception {
-        userInfosRepository.save(new UserInfosEntity(UUID.randomUUID(), USER_A, null, null, null));
-
         MvcResult result = mockMvc.perform(get(API_BASE_PATH + "/users/{sub}/quota/current", USER_A)
                         .header("userId", ADMIN_USER)
                         .header(ROLES_HEADER, USER_ADMIN_ROLE)
@@ -114,8 +114,6 @@ class UserQuotaControllerTest {
 
     @Test
     void getUserCurrentQuotaUsageReturnsAggregatedCountsWhenOperationsExist() throws Exception {
-        userInfosRepository.save(new UserInfosEntity(UUID.randomUUID(), USER_A, null, null, null));
-
         UUID buildOp1 = UUID.randomUUID();
         UUID buildOp2 = UUID.randomUUID();
         UUID casesOp1 = UUID.randomUUID();
@@ -139,17 +137,7 @@ class UserQuotaControllerTest {
     }
 
     @Test
-    void getUserCurrentQuotaUsageReturns404WhenUserDoesNotExist() throws Exception {
-        mockMvc.perform(get(API_BASE_PATH + "/users/{sub}/quota/current", "nonExistentUser")
-                        .header("userId", ADMIN_USER)
-                        .header(ROLES_HEADER, USER_ADMIN_ROLE)
-                        .contentType(APPLICATION_JSON))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
     void startUserOperationAddsOperationAndReturns200() throws Exception {
-        userInfosRepository.save(new UserInfosEntity(UUID.randomUUID(), USER_A, null, null, null));
         UUID operationId = UUID.randomUUID();
 
         startOperation(USER_A, BUILD, operationId);
@@ -160,18 +148,7 @@ class UserQuotaControllerTest {
     }
 
     @Test
-    void startUserOperationReturns404WhenUserDoesNotExist() throws Exception {
-        mockMvc.perform(post(API_BASE_PATH + "/users/{sub}/quota/{operation}/{id}/start",
-                        "nonExistentUser", BUILD, UUID.randomUUID())
-                        .header("userId", ADMIN_USER)
-                        .header(ROLES_HEADER, USER_ADMIN_ROLE)
-                        .contentType(APPLICATION_JSON))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
     void endUserOperationRemovesOperationAndReturns200() throws Exception {
-        userInfosRepository.save(new UserInfosEntity(UUID.randomUUID(), USER_A, null, null, null));
         UUID operationId = UUID.randomUUID();
 
         startOperation(USER_A, BUILD, operationId);
@@ -183,7 +160,6 @@ class UserQuotaControllerTest {
 
     @Test
     void endUserOperationDoesNotRemoveWhenTypeMismatch() throws Exception {
-        userInfosRepository.save(new UserInfosEntity(UUID.randomUUID(), USER_A, null, null, null));
         UUID operationId = UUID.randomUUID();
 
         startOperation(USER_A, BUILD, operationId);
@@ -195,18 +171,7 @@ class UserQuotaControllerTest {
     }
 
     @Test
-    void endUserOperationReturns404WhenUserDoesNotExist() throws Exception {
-        mockMvc.perform(post(API_BASE_PATH + "/users/{sub}/quota/{operation}/{id}/end",
-                        "nonExistentUser", BUILD, UUID.randomUUID())
-                        .header("userId", ADMIN_USER)
-                        .header(ROLES_HEADER, USER_ADMIN_ROLE)
-                        .contentType(APPLICATION_JSON))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
     void resetUserCurrentQuotaUsageClearsAllOperationsWhenAdmin() throws Exception {
-        userInfosRepository.save(new UserInfosEntity(UUID.randomUUID(), USER_A, null, null, null));
         startOperation(USER_A, BUILD, UUID.randomUUID());
         startOperation(USER_A, CASES, UUID.randomUUID());
         assertEquals(2, getCurrentQuota(USER_A).size());
@@ -222,8 +187,6 @@ class UserQuotaControllerTest {
 
     @Test
     void resetUserCurrentQuotaUsageReturns403WhenNotAdmin() throws Exception {
-        userInfosRepository.save(new UserInfosEntity(UUID.randomUUID(), USER_A, null, null, null));
-
         mockMvc.perform(post(API_BASE_PATH + "/users/{sub}/quota/reset", USER_A)
                         .header("userId", "regularUser")
                         // no ADMIN role header

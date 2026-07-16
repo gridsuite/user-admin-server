@@ -33,11 +33,8 @@ public class UserOperationEntity {
     @Column(name = "id")
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sub",
-            referencedColumnName = "sub", nullable = false,
-            foreignKey = @ForeignKey(name = "userOperation_userInfo_sub_fk_constraint"))
-    private UserInfosEntity userInfos;
+    @Column(name = "sub", nullable = false)
+    private String sub;
 
     @Column(name = "operation_id", nullable = false)
     private UUID operationId;
@@ -46,8 +43,8 @@ public class UserOperationEntity {
     @Column(name = "operation_type", nullable = false)
     private QuotaType quotaType;
 
-    public UserOperationEntity(UserInfosEntity userInfos, UUID operationId, QuotaType quotaType) {
-        this.userInfos = userInfos;
+    public UserOperationEntity(String sub, UUID operationId, QuotaType quotaType) {
+        this.sub = sub;
         this.operationId = operationId;
         this.quotaType = quotaType;
     }

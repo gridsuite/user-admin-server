@@ -7,23 +7,18 @@
 package org.gridsuite.useradmin.server.service;
 
 import org.gridsuite.useradmin.server.UserAdminApplication;
-import org.gridsuite.useradmin.server.UserAdminApplicationProps;
 import org.gridsuite.useradmin.server.dto.QuotaType;
 import org.gridsuite.useradmin.server.dto.UserProfile;
-import org.gridsuite.useradmin.server.entity.UserInfosEntity;
 import org.gridsuite.useradmin.server.entity.UserOperationEntity;
 import org.gridsuite.useradmin.server.error.UserAdminException;
-import org.gridsuite.useradmin.server.repository.UserInfosRepository;
+import org.gridsuite.useradmin.server.repository.UserOperationRepository;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static org.gridsuite.useradmin.server.dto.QuotaType.BUILD;
 import static org.gridsuite.useradmin.server.dto.QuotaType.CASES;
@@ -32,12 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * @author Ghiles Abdellah {@literal <ghiles.abdellah at rte-france.com>}
@@ -46,16 +36,13 @@ import static org.mockito.Mockito.when;
 class UserQuotaServiceTest {
 
     @Mock
-    private UserInfosRepository userInfosRepositoryMock;
+    private UserOperationRepository userOperationRepository;
 
     @Mock
     private AdminRightService adminRightServiceMock;
 
     @Mock
     private UserProfileService userProfileServiceMock;
-
-    @Mock
-    private UserAdminApplicationProps applicationPropsMock;
 
     @InjectMocks
     private UserQuotaService userQuotaService;
@@ -100,9 +87,6 @@ class UserQuotaServiceTest {
 
     @Test
     void getUserCurrentQuotaUsageReturnsEmptyMapWhenNoOperations() {
-        UserInfosEntity userInfosEntity = new UserInfosEntity(UUID.randomUUID(), "user_A", null, new ArrayList<>(), null);
-        when(userInfosRepositoryMock.findBySub("user_A")).thenReturn(Optional.of(userInfosEntity));
-
         Map<QuotaType, Integer> result = userQuotaService.getUserCurrentQuotaUsage("user_A");
 
         assertNotNull(result);
@@ -111,15 +95,14 @@ class UserQuotaServiceTest {
 
     @Test
     void getUserCurrentQuotaUsageReturnsAggregatedCountsWhenOperationsExist() {
-        UserInfosEntity userInfosEntity = new UserInfosEntity(UUID.randomUUID(), "user_A", null, new ArrayList<>(), null);
         UUID op1 = UUID.randomUUID();
         UUID op2 = UUID.randomUUID();
         UUID op3 = UUID.randomUUID();
-        userInfosEntity.getUserOperations().add(new UserOperationEntity(userInfosEntity, op1, BUILD));
-        userInfosEntity.getUserOperations().add(new UserOperationEntity(userInfosEntity, op2, BUILD));
-        userInfosEntity.getUserOperations().add(new UserOperationEntity(userInfosEntity, op3, CASES));
-
-        when(userInfosRepositoryMock.findBySub("user_A")).thenReturn(Optional.of(userInfosEntity));
+        when(userOperationRepository.findBySub("user_A")).thenReturn(List.of(
+                new UserOperationEntity("user_A", op1, BUILD),
+                new UserOperationEntity("user_A", op2, BUILD),
+                new UserOperationEntity("user_A", op3, CASES)
+        ));
 
         Map<QuotaType, Integer> result = userQuotaService.getUserCurrentQuotaUsage("user_A");
 
@@ -128,96 +111,56 @@ class UserQuotaServiceTest {
     }
 
     @Test
-    void getUserCurrentQuotaUsageThrowsUserNotFoundWhenUserDoesNotExist() {
-        when(userInfosRepositoryMock.findBySub("unknown")).thenReturn(Optional.empty());
-
-        assertThrows(UserAdminException.class, () -> userQuotaService.getUserCurrentQuotaUsage("unknown"));
+    void getUserCurrentQuotaUsageReturnsEmptyMapWhenUserDoesNotExist() {
+        Map<QuotaType, Integer> result = userQuotaService.getUserCurrentQuotaUsage("unknown");
+        assertTrue(result.isEmpty());
     }
 
     @Test
     void startUserOperationAddsOperationToUser() {
-        UserInfosEntity userInfosEntity = new UserInfosEntity(UUID.randomUUID(), "user_A", null, new ArrayList<>(), null);
-        when(userInfosRepositoryMock.findBySub("user_A")).thenReturn(Optional.of(userInfosEntity));
-        when(userInfosRepositoryMock.save(any())).thenReturn(userInfosEntity);
-
         UUID operationId = UUID.randomUUID();
         userQuotaService.startUserOperation("user_A", BUILD, operationId);
 
-        assertEquals(1, userInfosEntity.getUserOperations().size());
-        assertEquals(BUILD, userInfosEntity.getUserOperations().getFirst().getQuotaType());
-        assertEquals(operationId, userInfosEntity.getUserOperations().getFirst().getOperationId());
-        verify(userInfosRepositoryMock).save(userInfosEntity);
-    }
+        ArgumentCaptor<UserOperationEntity> entityArgumentCaptor = ArgumentCaptor.forClass(UserOperationEntity.class);
+        verify(userOperationRepository).save(entityArgumentCaptor.capture());
 
-    @Test
-    void startUserOperationThrowsUserNotFoundWhenUserDoesNotExist() {
-        when(userInfosRepositoryMock.findBySub("unknown")).thenReturn(Optional.empty());
-
-        assertThrows(UserAdminException.class,
-                () -> userQuotaService.startUserOperation("unknown", BUILD, UUID.randomUUID()));
+        UserOperationEntity value = entityArgumentCaptor.getValue();
+        assertEquals("user_A", value.getSub());
+        assertEquals(BUILD, value.getQuotaType());
+        assertEquals(operationId, value.getOperationId());
     }
 
     @Test
     void endUserOperationRemovesMatchingOperation() {
-        UserInfosEntity userInfosEntity = new UserInfosEntity(UUID.randomUUID(), "user_A", null, new ArrayList<>(), null);
         UUID operationId = UUID.randomUUID();
-        userInfosEntity.getUserOperations().add(new UserOperationEntity(userInfosEntity, operationId, BUILD));
-        // add a different operation that must NOT be removed
-        userInfosEntity.getUserOperations().add(new UserOperationEntity(userInfosEntity, UUID.randomUUID(), CASES));
+        UserOperationEntity operation1 = new UserOperationEntity("user_A", operationId, BUILD);
+        UserOperationEntity operation2 = new UserOperationEntity("user_A", UUID.randomUUID(), CASES);
 
-        when(userInfosRepositoryMock.findBySub("user_A")).thenReturn(Optional.of(userInfosEntity));
-        when(userInfosRepositoryMock.save(any())).thenReturn(userInfosEntity);
+        when(userOperationRepository.findBySub("user_A")).thenReturn(List.of(operation1, operation2));
 
         userQuotaService.endUserOperation("user_A", BUILD, operationId);
 
-        assertEquals(1, userInfosEntity.getUserOperations().size());
-        assertEquals(CASES, userInfosEntity.getUserOperations().get(0).getQuotaType());
-        verify(userInfosRepositoryMock).save(userInfosEntity);
+        verify(userOperationRepository).delete(operation1);
     }
 
     @Test
     void endUserOperationDoesNotRemoveWhenOperationIdMatchesButTypeDiffers() {
-        UserInfosEntity userInfosEntity = new UserInfosEntity(UUID.randomUUID(), "user_A", null, new ArrayList<>(), null);
         UUID operationId = UUID.randomUUID();
-        userInfosEntity.getUserOperations().add(new UserOperationEntity(userInfosEntity, operationId, BUILD));
+        UserOperationEntity operation1 = new UserOperationEntity("user_A", operationId, CASES);
+        when(userOperationRepository.findBySub("user_A")).thenReturn(List.of(operation1));
 
-        when(userInfosRepositoryMock.findBySub("user_A")).thenReturn(Optional.of(userInfosEntity));
-        when(userInfosRepositoryMock.save(any())).thenReturn(userInfosEntity);
+        userQuotaService.endUserOperation("user_A", BUILD, operationId);
 
-        // end a CASES operation with the same UUID — should NOT remove the BUILD one
-        userQuotaService.endUserOperation("user_A", CASES, operationId);
-
-        assertEquals(1, userInfosEntity.getUserOperations().size());
-    }
-
-    @Test
-    void endUserOperationThrowsUserNotFoundWhenUserDoesNotExist() {
-        when(userInfosRepositoryMock.findBySub("unknown")).thenReturn(Optional.empty());
-
-        assertThrows(UserAdminException.class,
-                () -> userQuotaService.endUserOperation("unknown", BUILD, UUID.randomUUID()));
+        verify(userOperationRepository, never()).delete(any());
     }
 
     @Test
     void resetUserCurrentQuotaUsageClearsOperationsWhenAdmin() {
-        UserInfosEntity userInfosEntity = new UserInfosEntity(UUID.randomUUID(), "user_A", null, new ArrayList<>(), null);
-        userInfosEntity.getUserOperations().add(new UserOperationEntity(userInfosEntity, UUID.randomUUID(), BUILD));
-        when(userInfosRepositoryMock.findBySub("user_A")).thenReturn(Optional.of(userInfosEntity));
-        when(userInfosRepositoryMock.save(any())).thenReturn(userInfosEntity);
         doNothing().when(adminRightServiceMock).assertIsAdmin();
 
         userQuotaService.resetUserCurrentQuotaUsage("user_A");
 
-        assertTrue(userInfosEntity.getUserOperations().isEmpty());
-        verify(userInfosRepositoryMock).save(userInfosEntity);
-    }
-
-    @Test
-    void resetUserCurrentQuotaUsageThrowsUserNotFoundWhenUserDoesNotExist() {
-        doNothing().when(adminRightServiceMock).assertIsAdmin();
-        when(userInfosRepositoryMock.findBySub("unknown")).thenReturn(Optional.empty());
-
-        assertThrows(UserAdminException.class, () -> userQuotaService.resetUserCurrentQuotaUsage("unknown"));
+        verify(userOperationRepository).deleteBySub("user_A");
     }
 
     @Test
@@ -225,6 +168,6 @@ class UserQuotaServiceTest {
         doThrow(UserAdminException.forbidden()).when(adminRightServiceMock).assertIsAdmin();
 
         assertThrows(UserAdminException.class, () -> userQuotaService.resetUserCurrentQuotaUsage("user_A"));
-        verify(userInfosRepositoryMock, never()).save(any());
+        verify(userOperationRepository, never()).save(any());
     }
 }

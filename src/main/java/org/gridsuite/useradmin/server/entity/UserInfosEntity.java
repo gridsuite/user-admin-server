@@ -12,10 +12,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.gridsuite.useradmin.server.dto.QuotaType;
 import org.gridsuite.useradmin.server.dto.UserInfos;
 
-import java.util.*;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -29,41 +29,24 @@ import java.util.stream.Collectors;
 @Table(name = "user_infos", indexes = {@Index(name = "user_infos_sub_index", columnList = "sub")})
 public class UserInfosEntity {
 
+    public UserInfosEntity(String sub) {
+        this(UUID.randomUUID(), sub, null, null);
+    }
+
     @Id
     @Column(name = "id")
     private UUID id;
+
     // TODO rename to subject or userName
     @Column(name = "sub", nullable = false, unique = true)
     private String sub;
+
     @ManyToOne
     @JoinColumn(name = "profile_id", foreignKey = @ForeignKey(name = "profile_id_fk_constraint"))
     private UserProfileEntity profile;
-    @OneToMany(orphanRemoval = true, mappedBy = "userInfos", cascade = CascadeType.ALL)
-    private List<UserOperationEntity> userOperations = new ArrayList<>();
+
     @ManyToMany(mappedBy = "users")
     private Set<GroupInfosEntity> groups;
-
-    public UserInfosEntity(String sub) {
-        this(UUID.randomUUID(), sub, null, new ArrayList<>(), null);
-    }
-
-    public static UserInfos toDto(@Nullable final UserInfosEntity entity) {
-        return entity == null ? null : entity.toUserInfos(null, null, null,
-                                                          null, null, null, null,
-                                                          null, null, null, null,
-                                                          null, null, null);
-    }
-
-    public static UserInfos toDtoWithDetail(@Nullable final UserInfosEntity entity, Integer maxAllowedCases, Integer numberCasesUsed,
-                                            Integer maxAllowedBuilds, Integer maxAllowedLoadflow, Integer maxAllowedSecurity,
-                                            Integer maxAllowedSensitivity, Integer maxAllowedShortCircuit, Integer maxAllowedVoltageInit,
-                                            Integer maxAllowedPccMin, Integer maxAllowedStateEstimation, Integer maxAllowedBalanceAdjustement,
-                                            Integer maxAllowedDynamicSimulation, Integer maxAllowedDynamicSecurity, Integer maxAllowedDynamicMargin) {
-        return entity == null ? null : entity.toUserInfos(maxAllowedCases, numberCasesUsed, maxAllowedBuilds,
-                                                          maxAllowedLoadflow, maxAllowedSecurity, maxAllowedSensitivity, maxAllowedShortCircuit, maxAllowedVoltageInit,
-                                                          maxAllowedPccMin, maxAllowedStateEstimation, maxAllowedBalanceAdjustement, maxAllowedDynamicSimulation,
-                                                          maxAllowedDynamicSecurity, maxAllowedDynamicMargin);
-    }
 
     private UserInfos toUserInfos(Integer maxAllowedCases,
                                   Integer numberCasesUsed,
@@ -79,7 +62,7 @@ public class UserInfosEntity {
                                   Integer maxAllowedDynamicSimulation,
                                   Integer maxAllowedDynamicSecurity,
                                   Integer maxAllowedDynamicMargin
-    ) {
+                                  ) {
         String profileName = getProfile() == null ? null : getProfile().getName();
         Set<String> groupNames = getGroups() == null ? null : getGroups().stream().map(GroupInfosEntity::getName).collect(Collectors.toSet());
         return new UserInfos(getSub(), null, null, profileName, maxAllowedCases, numberCasesUsed, maxAllowedBuilds,
@@ -88,8 +71,21 @@ public class UserInfosEntity {
                 maxAllowedDynamicSecurity, maxAllowedDynamicMargin, groupNames);
     }
 
-    public Map<QuotaType, Integer> getQuotaUsageMap() {
-        return userOperations.stream()
-                .collect(Collectors.groupingBy(UserOperationEntity::getQuotaType, Collectors.summingInt(e -> 1)));
+    public static UserInfos toDto(@Nullable final UserInfosEntity entity) {
+        return entity == null ? null : entity.toUserInfos(null, null, null,
+                null, null, null, null,
+                null, null, null, null,
+                null, null, null);
+    }
+
+    public static UserInfos toDtoWithDetail(@Nullable final UserInfosEntity entity, Integer maxAllowedCases, Integer numberCasesUsed,
+                                            Integer maxAllowedBuilds, Integer maxAllowedLoadflow, Integer maxAllowedSecurity,
+                                            Integer maxAllowedSensitivity, Integer maxAllowedShortCircuit, Integer maxAllowedVoltageInit,
+                                            Integer maxAllowedPccMin, Integer maxAllowedStateEstimation, Integer maxAllowedBalanceAdjustement,
+                                            Integer maxAllowedDynamicSimulation, Integer maxAllowedDynamicSecurity, Integer maxAllowedDynamicMargin) {
+        return entity == null ? null : entity.toUserInfos(maxAllowedCases, numberCasesUsed, maxAllowedBuilds,
+                maxAllowedLoadflow, maxAllowedSecurity, maxAllowedSensitivity, maxAllowedShortCircuit, maxAllowedVoltageInit,
+                maxAllowedPccMin, maxAllowedStateEstimation, maxAllowedBalanceAdjustement, maxAllowedDynamicSimulation,
+                maxAllowedDynamicSecurity, maxAllowedDynamicMargin);
     }
 }
