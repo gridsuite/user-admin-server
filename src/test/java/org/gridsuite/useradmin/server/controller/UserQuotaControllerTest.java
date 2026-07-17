@@ -9,9 +9,7 @@ package org.gridsuite.useradmin.server.controller;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.gridsuite.useradmin.server.dto.QuotaType;
-import org.gridsuite.useradmin.server.repository.UserInfosRepository;
 import org.gridsuite.useradmin.server.repository.UserOperationRepository;
-import org.gridsuite.useradmin.server.repository.UserProfileRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,17 +52,9 @@ class UserQuotaControllerTest {
     @Autowired
     private UserOperationRepository userOperationRepository;
 
-    @Autowired
-    private UserInfosRepository userProfileRepository;
-
-    @Autowired
-    private UserProfileRepository userInfosRepository;
-
     @AfterEach
     void cleanDB() {
         userOperationRepository.deleteAll();
-        userInfosRepository.deleteAll();
-        userProfileRepository.deleteAll();
     }
 
     @Test

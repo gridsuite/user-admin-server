@@ -41,7 +41,7 @@ public class UserProfileService {
                               final AdminRightService adminRightService,
                               final DirectoryService directoryService,
                               final UserAdminApplicationProps applicationProps) {
-        this.userInfosRepository = userInfosRepository;
+        this.userInfosRepository = Objects.requireNonNull(userInfosRepository);
         this.userProfileRepository = Objects.requireNonNull(userProfileRepository);
         this.adminRightService = Objects.requireNonNull(adminRightService);
         this.directoryService = Objects.requireNonNull(directoryService);

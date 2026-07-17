@@ -58,6 +58,7 @@ class UserInfosControllerTest {
     @AfterEach
     void cleanDB() {
         userInfosRepository.deleteAll();
+        userProfileRepository.deleteAll();
     }
 
     @Test

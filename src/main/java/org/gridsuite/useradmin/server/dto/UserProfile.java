@@ -9,10 +9,7 @@ package org.gridsuite.useradmin.server.dto;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author Etienne Lesot <etienne.lesot at rte-france.com>
@@ -63,7 +60,8 @@ public final class UserProfile {
         this.spreadsheetConfigCollectionId = spreadsheetConfigCollectionId;
         this.networkVisualizationParameterId = networkVisualizationParameterId;
         this.workspaceId = workspaceId;
-        this.maxOperationQuota = maxOperationQuota == null ? new HashMap<>() : new HashMap<>(maxOperationQuota);
+        this.maxOperationQuota = maxOperationQuota == null || maxOperationQuota.isEmpty() ?
+                new EnumMap<>(QuotaType.class) : new EnumMap<>(maxOperationQuota);
     }
 
     public static UserProfile createDefaultProfile(Map<QuotaType, Integer> maxAllowValues) {
