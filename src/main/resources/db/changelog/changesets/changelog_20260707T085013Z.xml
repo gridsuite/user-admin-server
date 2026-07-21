@@ -1,9 +1,9 @@
 <?xml version="1.1" encoding="UTF-8" standalone="no"?>
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
     <changeSet author="abdellahghi (generated)" id="1783414223236-2">
-        <createTable tableName="user_quotas">
+        <createTable tableName="user_operation">
             <column name="id" type="UUID">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="user_quotasPK"/>
+                <constraints nullable="false" primaryKey="true" primaryKeyName="user_operationPK"/>
             </column>
             <column name="operation_id" type="UUID">
                 <constraints nullable="false"/>
@@ -17,10 +17,10 @@
         </createTable>
     </changeSet>
     <changeSet author="abdellahghi (generated)" id="1783414223236-3">
-        <addUniqueConstraint columnNames="sub, operation_id" constraintName="UKtcacm3qqu0cxjhxwd8pe59x7w" tableName="user_quotas"/>
+        <addUniqueConstraint columnNames="sub, operation_id" constraintName="user_operation_sub_operation_id_uk" tableName="user_operation"/>
     </changeSet>
     <changeSet author="abdellahghi (generated)" id="1783414223236-4">
-        <createIndex indexName="user_operation_sub_index" tableName="user_quotas">
+        <createIndex indexName="user_operation_sub_index" tableName="user_operation">
             <column name="sub"/>
         </createIndex>
     </changeSet>

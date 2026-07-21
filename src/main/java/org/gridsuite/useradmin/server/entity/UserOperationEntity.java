@@ -23,8 +23,8 @@ import java.util.UUID;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "user_quotas",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"sub", "operation_id"}),
+@Table(name = "user_operation",
+        uniqueConstraints = @UniqueConstraint(name = "user_operation_sub_operation_id_uk", columnNames = {"sub", "operation_id"}),
         indexes = {@Index(name = "user_operation_sub_index", columnList = "sub")})
 public class UserOperationEntity {
 
