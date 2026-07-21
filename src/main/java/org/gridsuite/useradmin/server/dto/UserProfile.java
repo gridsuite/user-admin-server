@@ -9,10 +9,7 @@ package org.gridsuite.useradmin.server.dto;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author Etienne Lesot <etienne.lesot at rte-france.com>
@@ -21,19 +18,7 @@ import java.util.UUID;
 @Builder
 public final class UserProfile {
     public static final String DEFAULT_PROFILE_NAME = "default profile";
-    public static final String MAX_ALLOWED_CASES = "maxAllowedCases";
-    public static final String MAX_ALLOWED_BUILD = "maxAllowedBuilds";
-    public static final String MAX_ALLOWED_LOADFLOW = "maxAllowedLoadflow";
-    public static final String MAX_ALLOWED_SECURITY = "maxAllowedSecurity";
-    public static final String MAX_ALLOWED_SENSITIVITY = "maxAllowedSensitivity";
-    public static final String MAX_ALLOWED_SHORT_CIRCUIT = "maxAllowedShortCircuit";
-    public static final String MAX_ALLOWED_VOLTAGE_INIT = "maxAllowedVoltageInit";
-    public static final String MAX_ALLOWED_PCC_MIN = "maxAllowedPccMin";
-    public static final String MAX_ALLOWED_STATE_ESTIMATION = "maxAllowedStateEstimation";
-    public static final String MAX_ALLOWED_BALANCE_ADJUSTEMENT = "maxAllowedBalanceAdjustement";
-    public static final String MAX_ALLOWED_DYNAMIC_SIMULATION = "maxAllowedDynamicSimulation";
-    public static final String MAX_ALLOWED_DYNAMIC_SECURITY = "maxAllowedDynamicSecurity";
-    public static final String MAX_ALLOWED_DYNAMIC_MARGIN = "maxAllowedDynamicMargin";
+
     private final UUID id;
     private final String name;
     private final UUID loadFlowParameterId;
@@ -43,10 +28,10 @@ public final class UserProfile {
     private final UUID pccMinParameterId;
     private final UUID voltageInitParameterId;
     private final Boolean allLinksValid;
-    private final Map<String, Integer> maxAllowValuesMap;
     private final UUID spreadsheetConfigCollectionId;
     private final UUID networkVisualizationParameterId;
     private final UUID workspaceId;
+    private final Map<QuotaType, Integer> maxOperationQuota;
 
     public UserProfile(
             UUID id,
@@ -58,10 +43,10 @@ public final class UserProfile {
             UUID pccMinParameterId,
             UUID voltageInitParameterId,
             Boolean allLinksValid,
-            Map<String, Integer> maxAllowValuesMap,
             UUID spreadsheetConfigCollectionId,
             UUID networkVisualizationParameterId,
-            UUID workspaceId
+            UUID workspaceId,
+            Map<QuotaType, Integer> maxOperationQuota
     ) {
         this.id = id;
         this.name = name;
@@ -72,18 +57,26 @@ public final class UserProfile {
         this.pccMinParameterId = pccMinParameterId;
         this.voltageInitParameterId = voltageInitParameterId;
         this.allLinksValid = allLinksValid;
-        this.maxAllowValuesMap = maxAllowValuesMap == null ? new HashMap<>() : new HashMap<>(maxAllowValuesMap);
         this.spreadsheetConfigCollectionId = spreadsheetConfigCollectionId;
         this.networkVisualizationParameterId = networkVisualizationParameterId;
         this.workspaceId = workspaceId;
-
+        this.maxOperationQuota = maxOperationQuota == null || maxOperationQuota.isEmpty() ?
+                new EnumMap<>(QuotaType.class) : new EnumMap<>(maxOperationQuota);
     }
 
-    public Map<String, Integer> getMaxAllowValuesMap() {
-        return Collections.unmodifiableMap(maxAllowValuesMap);
+    public static UserProfile createDefaultProfile(Map<QuotaType, Integer> maxAllowValues) {
+        return UserProfile.builder()
+                .name(DEFAULT_PROFILE_NAME)
+                .maxOperationQuota(maxAllowValues)
+                .build();
     }
 
-    public static UserProfile createDefaultProfile(Map<String, Integer> maxAllowValues) {
-        return UserProfile.builder().name(DEFAULT_PROFILE_NAME).maxAllowValuesMap(maxAllowValues).build();
+    public Map<QuotaType, Integer> getMaxOperationQuota() {
+        return Collections.unmodifiableMap(maxOperationQuota);
     }
+
+    public Integer getMaxOperationQuota(QuotaType quotaType) {
+        return maxOperationQuota.get(quotaType);
+    }
+
 }
