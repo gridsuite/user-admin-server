@@ -7,11 +7,7 @@
 package org.gridsuite.useradmin.server.service;
 
 import org.gridsuite.useradmin.server.UserAdminApplicationProps;
-import org.gridsuite.useradmin.server.dto.UserConnection;
-import org.gridsuite.useradmin.server.dto.UserGroup;
-import org.gridsuite.useradmin.server.dto.UserIdentity;
-import org.gridsuite.useradmin.server.dto.UserInfos;
-import org.gridsuite.useradmin.server.dto.UserProfile;
+import org.gridsuite.useradmin.server.dto.*;
 import org.gridsuite.useradmin.server.entity.UserInfosEntity;
 import org.gridsuite.useradmin.server.entity.UserProfileEntity;
 import org.gridsuite.useradmin.server.error.UserAdminException;
@@ -23,8 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static org.gridsuite.useradmin.server.dto.UserProfile.*;
 
 /**
  * @author Etienne Homer <etienne.homer at rte-france.com>
@@ -38,8 +32,8 @@ public class UserAdminService {
     private final UserProfileService userProfileService;
     private final UserGroupService userGroupService;
     private final UserIdentityService userIdentityService;
-
     private final UserAdminApplicationProps applicationProps;
+
     private final UserGroupRepository userGroupRepository;
 
     public UserAdminService(final UserInfosRepository userInfosRepository,
@@ -59,7 +53,7 @@ public class UserAdminService {
         this.userGroupService = Objects.requireNonNull(userGroupService);
         this.userIdentityService = Objects.requireNonNull(userIdentityService);
         this.applicationProps = Objects.requireNonNull(applicationProps);
-        this.userGroupRepository = userGroupRepository;
+        this.userGroupRepository = Objects.requireNonNull(userGroupRepository);
     }
 
     private UserInfos toDtoUserInfo(final UserInfosEntity entity) {
@@ -160,25 +154,7 @@ public class UserAdminService {
 
     @Transactional(readOnly = true)
     public UserProfile getUserProfile(String sub) {
-        return doGetUserProfile(sub);
-    }
-
-    private UserProfile doGetUserProfile(String sub) {
-        // this method is not restricted to Admin because it is called by any user to retrieve its own profile
-        Optional<UserInfosEntity> userOpt = userInfosRepository.findBySub(sub);
-
-        if (userOpt.isEmpty()) {
-            return createDefaultProfile();
-        }
-
-        UserInfosEntity user = userOpt.get();
-
-        if (user.getProfile() == null) {
-            return createDefaultProfile();
-        }
-
-        return userProfileService.getProfile(user.getProfile().getId())
-                .orElseGet(this::createDefaultProfile);
+        return userProfileService.doGetUserProfile(sub);
     }
 
     @Transactional(readOnly = true)
@@ -203,121 +179,8 @@ public class UserAdminService {
                 .toList();
     }
 
-    @Transactional(readOnly = true)
-    public Integer getUserProfileMaxAllowedCases(String sub) {
-        UserProfile profile = doGetUserProfile(sub);
-        return Optional.ofNullable(profile.getMaxAllowValuesMap().get(MAX_ALLOWED_CASES))
-                .orElse(applicationProps.getDefaultMaxAllowedCases());
-    }
-
     public Integer getCasesAlertThreshold() {
-        return Optional.ofNullable(applicationProps.getCasesAlertThreshold()).orElse(90);
-    }
-
-    @Transactional(readOnly = true)
-    public Integer getUserProfileMaxAllowedBuilds(String sub) {
-        UserProfile profile = doGetUserProfile(sub);
-        return Optional.ofNullable(profile.getMaxAllowValuesMap().get(MAX_ALLOWED_BUILD))
-                .orElse(applicationProps.getDefaultMaxAllowedBuilds());
-    }
-
-    @Transactional(readOnly = true)
-    public Integer getUserProfileMaxAllowedLoadflows(String sub) {
-        UserProfile profile = doGetUserProfile(sub);
-        return Optional.ofNullable(profile.getMaxAllowValuesMap().get(MAX_ALLOWED_LOADFLOW))
-                .orElse(applicationProps.getDefaultMaxAllowedLoadflow());
-    }
-
-    @Transactional(readOnly = true)
-    public Integer getUserProfileMaxAllowedSecurity(String sub) {
-        UserProfile profile = doGetUserProfile(sub);
-        return Optional.ofNullable(profile.getMaxAllowValuesMap().get(MAX_ALLOWED_SECURITY))
-                .orElse(applicationProps.getDefaultMaxAllowedSecurity());
-    }
-
-    @Transactional(readOnly = true)
-    public Integer getUserProfileMaxAllowedSensitivity(String sub) {
-        UserProfile profile = doGetUserProfile(sub);
-        return Optional.ofNullable(profile.getMaxAllowValuesMap().get(MAX_ALLOWED_SENSITIVITY))
-                .orElse(applicationProps.getDefaultMaxAllowedSensitivity());
-    }
-
-    @Transactional(readOnly = true)
-    public Integer getUserProfileMaxAllowedShortCircuit(String sub) {
-        UserProfile profile = doGetUserProfile(sub);
-        return Optional.ofNullable(profile.getMaxAllowValuesMap().get(MAX_ALLOWED_SHORT_CIRCUIT))
-                .orElse(applicationProps.getDefaultMaxAllowedShortCircuit());
-    }
-
-    @Transactional(readOnly = true)
-    public Integer getUserProfileMaxAllowedVoltageInit(String sub) {
-        UserProfile profile = doGetUserProfile(sub);
-        return Optional.ofNullable(profile.getMaxAllowValuesMap().get(MAX_ALLOWED_VOLTAGE_INIT))
-                .orElse(applicationProps.getDefaultMaxAllowedVoltageInit());
-    }
-
-    @Transactional(readOnly = true)
-    public Integer getUserProfileMaxAllowedPccMin(String sub) {
-        UserProfile profile = doGetUserProfile(sub);
-        return Optional.ofNullable(profile.getMaxAllowValuesMap().get(MAX_ALLOWED_PCC_MIN))
-                .orElse(applicationProps.getDefaultMaxAllowedPccMin());
-    }
-
-    @Transactional(readOnly = true)
-    public Integer getUserProfileMaxAllowedStateEstimation(String sub) {
-        UserProfile profile = doGetUserProfile(sub);
-        return Optional.ofNullable(profile.getMaxAllowValuesMap().get(MAX_ALLOWED_STATE_ESTIMATION))
-                .orElse(applicationProps.getDefaultMaxAllowedStateEstimation());
-    }
-
-    @Transactional(readOnly = true)
-    public Integer getUserProfileMaxAllowedBalanceAdjustement(String sub) {
-        UserProfile profile = doGetUserProfile(sub);
-        return Optional.ofNullable(profile.getMaxAllowValuesMap().get(MAX_ALLOWED_BALANCE_ADJUSTEMENT))
-                .orElse(applicationProps.getDefaultMaxAllowedBalanceAdjustement());
-    }
-
-    @Transactional(readOnly = true)
-    public Integer getUserProfileMaxAllowedDynamicSimulation(String sub) {
-        UserProfile profile = doGetUserProfile(sub);
-        return Optional.ofNullable(profile.getMaxAllowValuesMap().get(MAX_ALLOWED_DYNAMIC_SIMULATION))
-                .orElse(applicationProps.getDefaultMaxAllowedDynamicSimulation());
-    }
-
-    @Transactional(readOnly = true)
-    public Integer getUserProfileMaxAllowedDynamicSecurity(String sub) {
-        UserProfile profile = doGetUserProfile(sub);
-        return Optional.ofNullable(profile.getMaxAllowValuesMap().get(MAX_ALLOWED_DYNAMIC_SECURITY))
-                .orElse(applicationProps.getDefaultMaxAllowedDynamicSecurity());
-    }
-
-    @Transactional(readOnly = true)
-    public Integer getUserProfileMaxAllowedDynamicMargin(String sub) {
-        UserProfile profile = doGetUserProfile(sub);
-        return Optional.ofNullable(profile.getMaxAllowValuesMap().get(MAX_ALLOWED_DYNAMIC_MARGIN))
-                .orElse(applicationProps.getDefaultMaxAllowedDynamicMargin());
-    }
-
-    private Map<String, Integer> getDefaultMaxAllowedValues() {
-        Map<String, Integer> maxAllowedValuesMap = new HashMap<>();
-        maxAllowedValuesMap.put(MAX_ALLOWED_CASES, applicationProps.getDefaultMaxAllowedCases());
-        maxAllowedValuesMap.put(MAX_ALLOWED_BUILD, applicationProps.getDefaultMaxAllowedBuilds());
-        maxAllowedValuesMap.put(MAX_ALLOWED_LOADFLOW, applicationProps.getDefaultMaxAllowedLoadflow());
-        maxAllowedValuesMap.put(MAX_ALLOWED_SECURITY, applicationProps.getDefaultMaxAllowedSecurity());
-        maxAllowedValuesMap.put(MAX_ALLOWED_SENSITIVITY, applicationProps.getDefaultMaxAllowedSensitivity());
-        maxAllowedValuesMap.put(MAX_ALLOWED_SHORT_CIRCUIT, applicationProps.getDefaultMaxAllowedShortCircuit());
-        maxAllowedValuesMap.put(MAX_ALLOWED_VOLTAGE_INIT, applicationProps.getDefaultMaxAllowedVoltageInit());
-        maxAllowedValuesMap.put(MAX_ALLOWED_PCC_MIN, applicationProps.getDefaultMaxAllowedPccMin());
-        maxAllowedValuesMap.put(MAX_ALLOWED_STATE_ESTIMATION, applicationProps.getDefaultMaxAllowedStateEstimation());
-        maxAllowedValuesMap.put(MAX_ALLOWED_BALANCE_ADJUSTEMENT, applicationProps.getDefaultMaxAllowedBalanceAdjustement());
-        maxAllowedValuesMap.put(MAX_ALLOWED_DYNAMIC_SIMULATION, applicationProps.getDefaultMaxAllowedDynamicSimulation());
-        maxAllowedValuesMap.put(MAX_ALLOWED_DYNAMIC_SECURITY, applicationProps.getDefaultMaxAllowedDynamicSecurity());
-        maxAllowedValuesMap.put(MAX_ALLOWED_DYNAMIC_MARGIN, applicationProps.getDefaultMaxAllowedDynamicMargin());
-        return maxAllowedValuesMap;
-    }
-
-    private UserProfile createDefaultProfile() {
-        return UserProfile.createDefaultProfile(getDefaultMaxAllowedValues());
+        return applicationProps.getCasesAlertThreshold();
     }
 
     /**

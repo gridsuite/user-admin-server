@@ -118,14 +118,6 @@ public class UserAdminController {
         return ResponseEntity.ok(service.getUserGroups(sub));
     }
 
-    @GetMapping(value = "/users/{sub}/profile/max-cases")
-    @Operation(summary = "Get the user's max allowed cases")
-    @ApiResponse(responseCode = "200", description = "The user max allowed cases created")
-    @ApiResponse(responseCode = "404", description = "The user doesn't exist")
-    public ResponseEntity<Integer> getUserProfileMaxStudies(@PathVariable("sub") String sub) {
-        return ResponseEntity.ok().body(service.getUserProfileMaxAllowedCases(sub));
-    }
-
     @GetMapping(value = "/cases-alert-threshold")
     @Operation(summary = "Get the cases alert threshold")
     @ApiResponse(responseCode = "200", description = "The cases alert threshold")
@@ -133,107 +125,11 @@ public class UserAdminController {
         return ResponseEntity.ok().body(service.getCasesAlertThreshold());
     }
 
-    @GetMapping(value = "/users/{sub}/profile/max-builds")
-    @Operation(summary = "Get the user's max allowed builds")
-    @ApiResponse(responseCode = "200", description = "The user max allowed builds")
-    @ApiResponse(responseCode = "404", description = "The user doesn't exist")
-    public ResponseEntity<Integer> getUserProfileMaxAllowedBuilds(@PathVariable("sub") String sub) {
-        return ResponseEntity.ok().body(service.getUserProfileMaxAllowedBuilds(sub));
-    }
-
     @GetMapping(value = "/connections", produces = {MediaType.APPLICATION_JSON_VALUE})
     @Operation(summary = "get the connections", description = "Access restricted to users of type: `admin`")
     @ApiResponse(responseCode = "200", description = "The connections list")
     public ResponseEntity<List<UserConnection>> getConnections() {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getConnections());
-    }
-
-    @GetMapping(value = "/users/{sub}/profile/max-loadflow")
-    @Operation(summary = "Get the user's max allowed loadflows")
-    @ApiResponse(responseCode = "200", description = "The user max allowed loadflows")
-    @ApiResponse(responseCode = "404", description = "The user doesn't exist")
-    public ResponseEntity<Integer> getUserProfileMaxAllowedLoadflows(@PathVariable String sub) {
-        return ResponseEntity.ok().body(service.getUserProfileMaxAllowedLoadflows(sub));
-    }
-
-    @GetMapping(value = "/users/{sub}/profile/max-security")
-    @Operation(summary = "Get the user's max allowed security analysis")
-    @ApiResponse(responseCode = "200", description = "The user max allowed security analysis")
-    @ApiResponse(responseCode = "404", description = "The user doesn't exist")
-    public ResponseEntity<Integer> getUserProfileMaxAllowedSecurity(@PathVariable String sub) {
-        return ResponseEntity.ok().body(service.getUserProfileMaxAllowedSecurity(sub));
-    }
-
-    @GetMapping(value = "/users/{sub}/profile/max-sensitivity")
-    @Operation(summary = "Get the user's max allowed sensitivity analysis")
-    @ApiResponse(responseCode = "200", description = "The user max allowed sensitivity analysis")
-    @ApiResponse(responseCode = "404", description = "The user doesn't exist")
-    public ResponseEntity<Integer> getUserProfileMaxAllowedSensitivity(@PathVariable String sub) {
-        return ResponseEntity.ok().body(service.getUserProfileMaxAllowedSensitivity(sub));
-    }
-
-    @GetMapping(value = "/users/{sub}/profile/max-shortcircuit")
-    @Operation(summary = "Get the user's max allowed short circuit analysis")
-    @ApiResponse(responseCode = "200", description = "The user max allowed short circuit analysis")
-    @ApiResponse(responseCode = "404", description = "The user doesn't exist")
-    public ResponseEntity<Integer> getUserProfileMaxAllowedShortCircuit(@PathVariable String sub) {
-        return ResponseEntity.ok().body(service.getUserProfileMaxAllowedShortCircuit(sub));
-    }
-
-    @GetMapping(value = "/users/{sub}/profile/max-voltage-init")
-    @Operation(summary = "Get the user's max allowed voltage init analysis")
-    @ApiResponse(responseCode = "200", description = "The user max allowed voltage init analysis")
-    @ApiResponse(responseCode = "404", description = "The user doesn't exist")
-    public ResponseEntity<Integer> getUserProfileMaxAllowedVoltageInit(@PathVariable String sub) {
-        return ResponseEntity.ok().body(service.getUserProfileMaxAllowedVoltageInit(sub));
-    }
-
-    @GetMapping(value = "/users/{sub}/profile/max-pcc-min")
-    @Operation(summary = "Get the user's max allowed pcc min analysis")
-    @ApiResponse(responseCode = "200", description = "The user max allowed pcc min analysis")
-    @ApiResponse(responseCode = "404", description = "The user doesn't exist")
-    public ResponseEntity<Integer> getUserProfileMaxAllowedPccMin(@PathVariable String sub) {
-        return ResponseEntity.ok().body(service.getUserProfileMaxAllowedPccMin(sub));
-    }
-
-    @GetMapping(value = "/users/{sub}/profile/max-state-estimation")
-    @Operation(summary = "Get the user's max allowed state estimation analysis")
-    @ApiResponse(responseCode = "200", description = "The user max allowed state estimation analysis")
-    @ApiResponse(responseCode = "404", description = "The user doesn't exist")
-    public ResponseEntity<Integer> getUserProfileMaxAllowedStateEstimation(@PathVariable String sub) {
-        return ResponseEntity.ok().body(service.getUserProfileMaxAllowedStateEstimation(sub));
-    }
-
-    @GetMapping(value = "/users/{sub}/profile/max-balance-adjustement")
-    @Operation(summary = "Get the user's max allowed balance adjustement analysis")
-    @ApiResponse(responseCode = "200", description = "The user max allowed balance adjustement analysis")
-    @ApiResponse(responseCode = "404", description = "The user doesn't exist")
-    public ResponseEntity<Integer> getUserProfileMaxAllowedBalanceAdjustement(@PathVariable String sub) {
-        return ResponseEntity.ok().body(service.getUserProfileMaxAllowedBalanceAdjustement(sub));
-    }
-
-    @GetMapping(value = "/users/{sub}/profile/max-dynamic-simulation")
-    @Operation(summary = "Get the user's max allowed dynamic simulation analysis")
-    @ApiResponse(responseCode = "200", description = "The user max allowed dynamic simulation analysis")
-    @ApiResponse(responseCode = "404", description = "The user doesn't exist")
-    public ResponseEntity<Integer> getUserProfileMaxAllowedDynamicSimulation(@PathVariable String sub) {
-        return ResponseEntity.ok().body(service.getUserProfileMaxAllowedDynamicSimulation(sub));
-    }
-
-    @GetMapping(value = "/users/{sub}/profile/max-dynamic-security")
-    @Operation(summary = "Get the user's max allowed dynamic security analysis")
-    @ApiResponse(responseCode = "200", description = "The user max allowed dynamic security analysis")
-    @ApiResponse(responseCode = "404", description = "The user doesn't exist")
-    public ResponseEntity<Integer> getUserProfileMaxAllowedDynamicSecurity(@PathVariable String sub) {
-        return ResponseEntity.ok().body(service.getUserProfileMaxAllowedDynamicSecurity(sub));
-    }
-
-    @GetMapping(value = "/users/{sub}/profile/max-dynamic-margin")
-    @Operation(summary = "Get the user's max allowed dynamic margin analysis")
-    @ApiResponse(responseCode = "200", description = "The user max allowed dynamic margin analysis")
-    @ApiResponse(responseCode = "404", description = "The user doesn't exist")
-    public ResponseEntity<Integer> getUserProfileMaxAllowedDynamicMargin(@PathVariable String sub) {
-        return ResponseEntity.ok().body(service.getUserProfileMaxAllowedDynamicMargin(sub));
     }
 
 }
