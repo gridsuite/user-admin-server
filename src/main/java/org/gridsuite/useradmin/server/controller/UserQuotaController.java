@@ -48,6 +48,14 @@ public class UserQuotaController {
         return ResponseEntity.ok().body(userCurrentQuotaUsage);
     }
 
+    @GetMapping(value = "/users/{sub}/quota/state")
+    @Operation(summary = "Get the user's current quota state : usage and max")
+    @ApiResponse(responseCode = "200", description = "The user current quota state")
+    public ResponseEntity<Map<QuotaType, QuotaState>> getUserCurrentQuotaState(@PathVariable("sub") String sub) {
+        Map<QuotaType, QuotaState> userCurrentQuotaStat = userQuotaService.getUserCurrentQuotaState(sub);
+        return ResponseEntity.ok().body(userCurrentQuotaStat);
+    }
+
     @PostMapping(value = "/users/{sub}/quota/reset")
     @Operation(summary = "Reset the user's current quota usage", description = "Access restricted to users of type: `admin`")
     @ApiResponse(responseCode = "200", description = "The user current quota usage has been reseted")

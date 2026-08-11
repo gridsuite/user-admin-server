@@ -8,6 +8,7 @@ package org.gridsuite.useradmin.server.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.gridsuite.useradmin.server.dto.QuotaState;
 import org.gridsuite.useradmin.server.dto.QuotaType;
 import org.gridsuite.useradmin.server.repository.UserOperationRepository;
 import org.junit.jupiter.api.AfterEach;
@@ -124,6 +125,44 @@ class UserQuotaControllerTest {
 
         assertEquals(2, usage.get(BUILD));
         assertEquals(1, usage.get(CASES));
+    }
+
+    @Test
+    void getUserCurrentQuotaStateReturnsCurrentAndMaxWhenNoOperations() throws Exception {
+        MvcResult result = mockMvc.perform(get(API_BASE_PATH + "/users/{sub}/quota/state", USER_A)
+                        .header("userId", ADMIN_USER)
+                        .header(ROLES_HEADER, USER_ADMIN_ROLE)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        Map<QuotaType, QuotaState> state = objectMapper.readValue(
+                result.getResponse().getContentAsString(), new TypeReference<>() { });
+
+        assertNotNull(state);
+        // default values from application-default.yml
+        assertEquals(new QuotaState(0, 20), state.get(CASES));
+        assertEquals(new QuotaState(0, 10), state.get(BUILD));
+    }
+
+    @Test
+    void getUserCurrentQuotaStateReturnsCurrentAndMaxWhenOperationsExist() throws Exception {
+        startOperation(USER_A, BUILD, UUID.randomUUID());
+        startOperation(USER_A, BUILD, UUID.randomUUID());
+        startOperation(USER_A, CASES, UUID.randomUUID());
+
+        MvcResult result = mockMvc.perform(get(API_BASE_PATH + "/users/{sub}/quota/state", USER_A)
+                        .header("userId", ADMIN_USER)
+                        .header(ROLES_HEADER, USER_ADMIN_ROLE)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        Map<QuotaType, QuotaState> state = objectMapper.readValue(
+                result.getResponse().getContentAsString(), new TypeReference<>() { });
+
+        assertEquals(new QuotaState(2, 10), state.get(BUILD));
+        assertEquals(new QuotaState(1, 20), state.get(CASES));
     }
 
     @Test

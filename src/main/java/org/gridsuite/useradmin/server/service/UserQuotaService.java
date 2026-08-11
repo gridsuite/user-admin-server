@@ -6,10 +6,12 @@
  */
 package org.gridsuite.useradmin.server.service;
 
+import org.gridsuite.useradmin.server.dto.QuotaState;
 import org.gridsuite.useradmin.server.dto.QuotaType;
 import org.gridsuite.useradmin.server.dto.UserProfile;
 import org.gridsuite.useradmin.server.entity.UserOperationEntity;
 import org.gridsuite.useradmin.server.repository.UserOperationRepository;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,13 +26,16 @@ public class UserQuotaService {
     private final UserOperationRepository userOperationRepository;
     private final AdminRightService adminRightService;
     private final UserProfileService userProfileService;
+    private final UserQuotaService self;
 
     public UserQuotaService(final UserOperationRepository userOperationRepository,
                             final AdminRightService adminRightService,
-                            final UserProfileService userProfileService) {
+                            final UserProfileService userProfileService,
+                            final @Lazy UserQuotaService userQuotaService) {
         this.userOperationRepository = userOperationRepository;
         this.adminRightService = Objects.requireNonNull(adminRightService);
         this.userProfileService = Objects.requireNonNull(userProfileService);
+        this.self = userQuotaService;
     }
 
     @Transactional(readOnly = true)
@@ -52,6 +57,18 @@ public class UserQuotaService {
         List<UserOperationEntity> userOperations = userOperationRepository.findBySub(sub);
         return userOperations.stream()
                 .collect(Collectors.groupingBy(UserOperationEntity::getQuotaType, Collectors.summingInt(e -> 1)));
+    }
+
+    @Transactional(readOnly = true)
+    public Map<QuotaType, QuotaState> getUserCurrentQuotaState(String sub) {
+        Map<QuotaType, Integer> userCurrentQuotaUsage = self.getUserCurrentQuotaUsage(sub);
+        Map<QuotaType, Integer> userMaxQuota = self.getUserMaxQuota(sub);
+
+        return userMaxQuota.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> new QuotaState(userCurrentQuotaUsage.getOrDefault(entry.getKey(), 0), entry.getValue())
+                ));
     }
 
     @Transactional()

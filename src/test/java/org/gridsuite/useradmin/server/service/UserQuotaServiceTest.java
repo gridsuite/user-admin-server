@@ -7,16 +7,19 @@
 package org.gridsuite.useradmin.server.service;
 
 import org.gridsuite.useradmin.server.UserAdminApplication;
+import org.gridsuite.useradmin.server.dto.QuotaState;
 import org.gridsuite.useradmin.server.dto.QuotaType;
 import org.gridsuite.useradmin.server.dto.UserProfile;
 import org.gridsuite.useradmin.server.entity.UserOperationEntity;
 import org.gridsuite.useradmin.server.error.UserAdminException;
 import org.gridsuite.useradmin.server.repository.UserOperationRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.*;
 
@@ -46,6 +49,11 @@ class UserQuotaServiceTest {
 
     @InjectMocks
     private UserQuotaService userQuotaService;
+
+    @BeforeEach
+    void setUp() {
+        ReflectionTestUtils.setField(userQuotaService, "self", userQuotaService);
+    }
 
     @Test
     void getUserMaxQuotaReturnsProfileQuotaWhenProfileHasQuota() {
@@ -114,6 +122,51 @@ class UserQuotaServiceTest {
     void getUserCurrentQuotaUsageReturnsEmptyMapWhenUserDoesNotExist() {
         Map<QuotaType, Integer> result = userQuotaService.getUserCurrentQuotaUsage("unknown");
         assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void getUserCurrentQuotaStateReturnsCurrentAndMaxForEachType() {
+        Map<QuotaType, Integer> profileQuota = new EnumMap<>(QuotaType.class);
+        profileQuota.put(CASES, 10);
+        profileQuota.put(BUILD, 5);
+        UserProfile profile = UserProfile.builder()
+                .name("profile_A")
+                .maxOperationQuota(profileQuota)
+                .build();
+
+        when(userProfileServiceMock.doGetUserProfile("user_A")).thenReturn(profile);
+
+        UUID op1 = UUID.randomUUID();
+        UUID op2 = UUID.randomUUID();
+        when(userOperationRepository.findBySub("user_A")).thenReturn(List.of(
+                new UserOperationEntity("user_A", op1, BUILD),
+                new UserOperationEntity("user_A", op2, BUILD)
+        ));
+
+        Map<QuotaType, QuotaState> result = userQuotaService.getUserCurrentQuotaState("user_A");
+
+        assertNotNull(result);
+        assertEquals(new QuotaState(2, 5), result.get(BUILD));
+        assertEquals(new QuotaState(0, 10), result.get(CASES));
+    }
+
+    @Test
+    void getUserCurrentQuotaStateReturnsZeroCurrentWhenNoOperations() {
+        Map<QuotaType, Integer> defaultQuota = new EnumMap<>(QuotaType.class);
+        defaultQuota.put(CASES, 20);
+        defaultQuota.put(BUILD, 10);
+
+        UserProfile profileWithNullQuota = mock(UserProfile.class);
+        when(profileWithNullQuota.getMaxOperationQuota()).thenReturn(null);
+
+        when(userProfileServiceMock.doGetUserProfile("user_B")).thenReturn(profileWithNullQuota);
+        when(userProfileServiceMock.getDefaultMaxAllowedValues()).thenReturn(defaultQuota);
+
+        Map<QuotaType, QuotaState> result = userQuotaService.getUserCurrentQuotaState("user_B");
+
+        assertNotNull(result);
+        assertEquals(new QuotaState(0, 20), result.get(CASES));
+        assertEquals(new QuotaState(0, 10), result.get(BUILD));
     }
 
     @Test
