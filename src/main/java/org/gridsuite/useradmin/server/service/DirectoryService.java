@@ -11,13 +11,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
 import java.util.List;
 import java.util.Set;
@@ -42,14 +41,14 @@ public class DirectoryService {
     private static final String USER_SERVER_ROOT_PATH = DELIMITER + DIRECTORY_SERVER_API_VERSION + DELIMITER
             + "users";
 
-    private final RestTemplate restTemplate;
+    private final RestClient restClient;
 
     private static String directoryServerBaseUri;
 
     public DirectoryService(@Value("${gridsuite.services.directory-server.base-uri:http://directory-server/}") String directoryServerBaseUri,
-                            RestTemplate restTemplate) {
+                            RestClient restClient) {
         setDirectoryServerBaseUri(directoryServerBaseUri);
-        this.restTemplate = restTemplate;
+        this.restClient = restClient;
     }
 
     public static void setDirectoryServerBaseUri(String serverBaseUri) {
@@ -69,16 +68,19 @@ public class DirectoryService {
         headers.add("userId", userId);
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        List<ElementAttributes> existingElementList = restTemplate.exchange(directoryServerBaseUri + path, HttpMethod.GET, new HttpEntity<>(headers),
-                new ParameterizedTypeReference<List<ElementAttributes>>() {
-                }).getBody();
+        List<ElementAttributes> existingElementList = restClient.method(HttpMethod.GET)
+                .uri(directoryServerBaseUri + path)
+                .headers(httpHeaders -> httpHeaders.addAll(headers))
+                .retrieve()
+                .body(new ParameterizedTypeReference<List<ElementAttributes>>() {
+                });
         return existingElementList == null ? Set.of() : existingElementList.stream().map(ElementAttributes::getElementUuid).collect(Collectors.toSet());
     }
 
     public Integer getCasesCount(String userId) {
         String path = UriComponentsBuilder.fromPath(USER_SERVER_ROOT_PATH + "/{userId}/cases/count").buildAndExpand(userId).toUriString();
         try {
-            return restTemplate.getForObject(directoryServerBaseUri + path, Integer.class);
+            return restClient.get().uri(directoryServerBaseUri + path).retrieve().body(Integer.class);
         } catch (Exception e) {
             LOGGER.warn("Failed to retrieve cases count for user {}", userId);
             return null;

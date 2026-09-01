@@ -15,7 +15,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Collection;
@@ -36,13 +36,13 @@ public class UserIdentityService {
     private static final String DELIMITER = "/";
     private static final String IDENTITIES_PATH = DELIMITER + USER_IDENTITY_API_VERSION + "/users/identities";
 
-    private final RestTemplate restTemplate;
+    private final RestClient restClient;
     private final String userIdentityServerBaseUri;
 
     public UserIdentityService(
-            RestTemplate restTemplate,
+            RestClient restClient,
             @Value("${gridsuite.services.user-identity-server.base-uri:http://user-identity-server/}") String userIdentityServerBaseUri) {
-        this.restTemplate = restTemplate;
+        this.restClient = restClient;
         this.userIdentityServerBaseUri = userIdentityServerBaseUri;
     }
 
@@ -62,7 +62,7 @@ public class UserIdentityService {
             String url = UriComponentsBuilder.fromUriString(userIdentityServerBaseUri + IDENTITIES_PATH)
                     .pathSegment(sub)
                     .toUriString();
-            UserIdentity identity = restTemplate.getForObject(url, UserIdentity.class);
+            UserIdentity identity = restClient.get().uri(url).retrieve().body(UserIdentity.class);
             return Optional.ofNullable(identity);
         } catch (Exception e) {
             LOGGER.warn("Failed to fetch identity for user '{}': {}", sub, e.getMessage());
@@ -88,13 +88,11 @@ public class UserIdentityService {
                     .queryParam("subs", String.join(",", subs))
                     .toUriString();
 
-            UserIdentitiesResult result = restTemplate.exchange(
-                    url,
-                    HttpMethod.GET,
-                    null,
-                    new ParameterizedTypeReference<UserIdentitiesResult>() {
-                    }
-            ).getBody();
+            UserIdentitiesResult result = restClient.get()
+                    .uri(url)
+                    .retrieve()
+                    .body(new ParameterizedTypeReference<UserIdentitiesResult>() {
+                    });
 
             if (result == null || result.data() == null) {
                 return Map.of();
