@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -68,7 +67,7 @@ public class DirectoryService {
         headers.add("userId", userId);
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        List<ElementAttributes> existingElementList = restClient.method(HttpMethod.GET)
+        List<ElementAttributes> existingElementList = restClient.get()
                 .uri(directoryServerBaseUri + path)
                 .headers(httpHeaders -> httpHeaders.addAll(headers))
                 .retrieve()
