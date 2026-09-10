@@ -7,17 +7,21 @@
 package org.gridsuite.useradmin.server.service;
 
 import org.gridsuite.useradmin.server.UserAdminApplication;
+import org.gridsuite.useradmin.server.dto.QuotaState;
 import org.gridsuite.useradmin.server.dto.QuotaType;
 import org.gridsuite.useradmin.server.dto.UserProfile;
 import org.gridsuite.useradmin.server.entity.UserOperationEntity;
 import org.gridsuite.useradmin.server.error.UserAdminException;
 import org.gridsuite.useradmin.server.repository.UserOperationRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.util.ReflectionTestUtils;
 
+import java.time.Instant;
 import java.util.*;
 
 import static org.gridsuite.useradmin.server.dto.QuotaType.BUILD;
@@ -46,6 +50,11 @@ class UserQuotaServiceTest {
 
     @InjectMocks
     private UserQuotaService userQuotaService;
+
+    @BeforeEach
+    void setUp() {
+        ReflectionTestUtils.setField(userQuotaService, "self", userQuotaService);
+    }
 
     @Test
     void getUserMaxQuotaReturnsProfileQuotaWhenProfileHasQuota() {
@@ -98,10 +107,12 @@ class UserQuotaServiceTest {
         UUID op1 = UUID.randomUUID();
         UUID op2 = UUID.randomUUID();
         UUID op3 = UUID.randomUUID();
+        Instant now = Instant.now();
+
         when(userOperationRepository.findBySub("user_A")).thenReturn(List.of(
-                new UserOperationEntity("user_A", op1, BUILD),
-                new UserOperationEntity("user_A", op2, BUILD),
-                new UserOperationEntity("user_A", op3, CASES)
+                new UserOperationEntity("user_A", op1, BUILD, now),
+                new UserOperationEntity("user_A", op2, BUILD, now),
+                new UserOperationEntity("user_A", op3, CASES, now)
         ));
 
         Map<QuotaType, Integer> result = userQuotaService.getUserCurrentQuotaUsage("user_A");
@@ -114,6 +125,52 @@ class UserQuotaServiceTest {
     void getUserCurrentQuotaUsageReturnsEmptyMapWhenUserDoesNotExist() {
         Map<QuotaType, Integer> result = userQuotaService.getUserCurrentQuotaUsage("unknown");
         assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void getUserCurrentQuotaStateReturnsCurrentAndMaxForEachType() {
+        Map<QuotaType, Integer> profileQuota = new EnumMap<>(QuotaType.class);
+        profileQuota.put(CASES, 10);
+        profileQuota.put(BUILD, 5);
+        UserProfile profile = UserProfile.builder()
+                .name("profile_A")
+                .maxOperationQuota(profileQuota)
+                .build();
+
+        when(userProfileServiceMock.doGetUserProfile("user_A")).thenReturn(profile);
+
+        UUID op1 = UUID.randomUUID();
+        UUID op2 = UUID.randomUUID();
+        Instant now = Instant.now();
+        when(userOperationRepository.findBySub("user_A")).thenReturn(List.of(
+                new UserOperationEntity("user_A", op1, BUILD, now),
+                new UserOperationEntity("user_A", op2, BUILD, now)
+        ));
+
+        Map<QuotaType, QuotaState> result = userQuotaService.getUserCurrentQuotaState("user_A");
+
+        assertNotNull(result);
+        assertEquals(new QuotaState(2, 5), result.get(BUILD));
+        assertEquals(new QuotaState(0, 10), result.get(CASES));
+    }
+
+    @Test
+    void getUserCurrentQuotaStateReturnsZeroCurrentWhenNoOperations() {
+        Map<QuotaType, Integer> defaultQuota = new EnumMap<>(QuotaType.class);
+        defaultQuota.put(CASES, 20);
+        defaultQuota.put(BUILD, 10);
+
+        UserProfile profileWithNullQuota = mock(UserProfile.class);
+        when(profileWithNullQuota.getMaxOperationQuota()).thenReturn(null);
+
+        when(userProfileServiceMock.doGetUserProfile("user_B")).thenReturn(profileWithNullQuota);
+        when(userProfileServiceMock.getDefaultMaxAllowedValues()).thenReturn(defaultQuota);
+
+        Map<QuotaType, QuotaState> result = userQuotaService.getUserCurrentQuotaState("user_B");
+
+        assertNotNull(result);
+        assertEquals(new QuotaState(0, 20), result.get(CASES));
+        assertEquals(new QuotaState(0, 10), result.get(BUILD));
     }
 
     @Test
@@ -133,8 +190,9 @@ class UserQuotaServiceTest {
     @Test
     void endUserOperationRemovesMatchingOperation() {
         UUID operationId = UUID.randomUUID();
-        UserOperationEntity operation1 = new UserOperationEntity("user_A", operationId, BUILD);
-        UserOperationEntity operation2 = new UserOperationEntity("user_A", UUID.randomUUID(), CASES);
+        Instant now = Instant.now();
+        UserOperationEntity operation1 = new UserOperationEntity("user_A", operationId, BUILD, now);
+        UserOperationEntity operation2 = new UserOperationEntity("user_A", UUID.randomUUID(), CASES, now);
 
         when(userOperationRepository.findBySub("user_A")).thenReturn(List.of(operation1, operation2));
 
@@ -146,7 +204,8 @@ class UserQuotaServiceTest {
     @Test
     void endUserOperationDoesNotRemoveWhenOperationIdMatchesButTypeDiffers() {
         UUID operationId = UUID.randomUUID();
-        UserOperationEntity operation1 = new UserOperationEntity("user_A", operationId, CASES);
+        Instant now = Instant.now();
+        UserOperationEntity operation1 = new UserOperationEntity("user_A", operationId, CASES, now);
         when(userOperationRepository.findBySub("user_A")).thenReturn(List.of(operation1));
 
         userQuotaService.endUserOperation("user_A", BUILD, operationId);
