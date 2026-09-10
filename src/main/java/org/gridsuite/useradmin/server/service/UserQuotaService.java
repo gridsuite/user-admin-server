@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -73,7 +74,8 @@ public class UserQuotaService {
 
     @Transactional()
     public void startUserOperation(String sub, QuotaType operation, UUID operationId) {
-        UserOperationEntity operationEntity = new UserOperationEntity(sub, operationId, operation);
+        Instant now = Instant.now();
+        UserOperationEntity operationEntity = new UserOperationEntity(sub, operationId, operation, now);
 
         userOperationRepository.save(operationEntity);
     }
