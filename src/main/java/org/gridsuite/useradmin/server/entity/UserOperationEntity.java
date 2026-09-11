@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.gridsuite.useradmin.server.dto.QuotaType;
 
+import java.time.Instant;
 import java.util.UUID;
 
 /**
@@ -43,9 +44,13 @@ public class UserOperationEntity {
     @Column(name = "operation_type", nullable = false)
     private QuotaType quotaType;
 
-    public UserOperationEntity(String sub, UUID operationId, QuotaType quotaType) {
+    @Column(name = "quota_date", nullable = false)
+    private Instant quotaDate;
+
+    public UserOperationEntity(String sub, UUID operationId, QuotaType quotaType, Instant quotaDate) {
         this.sub = sub;
         this.operationId = operationId;
         this.quotaType = quotaType;
+        this.quotaDate = quotaDate;
     }
 }
