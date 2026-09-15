@@ -32,22 +32,6 @@ public class UserQuotaController {
         this.userQuotaService = userQuotaService;
     }
 
-    @GetMapping(value = "/users/{sub}/quota/max")
-    @Operation(summary = "Get the user's quota")
-    @ApiResponse(responseCode = "200", description = "The user max quota")
-    public ResponseEntity<Map<QuotaType, Integer>> getUserProfileMaxQuota(@PathVariable("sub") String sub) {
-        Map<QuotaType, Integer> userMaxQuota = userQuotaService.getUserMaxQuota(sub);
-        return ResponseEntity.ok().body(userMaxQuota);
-    }
-
-    @GetMapping(value = "/users/{sub}/quota/current")
-    @Operation(summary = "Get the user's current quota usage")
-    @ApiResponse(responseCode = "200", description = "The user current quota usage")
-    public ResponseEntity<Map<QuotaType, Integer>> getUserCurrentQuotaUsage(@PathVariable("sub") String sub) {
-        Map<QuotaType, Integer> userCurrentQuotaUsage = userQuotaService.getUserCurrentQuotaUsage(sub);
-        return ResponseEntity.ok().body(userCurrentQuotaUsage);
-    }
-
     @GetMapping(value = "/users/{sub}/quota/state")
     @Operation(summary = "Get the user's current quota state : usage and max")
     @ApiResponse(responseCode = "200", description = "The user current quota state")
@@ -64,23 +48,22 @@ public class UserQuotaController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping(value = "/users/{sub}/quota/{operation}/{operation_id}/start")
-    @Operation(summary = "Increase the user's current quota usage for a given operation")
-    @ApiResponse(responseCode = "200", description = "The user current quota usage has been updated")
-    public ResponseEntity<Void> startUserOperation(@PathVariable("sub") String sub,
-                                                   @PathVariable("operation") QuotaType operation,
-                                                   @PathVariable("operation_id") UUID operationId) {
-        userQuotaService.startUserOperation(sub, operation, operationId);
-        return ResponseEntity.ok().build();
+    @PostMapping(value = "/users/{sub}/quota/{operation}/consume")
+    @Operation(summary = "Atomically check the user's quota availability for an operation type and consume one unit of it")
+    @ApiResponse(responseCode = "200", description = "The quota has been consumed, body contains the generated quotaId")
+    @ApiResponse(responseCode = "400", description = "The user's quota for this operation type is already exhausted")
+    public ResponseEntity<UUID> consumeUserOperation(@PathVariable("sub") String sub,
+                                                     @PathVariable("operation") QuotaType operation) {
+        UUID quotaId = userQuotaService.consumeUserOperation(sub, operation);
+        return ResponseEntity.ok().body(quotaId);
     }
 
-    @PostMapping(value = "/users/{sub}/quota/{operation}/{operation_id}/end")
-    @Operation(summary = "Decrease the user's current quota usage for a given operation")
-    @ApiResponse(responseCode = "200", description = "The user current quota usage has been updated")
-    public ResponseEntity<Void> endUserOperation(@PathVariable("sub") String sub,
-                                                 @PathVariable("operation") QuotaType operation,
-                                                 @PathVariable("operation_id") UUID operationId) {
-        userQuotaService.endUserOperation(sub, operation, operationId);
+    @PostMapping(value = "/users/{sub}/quota/{quotaId}/release")
+    @Operation(summary = "Release a previously consumed quota unit")
+    @ApiResponse(responseCode = "200", description = "The quota has been released")
+    public ResponseEntity<Void> releaseUserOperation(@PathVariable("sub") String sub,
+                                                      @PathVariable("quotaId") UUID quotaId) {
+        userQuotaService.releaseUserOperation(sub, quotaId);
         return ResponseEntity.ok().build();
     }
 }

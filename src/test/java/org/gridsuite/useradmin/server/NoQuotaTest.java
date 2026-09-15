@@ -9,6 +9,7 @@ package org.gridsuite.useradmin.server;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import org.gridsuite.useradmin.server.dto.QuotaState;
 import org.gridsuite.useradmin.server.dto.QuotaType;
 import org.gridsuite.useradmin.server.dto.UserInfos;
 import org.gridsuite.useradmin.server.dto.UserProfile;
@@ -209,8 +210,12 @@ class NoQuotaTest {
     }
 
     private Map<QuotaType, Integer> getMaxQuotaMap(String userSub) throws Exception {
-        MvcResult result = performGet(API_BASE_PATH + "/users/" + userSub + "/quota/max");
-        return objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() { });
+        MvcResult result = performGet(API_BASE_PATH + "/users/" + userSub + "/quota/state");
+        Map<QuotaType, QuotaState> state = objectMapper.readValue(
+                result.getResponse().getContentAsString(), new TypeReference<>() { });
+        Map<QuotaType, Integer> quota = new EnumMap<>(QuotaType.class);
+        state.forEach((type, quotaState) -> quota.put(type, quotaState.max()));
+        return quota;
     }
 
     private Integer getMaxAllowedBuilds(String userSub) throws Exception {

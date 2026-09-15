@@ -48,6 +48,7 @@ public class UserAdminExceptionHandler
                  USER_ADMIN_ANNOUNCEMENT_INVALID_PERIOD,
                  USER_ADMIN_ANNOUNCEMENT_OVERLAP -> HttpStatus.BAD_REQUEST;
             case USER_ADMIN_GROUP_STILL_REFERENCED -> HttpStatus.UNPROCESSABLE_ENTITY;
+            case USER_ADMIN_QUOTA_EXCEEDED -> HttpStatus.TOO_MANY_REQUESTS;
         };
     }
 
