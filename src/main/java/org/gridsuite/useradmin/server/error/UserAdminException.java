@@ -8,6 +8,7 @@ package org.gridsuite.useradmin.server.error;
 
 import com.powsybl.ws.commons.error.AbstractBusinessException;
 import jakarta.validation.constraints.NotNull;
+import org.gridsuite.useradmin.server.dto.QuotaType;
 
 import java.time.Instant;
 import java.util.Objects;
@@ -73,6 +74,11 @@ public class UserAdminException extends AbstractBusinessException {
     public static UserAdminException announcementOverlap(Instant startDate, Instant endDate) {
         return new UserAdminException(USER_ADMIN_ANNOUNCEMENT_OVERLAP,
             String.format("Announcement period [%s, %s] overlaps with an existing announcement", startDate, endDate));
+    }
+
+    public static UserAdminException quotaExceeded(QuotaType operation, long current, int max) {
+        return new UserAdminException(USER_ADMIN_QUOTA_EXCEEDED,
+            String.format("Max number of '%s' operations already reached (%d/%d)", operation, current, max));
     }
 
     public static UserAdminException of(UserAdminBusinessErrorCode errorCode, String message, Object... args) {

@@ -10,6 +10,7 @@ import org.gridsuite.useradmin.server.dto.QuotaState;
 import org.gridsuite.useradmin.server.dto.QuotaType;
 import org.gridsuite.useradmin.server.dto.UserProfile;
 import org.gridsuite.useradmin.server.entity.UserOperationEntity;
+import org.gridsuite.useradmin.server.error.UserAdminException;
 import org.gridsuite.useradmin.server.repository.UserOperationRepository;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -73,21 +74,23 @@ public class UserQuotaService {
     }
 
     @Transactional()
-    public void startUserOperation(String sub, QuotaType operation, UUID operationId) {
-        Instant now = Instant.now();
-        UserOperationEntity operationEntity = new UserOperationEntity(sub, operationId, operation, now);
-
-        userOperationRepository.save(operationEntity);
+    public UUID consumeUserOperation(String sub, QuotaType operation) {
+        Integer max = self.getUserMaxQuota(sub).get(operation);
+        if (max != null) {
+            long current = userOperationRepository.findBySubAndQuotaType(sub, operation).size();
+            if (current >= max) {
+                throw UserAdminException.quotaExceeded(operation, current, max);
+            }
+        }
+        UserOperationEntity operationEntity = new UserOperationEntity(sub, operation, Instant.now());
+        operationEntity = userOperationRepository.save(operationEntity);
+        return operationEntity.getId();
     }
 
     @Transactional()
-    public void endUserOperation(String sub, QuotaType operation, UUID operationId) {
-        List<UserOperationEntity> userOperations = userOperationRepository.findBySub(sub);
-
-        userOperations.stream()
-                .filter(userOperationEntity -> userOperationEntity.getSub().equals(sub) &&
-                        userOperationEntity.getOperationId().equals(operationId) &&
-                        userOperationEntity.getQuotaType().equals(operation))
-                .forEach(userOperationRepository::delete);
+    public void releaseUserOperation(String sub, UUID quotaId) {
+        userOperationRepository.findById(quotaId)
+                .filter(userOperationEntity -> userOperationEntity.getSub().equals(sub))
+                .ifPresent(userOperationRepository::delete);
     }
 }
