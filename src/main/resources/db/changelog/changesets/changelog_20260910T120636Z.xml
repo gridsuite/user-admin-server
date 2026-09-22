@@ -1,5 +1,24 @@
 <?xml version="1.1" encoding="UTF-8" standalone="no"?>
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <!-- Cleanup step for environments where the quota_date column has not been added yet.
+         If user_operation still contains rows at this point, they predate the quota_date
+         feature and cannot be assigned a valid value, so they are deleted. This runs only
+         once, before quota_date exists; environments where it already ran (and thus already
+         have quota_date) skip it as a no-op. -->
+    <changeSet author="abdellahghi (generated)" id="1789042005311-2-cleanup">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="user_operation" columnName="quota_date"/>
+            </not>
+        </preConditions>
+        <sql>
+            DELETE FROM user_operation
+        </sql>
+    </changeSet>
+
+    <!-- Original changeset, unchanged. Thanks to the cleanup changeset above, the table is
+         guaranteed to be empty here on environments where it hasn't run yet, so adding
+         quota_date as NOT NULL always succeeds. -->
     <changeSet author="abdellahghi (generated)" id="1789042005311-2">
         <addColumn tableName="user_operation">
             <column name="quota_date" type="TIMESTAMP WITH TIME ZONE">
