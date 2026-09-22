@@ -6,6 +6,7 @@
  */
 package org.gridsuite.useradmin.server.repository;
 
+import org.gridsuite.useradmin.server.dto.QuotaType;
 import org.gridsuite.useradmin.server.entity.UserOperationEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.lang.NonNull;
@@ -23,4 +24,12 @@ public interface UserOperationRepository extends JpaRepository<UserOperationEnti
     List<UserOperationEntity> findBySub(@NonNull String sub);
 
     long deleteBySub(@NonNull String sub);
+
+    /**
+     * We could add a db lock (pessimistic/otpimistic lock on the user's rows for this operation type: serializes concurrent
+     * consume attempts for the same (sub, operation) pair, closing the check-then-insert race window)
+     * For now this is considered as a race condition fix since the operation are fast and the window is very small.
+     * Moreover, the business impact is none...
+     */
+    List<UserOperationEntity> findBySubAndQuotaType(@NonNull String sub, @NonNull QuotaType quotaType);
 }

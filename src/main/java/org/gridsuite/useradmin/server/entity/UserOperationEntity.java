@@ -25,7 +25,6 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "user_operation",
-        uniqueConstraints = @UniqueConstraint(name = "user_operation_sub_operation_id_uk", columnNames = {"sub", "operation_id"}),
         indexes = {@Index(name = "user_operation_sub_index", columnList = "sub")})
 public class UserOperationEntity {
 
@@ -37,9 +36,6 @@ public class UserOperationEntity {
     @Column(name = "sub", nullable = false)
     private String sub;
 
-    @Column(name = "operation_id", nullable = false)
-    private UUID operationId;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "operation_type", nullable = false)
     private QuotaType quotaType;
@@ -47,9 +43,8 @@ public class UserOperationEntity {
     @Column(name = "quota_date", nullable = false)
     private Instant quotaDate;
 
-    public UserOperationEntity(String sub, UUID operationId, QuotaType quotaType, Instant quotaDate) {
+    public UserOperationEntity(String sub, QuotaType quotaType, Instant quotaDate) {
         this.sub = sub;
-        this.operationId = operationId;
         this.quotaType = quotaType;
         this.quotaDate = quotaDate;
     }

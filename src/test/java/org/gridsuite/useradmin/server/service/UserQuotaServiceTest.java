@@ -104,15 +104,12 @@ class UserQuotaServiceTest {
 
     @Test
     void getUserCurrentQuotaUsageReturnsAggregatedCountsWhenOperationsExist() {
-        UUID op1 = UUID.randomUUID();
-        UUID op2 = UUID.randomUUID();
-        UUID op3 = UUID.randomUUID();
         Instant now = Instant.now();
 
         when(userOperationRepository.findBySub("user_A")).thenReturn(List.of(
-                new UserOperationEntity("user_A", op1, BUILD, now),
-                new UserOperationEntity("user_A", op2, BUILD, now),
-                new UserOperationEntity("user_A", op3, CASES, now)
+                new UserOperationEntity("user_A", BUILD, now),
+                new UserOperationEntity("user_A", BUILD, now),
+                new UserOperationEntity("user_A", CASES, now)
         ));
 
         Map<QuotaType, Integer> result = userQuotaService.getUserCurrentQuotaUsage("user_A");
@@ -139,12 +136,10 @@ class UserQuotaServiceTest {
 
         when(userProfileServiceMock.doGetUserProfile("user_A")).thenReturn(profile);
 
-        UUID op1 = UUID.randomUUID();
-        UUID op2 = UUID.randomUUID();
         Instant now = Instant.now();
         when(userOperationRepository.findBySub("user_A")).thenReturn(List.of(
-                new UserOperationEntity("user_A", op1, BUILD, now),
-                new UserOperationEntity("user_A", op2, BUILD, now)
+                new UserOperationEntity("user_A", BUILD, now),
+                new UserOperationEntity("user_A", BUILD, now)
         ));
 
         Map<QuotaType, QuotaState> result = userQuotaService.getUserCurrentQuotaState("user_A");
@@ -174,41 +169,62 @@ class UserQuotaServiceTest {
     }
 
     @Test
-    void startUserOperationAddsOperationToUser() {
-        UUID operationId = UUID.randomUUID();
-        userQuotaService.startUserOperation("user_A", BUILD, operationId);
+    void consumeUserOperationSavesOperationWhenUnderQuota() {
+        Map<QuotaType, Integer> profileQuota = new EnumMap<>(QuotaType.class);
+        profileQuota.put(BUILD, 5);
+        UserProfile profile = UserProfile.builder().name("profile_A").maxOperationQuota(profileQuota).build();
+        when(userProfileServiceMock.doGetUserProfile("user_A")).thenReturn(profile);
+        when(userOperationRepository.findBySubAndQuotaType("user_A", BUILD)).thenReturn(List.of());
 
+        UUID generatedId = UUID.randomUUID();
+        when(userOperationRepository.save(any())).thenAnswer(invocation -> {
+            UserOperationEntity entity = invocation.getArgument(0);
+            entity.setId(generatedId);
+            return entity;
+        });
+
+        UUID quotaId = userQuotaService.consumeUserOperation("user_A", BUILD);
+
+        assertEquals(generatedId, quotaId);
         ArgumentCaptor<UserOperationEntity> entityArgumentCaptor = ArgumentCaptor.forClass(UserOperationEntity.class);
         verify(userOperationRepository).save(entityArgumentCaptor.capture());
-
-        UserOperationEntity value = entityArgumentCaptor.getValue();
-        assertEquals("user_A", value.getSub());
-        assertEquals(BUILD, value.getQuotaType());
-        assertEquals(operationId, value.getOperationId());
+        assertEquals("user_A", entityArgumentCaptor.getValue().getSub());
+        assertEquals(BUILD, entityArgumentCaptor.getValue().getQuotaType());
     }
 
     @Test
-    void endUserOperationRemovesMatchingOperation() {
-        UUID operationId = UUID.randomUUID();
-        Instant now = Instant.now();
-        UserOperationEntity operation1 = new UserOperationEntity("user_A", operationId, BUILD, now);
-        UserOperationEntity operation2 = new UserOperationEntity("user_A", UUID.randomUUID(), CASES, now);
+    void consumeUserOperationThrowsWhenQuotaExhausted() {
+        Map<QuotaType, Integer> profileQuota = new EnumMap<>(QuotaType.class);
+        profileQuota.put(BUILD, 1);
+        UserProfile profile = UserProfile.builder().name("profile_A").maxOperationQuota(profileQuota).build();
+        when(userProfileServiceMock.doGetUserProfile("user_A")).thenReturn(profile);
+        when(userOperationRepository.findBySubAndQuotaType("user_A", BUILD))
+                .thenReturn(List.of(new UserOperationEntity("user_A", BUILD, Instant.now())));
 
-        when(userOperationRepository.findBySub("user_A")).thenReturn(List.of(operation1, operation2));
-
-        userQuotaService.endUserOperation("user_A", BUILD, operationId);
-
-        verify(userOperationRepository).delete(operation1);
+        assertThrows(UserAdminException.class, () -> userQuotaService.consumeUserOperation("user_A", BUILD));
+        verify(userOperationRepository, never()).save(any());
     }
 
     @Test
-    void endUserOperationDoesNotRemoveWhenOperationIdMatchesButTypeDiffers() {
-        UUID operationId = UUID.randomUUID();
-        Instant now = Instant.now();
-        UserOperationEntity operation1 = new UserOperationEntity("user_A", operationId, CASES, now);
-        when(userOperationRepository.findBySub("user_A")).thenReturn(List.of(operation1));
+    void releaseUserOperationRemovesMatchingOperation() {
+        UUID quotaId = UUID.randomUUID();
+        UserOperationEntity operation = new UserOperationEntity("user_A", BUILD, Instant.now());
+        operation.setId(quotaId);
+        when(userOperationRepository.findById(quotaId)).thenReturn(Optional.of(operation));
 
-        userQuotaService.endUserOperation("user_A", BUILD, operationId);
+        userQuotaService.releaseUserOperation("user_A", quotaId);
+
+        verify(userOperationRepository).delete(operation);
+    }
+
+    @Test
+    void releaseUserOperationDoesNothingWhenSubDiffers() {
+        UUID quotaId = UUID.randomUUID();
+        UserOperationEntity operation = new UserOperationEntity("otherUser", BUILD, Instant.now());
+        operation.setId(quotaId);
+        when(userOperationRepository.findById(quotaId)).thenReturn(Optional.of(operation));
+
+        userQuotaService.releaseUserOperation("user_A", quotaId);
 
         verify(userOperationRepository, never()).delete(any());
     }
