@@ -15,9 +15,11 @@ import org.gridsuite.useradmin.server.error.UserAdminException;
 import org.gridsuite.useradmin.server.repository.UserOperationRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -37,6 +39,7 @@ import static org.mockito.Mockito.*;
  * @author Ghiles Abdellah {@literal <ghiles.abdellah at rte-france.com>}
  */
 @SpringBootTest(classes = {UserAdminApplication.class})
+@ExtendWith(MockitoExtension.class)
 class UserQuotaServiceTest {
 
     @Mock
