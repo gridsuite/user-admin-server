@@ -226,7 +226,7 @@ class UserAdminTest {
         // udpate the user: change its name and link it to the profile and to the first group
         UserInfos userInfo = new UserInfos(USER_SUB2, null, null, PROFILE_1, null, null,
                 null, null, null, null, null,
-                null, null, null, null, null,
+                null, null, null, null,
                 null, null, Set.of(GROUP_1));
         updateUserWithAdmin(USER_SUB, userInfo, HttpStatus.OK);
 
@@ -242,7 +242,7 @@ class UserAdminTest {
 
         // udpate the user: change groups
         userInfo = new UserInfos(USER_SUB2, PROFILE_1, null, null, null, null, null, null, null, null,
-                null, null, null, null, null,
+                null, null, null, null,
                 null, null, null, Set.of(GROUP_2));
         updateUserWithAdmin(USER_SUB2, userInfo, HttpStatus.OK);
 
@@ -255,7 +255,7 @@ class UserAdminTest {
     @Test
     void testUpdateUserNotFound() throws Exception {
         updateUserWithAdmin("nofFound", new UserInfos("nofFound", null, null, "prof", null, null, null, null, null, null, null, null,
-                null, null, null, null, null,
+                null, null, null, null,
                 null, null), HttpStatus.NOT_FOUND);
     }
 
@@ -263,7 +263,7 @@ class UserAdminTest {
     void testUpdateUserForbidden() throws Exception {
         updateUserWithNotAdmin("dummy", new UserInfos("dummy", null, null, "prof", null,
                 null, null, null, null, null, null,
-                null, null, null, null, null,
+                null, null, null, null,
                 null, null, null));
     }
 

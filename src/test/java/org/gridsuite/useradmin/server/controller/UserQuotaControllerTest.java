@@ -81,7 +81,6 @@ class UserQuotaControllerTest {
         assertEquals(2, state.get(VOLTAGE_INITIALIZATION).max());
         assertEquals(1, state.get(PCC_MIN).max());
         assertEquals(1, state.get(STATE_ESTIMATION).max());
-        assertEquals(1, state.get(BALANCE_ADJUSTMENT).max());
         assertEquals(1, state.get(DYNAMIC_SIMULATION).max());
         assertEquals(1, state.get(DYNAMIC_SECURITY_ANALYSIS).max());
         assertEquals(1, state.get(DYNAMIC_MARGIN_CALCULATION).max());
