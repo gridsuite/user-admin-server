@@ -54,7 +54,7 @@ class UserInfosServiceTest {
                 null, null, null, null, 5, 6,
                 null, null, null, null, null,
                 null, null, null, null, null,
-                null, null, null, null);
+                null, null, null);
         UserInfosEntity user = new UserInfosEntity(UUID.randomUUID(), "user_A", profile, null);
 
         when(userInfosRepositoryMock.findBySub("user_A")).thenReturn(Optional.of(user));

@@ -128,7 +128,6 @@ class NoQuotaTest {
         assertEquals(2, quotaTwo.get(VOLTAGE_INITIALIZATION));
         assertEquals(1, quotaTwo.get(PCC_MIN));
         assertEquals(1, quotaTwo.get(STATE_ESTIMATION));
-        assertEquals(1, quotaTwo.get(BALANCE_ADJUSTMENT));
         assertEquals(1, quotaTwo.get(DYNAMIC_SIMULATION));
         assertEquals(1, quotaTwo.get(DYNAMIC_SECURITY_ANALYSIS));
         assertEquals(1, quotaTwo.get(DYNAMIC_MARGIN_CALCULATION));
@@ -145,7 +144,6 @@ class NoQuotaTest {
         maxAllowedCases.put(VOLTAGE_INITIALIZATION, 2);
         maxAllowedCases.put(PCC_MIN, 1);
         maxAllowedCases.put(STATE_ESTIMATION, 1);
-        maxAllowedCases.put(BALANCE_ADJUSTMENT, 1);
         maxAllowedCases.put(DYNAMIC_SIMULATION, 1);
         maxAllowedCases.put(DYNAMIC_SECURITY_ANALYSIS, 1);
         maxAllowedCases.put(DYNAMIC_MARGIN_CALCULATION, 1);
@@ -177,7 +175,6 @@ class NoQuotaTest {
         assertEquals(maxAllowedValues.get(VOLTAGE_INITIALIZATION), createdProfile.get().getMaxAllowedVoltageInit());
         assertEquals(maxAllowedValues.get(PCC_MIN), createdProfile.get().getMaxAllowedPccMin());
         assertEquals(maxAllowedValues.get(STATE_ESTIMATION), createdProfile.get().getMaxAllowedStateEstimation());
-        assertEquals(maxAllowedValues.get(BALANCE_ADJUSTMENT), createdProfile.get().getMaxAllowedBalanceAdjustement());
         assertEquals(maxAllowedValues.get(DYNAMIC_SIMULATION), createdProfile.get().getMaxAllowedDynamicSimulation());
         assertEquals(maxAllowedValues.get(DYNAMIC_SECURITY_ANALYSIS), createdProfile.get().getMaxAllowedDynamicSecurity());
         assertEquals(maxAllowedValues.get(DYNAMIC_MARGIN_CALCULATION), createdProfile.get().getMaxAllowedDynamicMargin());
@@ -204,7 +201,7 @@ class NoQuotaTest {
         UserInfos userInfos = new UserInfos(userSub, null, null, profileName, null,
                 null, null, null, null,
                 null, null, null, null,
-                null, null, null, null,
+                null, null, null,
                 null, null);
         performPut(API_BASE_PATH + "/users/" + userSub, userInfos);
     }

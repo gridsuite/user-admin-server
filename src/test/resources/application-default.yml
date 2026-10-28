@@ -32,7 +32,6 @@ useradmin:
   defaultMaxAllowedVoltageInit: 2
   defaultMaxAllowedPccMin: 1
   defaultMaxAllowedStateEstimation: 1
-  defaultMaxAllowedBalanceAdjustement: 1
   defaultMaxAllowedDynamicSimulation: 1
   defaultMaxAllowedDynamicSecurity: 1
   defaultMaxAllowedDynamicMargin: 1

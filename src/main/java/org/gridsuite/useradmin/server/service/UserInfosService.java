@@ -69,10 +69,6 @@ public class UserInfosService {
                 .map(UserProfileEntity::getMaxAllowedStateEstimation)
                 .orElse(applicationProps.getDefaultMaxAllowedStateEstimation());
 
-        Integer maxAllowedBalanceAdjustement = Optional.ofNullable(userInfosEntity.getProfile())
-                .map(UserProfileEntity::getMaxAllowedBalanceAdjustement)
-                .orElse(applicationProps.getDefaultMaxAllowedBalanceAdjustement());
-
         Integer maxAllowedDynamicSimulation = Optional.ofNullable(userInfosEntity.getProfile())
                 .map(UserProfileEntity::getMaxAllowedDynamicSimulation)
                 .orElse(applicationProps.getDefaultMaxAllowedDynamicSimulation());
@@ -87,7 +83,7 @@ public class UserInfosService {
 
         return UserInfosEntity.toDtoWithDetail(userInfosEntity, maxAllowedCases, casesUsed, maxAllowedBuilds,
                 maxAllowedLoadflow, maxAllowedSecurity, maxAllowedSensitivity, maxAllowedShortCircuit, maxAllowedVoltageInit,
-                maxAllowedPccMin, maxAllowedStateEstimation, maxAllowedBalanceAdjustement,
+                maxAllowedPccMin, maxAllowedStateEstimation,
                 maxAllowedDynamicSimulation, maxAllowedDynamicSecurity, maxAllowedDynamicMargin);
     }
 
@@ -124,7 +120,6 @@ public class UserInfosService {
                 applicationProps.getDefaultMaxAllowedVoltageInit(),
                 applicationProps.getDefaultMaxAllowedPccMin(),
                 applicationProps.getDefaultMaxAllowedStateEstimation(),
-                applicationProps.getDefaultMaxAllowedBalanceAdjustement(),
                 applicationProps.getDefaultMaxAllowedDynamicSimulation(),
                 applicationProps.getDefaultMaxAllowedDynamicSecurity(),
                 applicationProps.getDefaultMaxAllowedDynamicMargin(),

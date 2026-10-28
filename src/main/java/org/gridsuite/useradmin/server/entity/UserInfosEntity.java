@@ -58,7 +58,6 @@ public class UserInfosEntity {
                                   Integer maxAllowedVoltageInit,
                                   Integer maxAllowedPccMin,
                                   Integer maxAllowedStateEstimation,
-                                  Integer maxAllowedBalanceAdjustement,
                                   Integer maxAllowedDynamicSimulation,
                                   Integer maxAllowedDynamicSecurity,
                                   Integer maxAllowedDynamicMargin
@@ -67,7 +66,7 @@ public class UserInfosEntity {
         Set<String> groupNames = getGroups() == null ? null : getGroups().stream().map(GroupInfosEntity::getName).collect(Collectors.toSet());
         return new UserInfos(getSub(), null, null, profileName, maxAllowedCases, numberCasesUsed, maxAllowedBuilds,
                 maxAllowedLoadflow, maxAllowedSecurity, maxAllowedSensitivity, maxAllowedShortCircuit, maxAllowedVoltageInit,
-                maxAllowedPccMin, maxAllowedStateEstimation, maxAllowedBalanceAdjustement, maxAllowedDynamicSimulation,
+                maxAllowedPccMin, maxAllowedStateEstimation, maxAllowedDynamicSimulation,
                 maxAllowedDynamicSecurity, maxAllowedDynamicMargin, groupNames);
     }
 
@@ -75,17 +74,17 @@ public class UserInfosEntity {
         return entity == null ? null : entity.toUserInfos(null, null, null,
                 null, null, null, null,
                 null, null, null, null,
-                null, null, null);
+                null, null);
     }
 
     public static UserInfos toDtoWithDetail(@Nullable final UserInfosEntity entity, Integer maxAllowedCases, Integer numberCasesUsed,
                                             Integer maxAllowedBuilds, Integer maxAllowedLoadflow, Integer maxAllowedSecurity,
                                             Integer maxAllowedSensitivity, Integer maxAllowedShortCircuit, Integer maxAllowedVoltageInit,
-                                            Integer maxAllowedPccMin, Integer maxAllowedStateEstimation, Integer maxAllowedBalanceAdjustement,
+                                            Integer maxAllowedPccMin, Integer maxAllowedStateEstimation,
                                             Integer maxAllowedDynamicSimulation, Integer maxAllowedDynamicSecurity, Integer maxAllowedDynamicMargin) {
         return entity == null ? null : entity.toUserInfos(maxAllowedCases, numberCasesUsed, maxAllowedBuilds,
                 maxAllowedLoadflow, maxAllowedSecurity, maxAllowedSensitivity, maxAllowedShortCircuit, maxAllowedVoltageInit,
-                maxAllowedPccMin, maxAllowedStateEstimation, maxAllowedBalanceAdjustement, maxAllowedDynamicSimulation,
+                maxAllowedPccMin, maxAllowedStateEstimation, maxAllowedDynamicSimulation,
                 maxAllowedDynamicSecurity, maxAllowedDynamicMargin);
     }
 }
