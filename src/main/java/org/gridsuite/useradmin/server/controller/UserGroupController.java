@@ -16,6 +16,7 @@ import org.gridsuite.useradmin.server.service.UserGroupService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -47,6 +48,7 @@ public class UserGroupController {
     @GetMapping(value = "", produces = {MediaType.APPLICATION_JSON_VALUE})
     @Operation(summary = "get all the groups")
     @ApiResponse(responseCode = "200", description = "The groups set")
+    @PreAuthorize("true")
     public ResponseEntity<Set<UserGroup>> getGroups() {
         return ResponseEntity.ok().body(service.getGroups());
     }
@@ -55,6 +57,7 @@ public class UserGroupController {
     @Operation(summary = "Get the group informations", description = "Access restricted to users of type: `admin`")
     @ApiResponse(responseCode = "200", description = "The group exist")
     @ApiResponse(responseCode = "404", description = "The group doesn't exist")
+    @PreAuthorize("true")
     public ResponseEntity<UserGroup> getGroup(@PathVariable("group") String group) {
         return ResponseEntity.of(service.getGroupIfAdmin(group));
     }
@@ -63,6 +66,7 @@ public class UserGroupController {
     @Operation(summary = "update a group", description = "Access restricted to users of type: `admin`")
     @ApiResponse(responseCode = "200", description = "The group exists")
     @ApiResponse(responseCode = "404", description = "The group does not exist")
+    @PreAuthorize("true")
     public ResponseEntity<Void> updateGroup(@PathVariable("groupUuid") UUID groupUuid,
                                             @RequestBody UserGroup userGroup) {
         service.updateGroup(groupUuid, userGroup);
@@ -73,6 +77,7 @@ public class UserGroupController {
     @Operation(summary = "Create the group", description = "Access restricted to users of type: `admin`")
     @ApiResponse(responseCode = "201", description = "The group has been created")
     @ApiResponse(responseCode = "400", description = "The group already exists")
+    @PreAuthorize("true")
     public ResponseEntity<Void> createGroup(@PathVariable("group") String group) {
         service.createGroup(group);
         return ResponseEntity.status(HttpStatus.CREATED).build();
@@ -83,6 +88,7 @@ public class UserGroupController {
     @ApiResponse(responseCode = "204", description = "Groups deleted")
     @ApiResponse(responseCode = "404", description = "One or more group(s) not found")
     @ApiResponse(responseCode = "422", description = "Integrity issue when a group is still referenced by users")
+    @PreAuthorize("true")
     public ResponseEntity<Void> deleteGroups(@RequestBody @NotEmpty List<String> names) {
         if (service.deleteGroups(names) > 0L) {
             return ResponseEntity.noContent().build();

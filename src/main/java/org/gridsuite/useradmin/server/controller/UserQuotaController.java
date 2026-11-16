@@ -13,6 +13,7 @@ import org.gridsuite.useradmin.server.UserAdminApi;
 import org.gridsuite.useradmin.server.dto.*;
 import org.gridsuite.useradmin.server.service.UserQuotaService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -35,6 +36,7 @@ public class UserQuotaController {
     @GetMapping(value = "/users/{sub}/quota/state")
     @Operation(summary = "Get the user's current quota state : usage and max")
     @ApiResponse(responseCode = "200", description = "The user current quota state")
+    @PreAuthorize("true")
     public ResponseEntity<Map<QuotaType, QuotaState>> getUserCurrentQuotaState(@PathVariable("sub") String sub) {
         Map<QuotaType, QuotaState> userCurrentQuotaStat = userQuotaService.getUserCurrentQuotaState(sub);
         return ResponseEntity.ok().body(userCurrentQuotaStat);
@@ -43,6 +45,7 @@ public class UserQuotaController {
     @PostMapping(value = "/users/{sub}/quota/reset")
     @Operation(summary = "Reset the user's current quota usage", description = "Access restricted to users of type: `admin`")
     @ApiResponse(responseCode = "200", description = "The user current quota usage has been reseted")
+    @PreAuthorize("true")
     public ResponseEntity<Void> resetUserCurrentQuotaUsage(@PathVariable("sub") String sub) {
         userQuotaService.resetUserCurrentQuotaUsage(sub);
         return ResponseEntity.ok().build();
@@ -52,6 +55,7 @@ public class UserQuotaController {
     @Operation(summary = "Atomically check the user's quota availability for an operation type and consume one unit of it")
     @ApiResponse(responseCode = "200", description = "The quota has been consumed, body contains the generated quotaId")
     @ApiResponse(responseCode = "400", description = "The user's quota for this operation type is already exhausted")
+    @PreAuthorize("true")
     public ResponseEntity<UUID> consumeUserOperation(@PathVariable("sub") String sub,
                                                      @PathVariable("operation") QuotaType operation) {
         UUID quotaId = userQuotaService.consumeUserOperation(sub, operation);
@@ -61,6 +65,7 @@ public class UserQuotaController {
     @PostMapping(value = "/users/{sub}/quota/{quotaId}/release")
     @Operation(summary = "Release a previously consumed quota unit")
     @ApiResponse(responseCode = "200", description = "The quota has been released")
+    @PreAuthorize("true")
     public ResponseEntity<Void> releaseUserOperation(@PathVariable("sub") String sub,
                                                       @PathVariable("quotaId") UUID quotaId) {
         userQuotaService.releaseUserOperation(sub, quotaId);

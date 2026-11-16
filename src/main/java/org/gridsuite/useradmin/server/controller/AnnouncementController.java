@@ -16,6 +16,7 @@ import org.gridsuite.useradmin.server.dto.Announcement;
 import org.gridsuite.useradmin.server.entity.AnnouncementSeverity;
 import org.gridsuite.useradmin.server.service.AnnouncementService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,6 +37,7 @@ public class AnnouncementController {
     @Operation(summary = "get the list of announcements")
     @ApiResponse(responseCode = "200", description = "the list of announcements")
     @ApiResponse(responseCode = "403", description = "User is not an admin")
+    @PreAuthorize("true")
     public ResponseEntity<List<Announcement>> getAnnouncements() {
         return ResponseEntity.ok(service.getAnnouncements());
     }
@@ -45,6 +47,7 @@ public class AnnouncementController {
     @ApiResponse(responseCode = "200", description = "the current announcement")
     @ApiResponse(responseCode = "204", description = "there is no current announcement")
     @ApiResponse(responseCode = "403", description = "User is not an admin")
+    @PreAuthorize("true")
     public ResponseEntity<Announcement> getCurrentAnnouncement() {
         return service.getCurrentAnnouncement().map(ResponseEntity::ok).orElse(ResponseEntity.noContent().build());
     }
@@ -54,6 +57,7 @@ public class AnnouncementController {
     @ApiResponse(responseCode = "200", description = "the created announcement")
     @ApiResponse(responseCode = "403", description = "User is not an admin")
     @ApiResponse(responseCode = "409", description = "There is a conflict in display time")
+    @PreAuthorize("true")
     public ResponseEntity<Announcement> createAnnouncement(@RequestParam("startDate") Instant startDate,
                                                            @RequestParam("endDate") Instant endDate,
                                                            @RequestParam("severity") AnnouncementSeverity severity,
@@ -65,6 +69,7 @@ public class AnnouncementController {
     @Operation(summary = "Delete an announcement")
     @ApiResponse(responseCode = "200", description = "Announcement deleted")
     @ApiResponse(responseCode = "403", description = "User is not an admin")
+    @PreAuthorize("true")
     public ResponseEntity<Void> deleteAnnouncement(@PathVariable("announcementId") UUID announcementId) {
         service.deleteAnnouncement(announcementId);
         return ResponseEntity.ok().build();
