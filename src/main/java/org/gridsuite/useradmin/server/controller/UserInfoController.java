@@ -14,6 +14,7 @@ import org.gridsuite.useradmin.server.UserAdminApi;
 import org.gridsuite.useradmin.server.dto.UserInfos;
 import org.gridsuite.useradmin.server.service.UserInfosService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -33,6 +34,7 @@ public class UserInfoController {
     @GetMapping(value = "/{sub}/detail", produces = "application/json")
     @Operation(summary = "get detailed user information")
     @ApiResponse(responseCode = "200", description = "The user exist")
+    @PreAuthorize("true")
     public ResponseEntity<UserInfos> getUserDetail(@PathVariable("sub") String sub) {
         return ResponseEntity.ok(userInfosService.getUserInfo(sub));
     }
