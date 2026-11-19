@@ -54,7 +54,7 @@
         <sonar.organization>gridsuite</sonar.organization>
         <sonar.projectKey>org.gridsuite:user-admin-server</sonar.projectKey>
 
-        <powsybl-ws-commons.version>1.42.0-SNAPSHOT</powsybl-ws-commons.version>
+        <powsybl-ws-commons.version>1.42.0</powsybl-ws-commons.version>
     </properties>
 
     <build>

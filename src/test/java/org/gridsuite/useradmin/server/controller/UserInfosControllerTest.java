@@ -8,7 +8,7 @@
 package org.gridsuite.useradmin.server.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.powsybl.ws.commons.security.AllowAllAuthorizationTestConfiguration;
+import com.powsybl.ws.commons.security.AllowAllAuthTestConfiguration;
 import org.gridsuite.useradmin.server.UserAdminApi;
 import org.gridsuite.useradmin.server.dto.UserInfos;
 import org.gridsuite.useradmin.server.entity.UserInfosEntity;
@@ -37,7 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @AutoConfigureMockMvc
 @SpringBootTest
-@Import(AllowAllAuthorizationTestConfiguration.class)
+@Import(AllowAllAuthTestConfiguration.class)
 class UserInfosControllerTest {
 
     private static final String PROFILE_A = "profile_A";
