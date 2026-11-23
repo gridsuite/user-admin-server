@@ -53,7 +53,7 @@
         <shedlock.version>6.4.0</shedlock.version>
         <sonar.organization>gridsuite</sonar.organization>
         <sonar.projectKey>org.gridsuite:user-admin-server</sonar.projectKey>
-
+        <!-- FIXME remove this in the next gridsuite-dependencies update -->
         <powsybl-ws-commons.version>1.42.0</powsybl-ws-commons.version>
     </properties>
 
