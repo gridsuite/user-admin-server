@@ -1,6 +1,10 @@
 spring:
   application:
     name: user-admin
+  http:
+    converters:
+      preferred-json-mapper: jackson2
+
   cloud:
     stream:
       bindings:
