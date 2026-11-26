@@ -73,11 +73,6 @@ public class UserAdminApplicationProps {
     private Integer defaultMaxAllowedStateEstimation;
 
     /**
-     * Default value of {@link org.gridsuite.useradmin.server.dto.UserInfos#maxAllowedBalanceAdjustement()} if {@code null}.
-     */
-    private Integer defaultMaxAllowedBalanceAdjustement;
-
-    /**
      * Default value of {@link org.gridsuite.useradmin.server.dto.UserInfos#maxAllowedDynamicSimulation()} if {@code null}.
      */
     private Integer defaultMaxAllowedDynamicSimulation;

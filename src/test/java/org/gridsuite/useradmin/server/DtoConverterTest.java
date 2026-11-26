@@ -26,26 +26,26 @@ class DtoConverterTest implements WithAssertions {
                     .as("dto result")
                     .isEqualTo(new UserInfos("sub_user", null, null, null, null, null, null, null, null, null,
                             null, null, null, null, null,
-                            null, null, null, null));
+                            null, null, null));
 
             // with profile but without group
             UserProfileEntity profile = new UserProfileEntity(UUID.randomUUID(), "a profile", null, null, null, null, null, null, 5, 6, null, null, null, null, null,
                     null, null, null, null, null,
-                    null, null, null, null);
+                    null, null, null);
             //     Test mapping without quota
             assertThat(UserInfosEntity.toDto(new UserInfosEntity(uuid, "sub_user", profile, null)))
                     .as("dto result")
                     .isEqualTo(new UserInfos("sub_user", null, null, "a profile", null, null, null, null, null, null,
                             null, null, null, null, null,
-                            null, null, null, null));
+                            null, null, null));
             //     Test mapping with quota
             assertThat(UserInfosEntity.toDtoWithDetail(new UserInfosEntity(uuid, "sub_user", profile, null), 5, 2, 6, null, null, null,
                     null, null, null, null, null,
-                    null, null, null))
+                    null, null))
                     .as("dto result")
                     .isEqualTo(new UserInfos("sub_user", null, null, "a profile", 5, 2, 6, null, null, null,
                             null, null, null, null, null,
-                            null, null, null, null));
+                            null, null, null));
 
             // with profile and groups
             GroupInfosEntity group1 = new GroupInfosEntity(UUID.randomUUID(), "group1", Set.of());
@@ -55,15 +55,15 @@ class DtoConverterTest implements WithAssertions {
                     .as("dto result")
                     .isEqualTo(new UserInfos("sub_user", null, null, "a profile", null, null, null, null, null,
                             null, null, null, null, null,
-                            null, null, null, null, Set.of("group1", "group2")));
+                            null, null, null, Set.of("group1", "group2")));
             //     Test mapping with quota
             assertThat(UserInfosEntity.toDtoWithDetail(new UserInfosEntity(uuid, "sub_user", profile, Set.of(group1, group2)), 5, 2, 6, null, null, null,
                     null, null, null, null, null,
-                    null, null, null))
+                    null, null))
                     .as("dto result")
                     .isEqualTo(new UserInfos("sub_user", null, null, "a profile", 5, 2, 6, null, null, null,
                             null, null, null, null, null,
-                            null, null, null, Set.of("group1", "group2")));
+                            null, null, Set.of("group1", "group2")));
         }
 
         @Test

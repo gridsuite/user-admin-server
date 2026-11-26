@@ -77,9 +77,6 @@ public class UserProfileEntity {
     @Column(name = "maxAllowedStateEstimation")
     Integer maxAllowedStateEstimation;
 
-    @Column(name = "maxAllowedBalanceAdjustement")
-    Integer maxAllowedBalanceAdjustement;
-
     @Column(name = "maxAllowedDynamicSimulation")
     Integer maxAllowedDynamicSimulation;
 

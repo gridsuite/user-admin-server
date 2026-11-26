@@ -81,7 +81,6 @@ public class UserProfileService {
         maxAllowedValuesMap.put(VOLTAGE_INITIALIZATION, applicationProps.getDefaultMaxAllowedVoltageInit());
         maxAllowedValuesMap.put(PCC_MIN, applicationProps.getDefaultMaxAllowedPccMin());
         maxAllowedValuesMap.put(STATE_ESTIMATION, applicationProps.getDefaultMaxAllowedStateEstimation());
-        maxAllowedValuesMap.put(BALANCE_ADJUSTMENT, applicationProps.getDefaultMaxAllowedBalanceAdjustement());
         maxAllowedValuesMap.put(DYNAMIC_SIMULATION, applicationProps.getDefaultMaxAllowedDynamicSimulation());
         maxAllowedValuesMap.put(DYNAMIC_SECURITY_ANALYSIS, applicationProps.getDefaultMaxAllowedDynamicSecurity());
         maxAllowedValuesMap.put(DYNAMIC_MARGIN_CALCULATION, applicationProps.getDefaultMaxAllowedDynamicMargin());
@@ -185,7 +184,6 @@ public class UserProfileService {
         profile.setMaxAllowedVoltageInit(userProfile.getMaxOperationQuota(QuotaType.VOLTAGE_INITIALIZATION));
         profile.setMaxAllowedPccMin(userProfile.getMaxOperationQuota(QuotaType.PCC_MIN));
         profile.setMaxAllowedStateEstimation(userProfile.getMaxOperationQuota(QuotaType.STATE_ESTIMATION));
-        profile.setMaxAllowedBalanceAdjustement(userProfile.getMaxOperationQuota(QuotaType.BALANCE_ADJUSTMENT));
         profile.setMaxAllowedDynamicSimulation(userProfile.getMaxOperationQuota(QuotaType.DYNAMIC_SIMULATION));
         profile.setMaxAllowedDynamicSecurity(userProfile.getMaxOperationQuota(QuotaType.DYNAMIC_SECURITY_ANALYSIS));
         profile.setMaxAllowedDynamicMargin(userProfile.getMaxOperationQuota(QuotaType.DYNAMIC_MARGIN_CALCULATION));
@@ -232,7 +230,6 @@ public class UserProfileService {
         maxAllowedValues.put(QuotaType.VOLTAGE_INITIALIZATION, entity.getMaxAllowedVoltageInit());
         maxAllowedValues.put(QuotaType.PCC_MIN, entity.getMaxAllowedPccMin());
         maxAllowedValues.put(QuotaType.STATE_ESTIMATION, entity.getMaxAllowedStateEstimation());
-        maxAllowedValues.put(QuotaType.BALANCE_ADJUSTMENT, entity.getMaxAllowedBalanceAdjustement());
         maxAllowedValues.put(QuotaType.DYNAMIC_SIMULATION, entity.getMaxAllowedDynamicSimulation());
         maxAllowedValues.put(QuotaType.DYNAMIC_SECURITY_ANALYSIS, entity.getMaxAllowedDynamicSecurity());
         maxAllowedValues.put(QuotaType.DYNAMIC_MARGIN_CALCULATION, entity.getMaxAllowedDynamicMargin());
@@ -274,7 +271,6 @@ public class UserProfileService {
                 Optional.ofNullable(userProfile.getMaxOperationQuota(QuotaType.VOLTAGE_INITIALIZATION)).orElse(applicationProps.getDefaultMaxAllowedVoltageInit()),
                 Optional.ofNullable(userProfile.getMaxOperationQuota(QuotaType.PCC_MIN)).orElse(applicationProps.getDefaultMaxAllowedPccMin()),
                 Optional.ofNullable(userProfile.getMaxOperationQuota(QuotaType.STATE_ESTIMATION)).orElse(applicationProps.getDefaultMaxAllowedStateEstimation()),
-                Optional.ofNullable(userProfile.getMaxOperationQuota(QuotaType.BALANCE_ADJUSTMENT)).orElse(applicationProps.getDefaultMaxAllowedBalanceAdjustement()),
                 Optional.ofNullable(userProfile.getMaxOperationQuota(QuotaType.DYNAMIC_SIMULATION)).orElse(applicationProps.getDefaultMaxAllowedDynamicSimulation()),
                 Optional.ofNullable(userProfile.getMaxOperationQuota(QuotaType.DYNAMIC_SECURITY_ANALYSIS)).orElse(applicationProps.getDefaultMaxAllowedDynamicSecurity()),
                 Optional.ofNullable(userProfile.getMaxOperationQuota(QuotaType.DYNAMIC_MARGIN_CALCULATION)).orElse(applicationProps.getDefaultMaxAllowedDynamicMargin()),

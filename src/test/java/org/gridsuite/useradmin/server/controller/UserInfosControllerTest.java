@@ -68,7 +68,7 @@ class UserInfosControllerTest {
                 null, null, null, null, null,
                 10, 20, null, null, null, null,
                 null, null, null, null, null,
-                null, null, null, null, null);
+                null, null, null, null);
         userProfileRepository.save(profileEntity);
         // Create a user
         UserInfosEntity userInfosEntity = new UserInfosEntity(UUID.randomUUID(), USER_A, profileEntity, null);
