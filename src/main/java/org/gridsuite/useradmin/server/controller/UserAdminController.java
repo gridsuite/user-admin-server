@@ -19,6 +19,7 @@ import org.gridsuite.useradmin.server.service.UserAdminService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -41,6 +42,7 @@ public class UserAdminController {
     @GetMapping(value = "/users", produces = {MediaType.APPLICATION_JSON_VALUE})
     @Operation(summary = "get the users", description = "Access restricted to users of type: `admin`")
     @ApiResponse(responseCode = "200", description = "The users list")
+    @PreAuthorize("true")
     public ResponseEntity<List<UserInfos>> getUsers() {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getUsers());
     }
@@ -49,6 +51,7 @@ public class UserAdminController {
     @Operation(summary = "delete the users", description = "Access restricted to users of type: `admin`")
     @ApiResponse(responseCode = "204", description = "Users deleted")
     @ApiResponse(responseCode = "404", description = "One or more user(s) not found")
+    @PreAuthorize("true")
     public ResponseEntity<Void> deleteUser(@RequestBody @NotEmpty List<String> subs) {
         if (service.delete(subs) > 0L) {
             return ResponseEntity.noContent().build();
@@ -61,6 +64,7 @@ public class UserAdminController {
     @Operation(summary = "Get the user information's", description = "Access restricted to users of type: `admin`")
     @ApiResponse(responseCode = "200", description = "The user exist")
     @ApiResponse(responseCode = "404", description = "The user doesn't exist")
+    @PreAuthorize("true")
     public ResponseEntity<UserInfos> getUser(@PathVariable("sub") String sub) {
         return ResponseEntity.of(service.getUser(sub));
     }
@@ -68,6 +72,7 @@ public class UserAdminController {
     @PostMapping(value = "/users/{sub}")
     @Operation(summary = "Create the user", description = "Access restricted to users of type: `admin`")
     @ApiResponse(responseCode = "201", description = "The user has been created")
+    @PreAuthorize("true")
     public ResponseEntity<Void> createUser(@PathVariable("sub") String sub) {
         service.createUser(sub);
         return ResponseEntity.status(HttpStatus.CREATED).build();
@@ -77,6 +82,7 @@ public class UserAdminController {
     @Operation(summary = "delete the user", description = "Access restricted to users of type: `admin`")
     @ApiResponse(responseCode = "204", description = "User deleted")
     @ApiResponse(responseCode = "404", description = "User not found")
+    @PreAuthorize("true")
     public ResponseEntity<Void> deleteUser(@PathVariable("sub") String sub) {
         if (service.delete(sub) > 0L) {
             return ResponseEntity.noContent().build();
@@ -89,6 +95,7 @@ public class UserAdminController {
     @Operation(summary = "update a user", description = "Access restricted to users of type: `admin`")
     @ApiResponse(responseCode = "200", description = "The user is updated")
     @ApiResponse(responseCode = "404", description = "The user does not exist")
+    @PreAuthorize("true")
     public ResponseEntity<UserProfile> updateUser(@PathVariable("sub") String sub,
                                                   @RequestBody UserInfos userInfos) {
         service.updateUser(sub, userInfos);
@@ -97,6 +104,7 @@ public class UserAdminController {
 
     @RequestMapping(value = "/users/{sub}/record-connection", method = RequestMethod.HEAD)
     @Operation(summary = "Record connection attempt")
+    @PreAuthorize("true")
     @ApiResponse(responseCode = "200", description = "Connection attempt recorded")
     public ResponseEntity<Void> recordConnectionAttempt(@PathVariable("sub") String sub,
                                            @RequestParam(value = "isConnectionAccepted") boolean isConnectionAccepted) {
@@ -107,6 +115,7 @@ public class UserAdminController {
     @GetMapping(value = "/users/{sub}/profile")
     @Operation(summary = "Get the user's profile")
     @ApiResponse(responseCode = "200", description = "The user profile")
+    @PreAuthorize("true")
     public ResponseEntity<UserProfile> getUserProfile(@PathVariable("sub") String sub) {
         return ResponseEntity.ok(service.getUserProfile(sub));
     }
@@ -114,6 +123,7 @@ public class UserAdminController {
     @GetMapping(value = "/users/{sub}/groups")
     @Operation(summary = "Get the user's groups")
     @ApiResponse(responseCode = "200", description = "The user groups")
+    @PreAuthorize("true")
     public ResponseEntity<List<UserGroup>> getUserGroups(@PathVariable("sub") String sub) {
         return ResponseEntity.ok(service.getUserGroups(sub));
     }
@@ -121,6 +131,7 @@ public class UserAdminController {
     @GetMapping(value = "/cases-alert-threshold")
     @Operation(summary = "Get the cases alert threshold")
     @ApiResponse(responseCode = "200", description = "The cases alert threshold")
+    @PreAuthorize("true")
     public ResponseEntity<Integer> getCasesAlertThreshold() {
         return ResponseEntity.ok().body(service.getCasesAlertThreshold());
     }
@@ -128,8 +139,8 @@ public class UserAdminController {
     @GetMapping(value = "/connections", produces = {MediaType.APPLICATION_JSON_VALUE})
     @Operation(summary = "get the connections", description = "Access restricted to users of type: `admin`")
     @ApiResponse(responseCode = "200", description = "The connections list")
+    @PreAuthorize("true")
     public ResponseEntity<List<UserConnection>> getConnections() {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getConnections());
     }
-
 }

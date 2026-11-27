@@ -17,6 +17,7 @@ import org.gridsuite.useradmin.server.service.UserProfileService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -40,6 +41,7 @@ public class UserProfileController {
     @GetMapping(value = "", produces = {MediaType.APPLICATION_JSON_VALUE})
     @Operation(summary = "get all the user profiles")
     @ApiResponse(responseCode = "200", description = "The profiles list")
+    @PreAuthorize("true")
     public ResponseEntity<List<UserProfile>> getProfiles(@RequestHeader("userId") String userId,
                                                          @Parameter(description = "To check if parameters and spreadsheet config collection links are still valid") @RequestParam(name =
                                                                  "checkLinksValidity", required = false, defaultValue = "true") boolean checkLinksValidity) {
@@ -50,6 +52,7 @@ public class UserProfileController {
     @Operation(summary = "get the profile information", description = "Access restricted to users of type: `admin`")
     @ApiResponse(responseCode = "200", description = "The profile exist")
     @ApiResponse(responseCode = "404", description = "The profile does not exist")
+    @PreAuthorize("true")
     public ResponseEntity<UserProfile> getProfile(@PathVariable("profileUuid") UUID profileUuid) {
         return ResponseEntity.of(service.getProfileIfAdmin(profileUuid));
     }
@@ -58,6 +61,7 @@ public class UserProfileController {
     @Operation(summary = "update a profile", description = "Access restricted to users of type: `admin`")
     @ApiResponse(responseCode = "200", description = "The profile exists")
     @ApiResponse(responseCode = "404", description = "The profile does not exist")
+    @PreAuthorize("true")
     public ResponseEntity<UserProfile> updateProfile(@PathVariable("profileUuid") UUID profileUuid,
                                                      @RequestBody UserProfile userProfile) {
         service.updateProfile(profileUuid, userProfile);
@@ -67,6 +71,7 @@ public class UserProfileController {
     @PostMapping(value = "")
     @Operation(summary = "Create the profile", description = "Access restricted to users of type: `admin`")
     @ApiResponse(responseCode = "201", description = "The profile has been created")
+    @PreAuthorize("true")
     public ResponseEntity<Void> createProfile(@RequestBody UserProfile userProfile) {
         service.createProfile(userProfile);
         return ResponseEntity.status(HttpStatus.CREATED).build();
@@ -76,6 +81,7 @@ public class UserProfileController {
     @Operation(summary = "delete the profiles", description = "Access restricted to users of type: `admin`")
     @ApiResponse(responseCode = "204", description = "Profiles deleted")
     @ApiResponse(responseCode = "404", description = "One or more profile(s) not found")
+    @PreAuthorize("true")
     public ResponseEntity<Void> deleteProfiles(@RequestBody @NotEmpty List<String> names) {
         if (service.deleteProfiles(names) > 0L) {
             return ResponseEntity.noContent().build();

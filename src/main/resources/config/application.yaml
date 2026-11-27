@@ -11,8 +11,12 @@ spring:
       output-bindings: publishMessage-out-0;publishDirectoryUpdate-out-0
 
 powsybl-ws:
+  autoconfigure:
+    authorization-system:
+      enable: true
   database:
     name: useradmin
+
 
 useradmin:
   cron:
